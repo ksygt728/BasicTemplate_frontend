@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 
 // API 응답 타입 정의
-interface MenuData {
+interface MenuResDto {
   menuCd: string;
   menuNm: string;
   upperMenu: string | null;
@@ -12,7 +12,7 @@ interface MenuData {
   useYn: "Y" | "N";
   menuUrl: string;
   orderNum: number;
-  childMenus: MenuData[];
+  childMenus: MenuResDto[];
 }
 
 interface ApiResponse {
@@ -20,20 +20,18 @@ interface ApiResponse {
   errorCode: string | null;
   message: string;
   data: {
-    data: MenuData[];
+    data: MenuResDto[];
   };
 }
 
 export default function NavBar() {
-  const API_BASE_URL =
-    process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
-
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
   const [isOpen, setIsOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [activeSubMenus, setActiveSubMenus] = useState<{
     [key: string]: string;
   }>({});
-  const [menuData, setMenuData] = useState<MenuData[]>([]);
+  const [menuData, setMenuData] = useState<MenuResDto[]>([]);
   const [loading, setLoading] = useState(true);
 
   // API에서 메뉴 데이터 가져오기
@@ -69,7 +67,7 @@ export default function NavBar() {
 
   // 메뉴 아이템을 재귀적으로 렌더링하는 함수
   const renderMenuItem = (
-    menu: MenuData,
+    menu: MenuResDto,
     level: number = 1
   ): React.ReactElement => {
     const hasChildren = menu.childMenus && menu.childMenus.length > 0;
@@ -79,7 +77,9 @@ export default function NavBar() {
       <div
         key={menu.menuCd}
         className={`${
-          level === 1 ? "relative inline-block group" : "relative group/sub"
+          level === 1
+            ? "relative inline-block group mt-3"
+            : "relative group/sub"
         }`}
         onMouseEnter={() => {
           if (level === 1) {
@@ -324,9 +324,9 @@ export default function NavBar() {
           </div>
 
           {/* Desktop Menu List*/}
-          <div className="py-3 mt-1 -mx-5 whitespace-nowrap relative overflow-visible">
+          <div className="py-1 mt-1 -mx-5 whitespace-nowrap relative overflow-visible">
             {loading ? (
-              <div className="px-3 py-2 text-gray-500">loading...</div>
+              <div className="text-gray-500">loading...</div>
             ) : (
               menuData.map((menu) => renderMenuItem(menu))
             )}
