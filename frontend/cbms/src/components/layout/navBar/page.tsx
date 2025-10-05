@@ -38,6 +38,8 @@ export default function NavBar() {
   useEffect(() => {
     const fetchMenuData = async () => {
       try {
+        console.log("API_BASE_URL:", API_BASE_URL);
+
         const response = await fetch(`${API_BASE_URL}/admin/menu/search`);
 
         if (!response.ok) {

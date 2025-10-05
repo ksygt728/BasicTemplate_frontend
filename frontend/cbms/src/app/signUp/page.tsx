@@ -6,10 +6,12 @@ export default function Home() {
       <div className="container flex items-center justify-center min-h-screen px-6 mx-auto">
         <form className="w-full max-w-md">
           <div className="flex justify-center mx-auto">
-            <img
+            <Image
               className="w-auto h-7 sm:h-8"
               src="https://merakiui.com/images/logo.svg"
               alt=""
+              width={120}
+              height={32}
             />
           </div>
 

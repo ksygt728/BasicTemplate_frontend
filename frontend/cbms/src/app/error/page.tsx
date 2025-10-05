@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 export default function Error() {
   const message1: string = "Go Back~";
 
@@ -43,10 +45,12 @@ export default function Error() {
         </div>
 
         <div className="relative w-full mt-12 lg:w-1/2 lg:mt-0">
-          <img
+          <Image
             className="w-full max-w-lg lg:mx-auto"
             src="/images/components/illustration.svg"
             alt=""
+            width={500}
+            height={300}
           />
         </div>
       </div>
