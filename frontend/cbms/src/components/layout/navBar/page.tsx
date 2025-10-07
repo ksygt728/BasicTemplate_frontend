@@ -2,27 +2,9 @@
 
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
-
-// API 응답 타입 정의
-interface MenuResDto {
-  menuCd: string;
-  menuNm: string;
-  upperMenu: string | null;
-  menuLv: number;
-  useYn: "Y" | "N";
-  menuUrl: string;
-  orderNum: number;
-  childMenus: MenuResDto[];
-}
-
-interface ApiResponse {
-  success: boolean;
-  errorCode: string | null;
-  message: string;
-  data: {
-    data: MenuResDto[];
-  };
-}
+import Link from "next/link";
+import type { MenuResDto } from "@/types/responseDto/MenuResDto";
+import type { ResponseApi } from "@/types/commonDto/ResponseApi";
 
 export default function NavBar() {
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -38,15 +20,13 @@ export default function NavBar() {
   useEffect(() => {
     const fetchMenuData = async () => {
       try {
-        console.log("API_BASE_URL:", API_BASE_URL);
-
         const response = await fetch(`${API_BASE_URL}/admin/menu/search`);
 
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        const data: ApiResponse = await response.json();
+        const data: ResponseApi = await response.json();
 
         if (data.success && data.data.data.length > 0) {
           // menuLv = 0인 최상위 메뉴를 제외하고 menuLv = 1인 메뉴들만 추출
@@ -65,7 +45,7 @@ export default function NavBar() {
     };
 
     fetchMenuData();
-  }, [API_BASE_URL]);
+  }, []);
 
   // 메뉴 아이템을 재귀적으로 렌더링하는 함수
   const renderMenuItem = (
@@ -100,13 +80,19 @@ export default function NavBar() {
           // level > 1인 경우 onMouseLeave를 제거하여 서브메뉴 간 이동시 메뉴가 유지되도록 함
         }}
       >
-        <a
-          href={menu.menuUrl}
+        <Link
+          href={menu.menuUrl || "#"}
           className={`${
             level === 1
               ? "mx-4 text-sm leading-5 text-gray-700 transition-colors duration-300 transform dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 hover:underline md:my-0 cursor-pointer"
               : "flex items-center justify-between px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200"
           }`}
+          onClick={(e) => {
+            // URL이 없거나 #인 경우 기본 동작 방지
+            if (!menu.menuUrl || menu.menuUrl === "#") {
+              e.preventDefault();
+            }
+          }}
         >
           {menu.menuNm}
           {hasChildren && level > 1 && (
@@ -124,7 +110,7 @@ export default function NavBar() {
               />
             </svg>
           )}
-        </a>
+        </Link>
 
         {/* 서브메뉴 렌더링 */}
         {hasChildren && (
@@ -140,7 +126,7 @@ export default function NavBar() {
                 }}
               >
                 <div className="py-2">
-                  {sortedChildren.map((child) =>
+                  {sortedChildren.map((child: MenuResDto) =>
                     renderMenuItem(child, level + 1)
                   )}
                 </div>
@@ -161,7 +147,7 @@ export default function NavBar() {
                 }
               >
                 <div className="py-2">
-                  {sortedChildren.map((child) =>
+                  {sortedChildren.map((child: MenuResDto) =>
                     renderMenuItem(child, level + 1)
                   )}
                 </div>
