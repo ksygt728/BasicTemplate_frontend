@@ -24,7 +24,7 @@ export interface UseMenuReturn {
 }
 
 /**
- * 메뉴 데이터를 관리하는 커스텀 Hook
+ * @기능 메뉴 데이터를 관리하는 커스텀 Hook
  * @returns {UseMenuReturn} 메뉴 데이터, 로딩 상태, 에러 상태, 재조회 함수
  */
 export const useMenu = (): UseMenuReturn => {
@@ -33,7 +33,7 @@ export const useMenu = (): UseMenuReturn => {
   const [error, setError] = useState<string | null>(null);
 
   /**
-   * API에서 메뉴 데이터 가져오기
+   * @기능 API에서 메뉴 데이터 가져오기
    */
   const fetchMenuData = async (): Promise<void> => {
     try {
@@ -87,7 +87,7 @@ export const useMenu = (): UseMenuReturn => {
   };
 
   /**
-   * 메뉴 데이터 재조회
+   * @기능 메뉴 데이터 재조회
    */
   const refetch = async (): Promise<void> => {
     await fetchMenuData();
@@ -107,8 +107,8 @@ export const useMenu = (): UseMenuReturn => {
 };
 
 /**
- * 네비게이션 바 전용 메뉴 Hook
- * 네비게이션 바에서 사용하는 특정 로직을 포함
+ * @기능 네비게이션 바 전용 메뉴 Hook
+ * @설명 네비게이션 바에서 사용하는 특정 로직을 포함
  * @returns {UseMenuReturn} 메뉴 데이터, 로딩 상태, 에러 상태, 재조회 함수
  */
 export const useNavBarMenu = (): UseMenuReturn => {
@@ -116,8 +116,8 @@ export const useNavBarMenu = (): UseMenuReturn => {
 };
 
 /**
- * 사이드바 전용 메뉴 Hook
- * 사이드바에서 사용하는 특정 로직을 포함 (향후 확장 가능)
+ * @기능 사이드바 전용 메뉴 Hook
+ * @설명 사이드바에서 사용하는 특정 로직을 포함 (향후 확장 가능)
  * @returns {UseMenuReturn} 메뉴 데이터, 로딩 상태, 에러 상태, 재조회 함수
  */
 export const useSideBarMenu = (): UseMenuReturn => {

@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useNavBarMenu } from "@/hooks/common/menuHook";
 import type { MenuResDto } from "@/types/responseDto/MenuResDto";
+import MainLogo from "@/components/common/logo/MainLogo";
 
 export default function NavBar() {
   // Hook을 사용하여 메뉴 데이터 가져오기
@@ -134,15 +135,7 @@ export default function NavBar() {
           <div className="flex flex-col md:flex-row md:justify-between md:items-center">
             <div className="flex items-center justify-between">
               <div className="flex items-center">
-                <a href="#">
-                  <Image
-                    className="w-auto h-6 sm:h-7"
-                    src="https://merakiui.com/images/full-logo.svg"
-                    alt="Logo"
-                    width={200}
-                    height={32}
-                  />
-                </a>
+                <MainLogo />
 
                 {/* Search input on desktop screen */}
                 <div className="hidden mx-10 md:block">
@@ -224,30 +217,30 @@ export default function NavBar() {
               }`}
             >
               <div className="flex flex-col md:flex-row md:mx-1">
-                <a
+                <Link
                   className="my-2 text-sm leading-5 text-gray-700 transition-colors duration-300 transform dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 hover:underline md:mx-4 md:my-0"
                   href="#"
                 >
-                  Home
-                </a>
-                <a
+                  예비버튼1
+                </Link>
+                <Link
                   className="my-2 text-sm leading-5 text-gray-700 transition-colors duration-300 transform dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 hover:underline md:mx-4 md:my-0"
                   href="#"
                 >
-                  Blog
-                </a>
-                <a
+                  예비버튼2
+                </Link>
+                <Link
                   className="my-2 text-sm leading-5 text-gray-700 transition-colors duration-300 transform dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 hover:underline md:mx-4 md:my-0"
                   href="#"
                 >
-                  Components
-                </a>
-                <a
+                  캐시삭제
+                </Link>
+                <Link
                   className="my-2 text-sm leading-5 text-gray-700 transition-colors duration-300 transform dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 hover:underline md:mx-4 md:my-0"
-                  href="#"
+                  href="/signIn"
                 >
-                  Courses
-                </a>
+                  Sign In
+                </Link>
               </div>
 
               {/* Search input on mobile screen */}

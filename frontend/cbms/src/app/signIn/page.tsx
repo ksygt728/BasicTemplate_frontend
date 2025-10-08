@@ -1,17 +1,13 @@
+import MainLogo from "@/components/common/logo/MainLogo";
 import Image from "next/image";
+import Link from "next/link";
 
 export default function Home() {
   return (
     <section className="bg-white dark:bg-gray-900">
       <div className="container flex items-center justify-center min-h-screen px-6 mx-auto">
         <form className="w-full max-w-md">
-          <Image
-            className="w-auto h-7 sm:h-8"
-            src="https://merakiui.com/images/logo.svg"
-            alt=""
-            width={120}
-            height={32}
-          />
+          <MainLogo />
 
           <h1 className="mt-3 text-2xl font-semibold text-gray-800 capitalize sm:text-3xl dark:text-white">
             sign In
@@ -131,7 +127,7 @@ export default function Home() {
             </a>
             <div className="mt-6 text-center ">
               <a
-                href="#"
+                href="/signUp"
                 className="text-sm text-blue-500 hover:underline dark:text-blue-400"
               >
                 Don’t have an account yet? Sign up
