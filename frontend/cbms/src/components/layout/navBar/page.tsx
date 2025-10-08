@@ -1,51 +1,20 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useNavBarMenu } from "@/hooks/common/menuHook";
 import type { MenuResDto } from "@/types/responseDto/MenuResDto";
-import type { ResponseApi } from "@/types/commonDto/ResponseApi";
 
 export default function NavBar() {
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+  // Hook을 사용하여 메뉴 데이터 가져오기
+  const { menuData, loading, error } = useNavBarMenu();
+
   const [isOpen, setIsOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [activeSubMenus, setActiveSubMenus] = useState<{
     [key: string]: string;
   }>({});
-  const [menuData, setMenuData] = useState<MenuResDto[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  // API에서 메뉴 데이터 가져오기
-  useEffect(() => {
-    const fetchMenuData = async () => {
-      try {
-        const response = await fetch(`${API_BASE_URL}/admin/menu/search`);
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data: ResponseApi = await response.json();
-
-        if (data.success && data.data.data.length > 0) {
-          // menuLv = 0인 최상위 메뉴를 제외하고 menuLv = 1인 메뉴들만 추출
-          const rootMenu = data.data.data[0]; // 최상위 메뉴 (menuLv = 0)
-          const level1Menus = rootMenu.childMenus;
-
-          setMenuData(level1Menus);
-        }
-      } catch (error) {
-        console.error("메뉴 데이터 로딩 실패:", error);
-        // 에러 시 빈 배열로 설정 (또는 기본 메뉴 데이터)
-        setMenuData([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchMenuData();
-  }, []);
 
   // 메뉴 아이템을 재귀적으로 렌더링하는 함수
   const renderMenuItem = (
@@ -121,7 +90,6 @@ export default function NavBar() {
                 style={{ zIndex: 9999, display: "block" }}
                 onMouseEnter={() => setActiveDropdown(menu.menuCd)}
                 onMouseLeave={() => {
-                  setActiveDropdown(null);
                   setActiveSubMenus({}); // 최상위 드롭다운을 벗어날 때 모든 서브메뉴도 닫기
                 }}
               >
@@ -315,6 +283,10 @@ export default function NavBar() {
           <div className="py-1 mt-1 -mx-5 whitespace-nowrap relative overflow-visible">
             {loading ? (
               <div className="text-gray-500">loading...</div>
+            ) : error ? (
+              <div className="text-red-500">
+                메뉴 로딩 중 오류가 발생했습니다: {error}
+              </div>
             ) : (
               menuData.map((menu) => renderMenuItem(menu))
             )}
