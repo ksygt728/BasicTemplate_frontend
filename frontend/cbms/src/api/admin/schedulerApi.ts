@@ -2,6 +2,7 @@ import { ResponseApi } from "@/types/commonDto/ResponseApi";
 import { ScheMReqDto } from "@/types/requestDto/ScheMReqDto";
 import { ScheMResDto } from "@/types/responseDto/ScheMResDto";
 import { ScheHResDto } from "@/types/responseDto/ScheHResDto";
+import { Pageable } from "@/types/requestDto/specialDto/Pageable";
 
 /**
  * @파일명 : schedulerApi.ts
@@ -24,7 +25,7 @@ export class SchedulerApi {
   }
 
   // API 기본 URL 설정
-  private API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+  private API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
   private ADMIN_SCHEDULER_BASE_URL = `${this.API_BASE_URL}/admin/scheduler`;
 
   /**
@@ -39,9 +40,12 @@ export class SchedulerApi {
    */
   public async findAllSchedulerForAdmin(
     scheMReqDto?: ScheMReqDto,
-    page: number = 0,
-    size: number = 200,
-    sort: string = "scheId"
+    pageable: Pageable = {
+      page: 0,
+      size: 200,
+      sort: "scheId",
+      direction: "ASC",
+    }
   ): Promise<ResponseApi<Map<string, object>>> {
     const url = new URL(`${this.ADMIN_SCHEDULER_BASE_URL}/search`);
 
@@ -54,9 +58,12 @@ export class SchedulerApi {
       });
     }
 
-    url.searchParams.append("page", page.toString());
-    url.searchParams.append("size", size.toString());
-    url.searchParams.append("sort", sort);
+    url.searchParams.append("page", pageable.page.toString());
+    url.searchParams.append("size", pageable.size.toString());
+    url.searchParams.append("sort", pageable.sort || "scheId");
+    if (pageable.direction) {
+      url.searchParams.append("direction", pageable.direction);
+    }
 
     const response = await fetch(url.toString(), {
       method: "GET",
@@ -102,15 +109,21 @@ export class SchedulerApi {
    */
   public async findBySchedulerHistoryForAdmin(
     scheId: string,
-    page: number = 0,
-    size: number = 200,
-    sort: string = "startDate"
+    pageable: Pageable = {
+      page: 0,
+      size: 200,
+      sort: "startDate",
+      direction: "ASC",
+    }
   ): Promise<ResponseApi<Map<string, object>>> {
     const url = new URL(`${this.ADMIN_SCHEDULER_BASE_URL}/history/${scheId}`);
 
-    url.searchParams.append("page", page.toString());
-    url.searchParams.append("size", size.toString());
-    url.searchParams.append("sort", sort);
+    url.searchParams.append("page", pageable.page.toString());
+    url.searchParams.append("size", pageable.size.toString());
+    url.searchParams.append("sort", pageable.sort || "startDate");
+    if (pageable.direction) {
+      url.searchParams.append("direction", pageable.direction);
+    }
 
     const response = await fetch(url.toString(), {
       method: "GET",

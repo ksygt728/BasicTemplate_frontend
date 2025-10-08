@@ -1,6 +1,7 @@
 import { ResponseApi } from "@/types/commonDto/ResponseApi";
 import { MulLangReqDto } from "@/types/requestDto/MulLangReqDto";
 import { MulLangResDto } from "@/types/responseDto/MulLangResDto";
+import { Pageable } from "@/types/requestDto/specialDto/Pageable";
 
 /**
  * @파일명 : langApi.ts
@@ -23,7 +24,7 @@ export class LangApi {
   }
 
   // API 기본 URL 설정
-  private API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+  private API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
   private ADMIN_LANG_BASE_URL = `${this.API_BASE_URL}/admin/lang`;
   /**
    * @REQ_ID : REQ_ADM_033
@@ -38,16 +39,18 @@ export class LangApi {
    */
   public async findAllMulLangForAdmin(
     mulLangReqDto: MulLangReqDto,
-    page: number = 0,
-    size: number = 2000,
-    sort: string = "langCd",
-    direction: "ASC" | "DESC" = "ASC"
+    pageable: Pageable = {
+      page: 0,
+      size: 2000,
+      sort: "langCd",
+      direction: "ASC",
+    }
   ): Promise<ResponseApi<Map<string, object>>> {
     const params = new URLSearchParams({
-      page: page.toString(),
-      size: size.toString(),
-      sort: sort,
-      direction: direction,
+      page: pageable.page.toString(),
+      size: pageable.size.toString(),
+      sort: pageable.sort || "langCd",
+      direction: pageable.direction || "ASC",
       ...Object.fromEntries(
         Object.entries(mulLangReqDto).filter(
           ([_, value]) => value !== undefined && value !== null

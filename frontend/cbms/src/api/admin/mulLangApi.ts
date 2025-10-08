@@ -1,6 +1,7 @@
 import { ResponseApi } from "@/types/commonDto/ResponseApi";
 import { MulLangReqDto } from "@/types/requestDto/MulLangReqDto";
 import { MulLangResDto } from "@/types/responseDto/MulLangResDto";
+import { Pageable } from "@/types/requestDto/specialDto/Pageable";
 
 /**
  * @파일명 : mulLangApi.ts
@@ -23,31 +24,30 @@ export class MulLangApi {
   }
 
   // API 기본 URL 설정
-  private API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+  private API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
   private ADMIN_MUL_LANG_BASE_URL = `${this.API_BASE_URL}/admin/lang`;
   /**
    * @REQ_ID : REQ_ADM_033
    * @화면 : 기준 정보 > 다국어 관리
    * @기능 : 다국어 리스트 조회
    * @param mulLangReqDto 다국어 검색 조건 DTO
-   * @param page 페이지 번호
-   * @param size 페이지 크기
-   * @param sort 정렬 필드
-   * @param direction 정렬 방향
+   * @param pageable 페이지네이션 정보
    * @return 다국어 리스트 조회 결과
    */
   public async findAllMulLangForAdmin(
     mulLangReqDto: MulLangReqDto,
-    page: number = 0,
-    size: number = 2000,
-    sort: string = "langCd",
-    direction: "ASC" | "DESC" = "ASC"
+    pageable: Pageable = {
+      page: 0,
+      size: 2000,
+      sort: "langCd",
+      direction: "ASC",
+    }
   ): Promise<ResponseApi<Map<string, object>>> {
     const params = new URLSearchParams({
-      page: page.toString(),
-      size: size.toString(),
-      sort: sort,
-      direction: direction,
+      page: pageable.page.toString(),
+      size: pageable.size.toString(),
+      sort: pageable.sort ?? "langCd",
+      direction: pageable.direction ?? "ASC",
       ...Object.fromEntries(
         Object.entries(mulLangReqDto).filter(
           ([_, value]) => value !== undefined && value !== null
@@ -190,55 +190,6 @@ export class MulLangApi {
       headers: {
         "Content-Type": "application/json",
       },
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    return response.json();
-  }
-
-  /**
-   * @기능 : 지원 언어 목록 조회
-   * @return 지원 언어 목록 조회 결과
-   */
-  public async findSupportedLanguages(): Promise<
-    ResponseApi<Map<string, object>>
-  > {
-    const url = `${this.ADMIN_MUL_LANG_BASE_URL}/supported`;
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    return response.json();
-  }
-
-  /**
-   * @기능 : 다국어 일괄 업로드
-   * @param langGubun 언어 구분
-   * @param file 업로드할 파일
-   * @return 다국어 일괄 업로드 결과
-   */
-  public async bulkUploadMulLang(
-    langGubun: string,
-    file: File
-  ): Promise<ResponseApi<Map<string, object>>> {
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("langGubun", langGubun);
-
-    const url = `${this.ADMIN_MUL_LANG_BASE_URL}/bulk-upload`;
-    const response = await fetch(url, {
-      method: "POST",
-      body: formData,
     });
 
     if (!response.ok) {

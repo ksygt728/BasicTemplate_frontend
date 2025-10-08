@@ -1,6 +1,7 @@
 import { ResponseApi } from "@/types/commonDto/ResponseApi";
 import { MenuReqDto } from "@/types/requestDto/MenuReqDto";
 import { MenuResDto } from "@/types/responseDto/MenuResDto";
+import { Pageable } from "@/types/requestDto/specialDto/Pageable";
 
 /**
  * @파일명 : menuApi.ts
@@ -23,31 +24,30 @@ export class MenuApi {
   }
 
   // API 기본 URL 설정
-  private API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+  private API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
   private ADMIN_MENU_BASE_URL = `${this.API_BASE_URL}/admin/menu`;
   /**
    * @REQ_ID : REQ_ADM_038
    * @화면 : 기준 정보 > 메뉴 관리
    * @기능 : 메뉴 리스트 조회
    * @param menuReqDto 메뉴 검색 조건 DTO
-   * @param page 페이지 번호
-   * @param size 페이지 크기
-   * @param sort 정렬 필드
-   * @param direction 정렬 방향
+   * @param pageable 페이지네이션 정보
    * @return 메뉴 리스트 조회 결과
    */
   public async findAllMenuForAdmin(
     menuReqDto: MenuReqDto,
-    page: number = 0,
-    size: number = 2000,
-    sort: string = "deptCode",
-    direction: "ASC" | "DESC" = "ASC"
+    pageable: Pageable = {
+      page: 0,
+      size: 2000,
+      sort: "orderNum",
+      direction: "ASC",
+    }
   ): Promise<ResponseApi<Map<string, object>>> {
     const params = new URLSearchParams({
-      page: page.toString(),
-      size: size.toString(),
-      sort: sort,
-      direction: direction,
+      page: pageable.page.toString(),
+      size: pageable.size.toString(),
+      sort: pageable.sort ?? "orderNum",
+      direction: pageable.direction ?? "ASC",
       ...Object.fromEntries(
         Object.entries(menuReqDto).filter(
           ([_, value]) => value !== undefined && value !== null
@@ -56,6 +56,7 @@ export class MenuApi {
     });
 
     const url = `${this.ADMIN_MENU_BASE_URL}/search?${params}`;
+
     const response = await fetch(url, {
       method: "GET",
       headers: {

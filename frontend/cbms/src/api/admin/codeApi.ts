@@ -7,6 +7,7 @@ import { ComCodeMResDto } from "@/types/responseDto/ComCodeMResDto";
 import { ComCodeDResDto } from "@/types/responseDto/ComCodeDResDto";
 import { ComCodeTResDto } from "@/types/responseDto/ComCodeTResDto";
 import { CodeSearchFormResDto } from "@/types/responseDto/specialDto/CodeSearchFormResDto";
+import { Pageable } from "@/types/requestDto/specialDto/Pageable";
 
 /**
  * @파일명 : codeApi.ts
@@ -29,7 +30,7 @@ export class CodeApi {
   }
 
   // API 기본 URL 설정
-  private API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+  private API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
   private ADMIN_CODE_BASE_URL = `${this.API_BASE_URL}/admin/code`;
   /**
    * @REQ_ID : REQ_ADM_009_1
@@ -179,18 +180,16 @@ export class CodeApi {
    * @param size 페이지 크기
    * @return 상세 코드 리스트 조회 결과
    */
-  public async findAllDetailCodeForAdmin(
-    grpCd: string,
-    page: number = 0,
-    size: number = 2000
-  ): Promise<ResponseApi<Map<string, object>>> {
-    const params = new URLSearchParams({
-      grpCd,
-      page: page.toString(),
-      size: size.toString(),
-    });
-
-    const url = `${this.ADMIN_CODE_BASE_URL}/detail/search?${params}`;
+  public async codeFormD(
+    codeSearchForm: CodeSearchFormReqDto,
+    pageable: Pageable = {
+      page: 0,
+      size: 20,
+      sort: "searchCdId",
+      direction: "ASC",
+    }
+  ): Promise<ResponseApi<CodeSearchFormResDto[]>> {
+    const url = `${this.API_BASE_URL}/admin/code/form/detail?page=${pageable.page}&size=${pageable.size}&sort=${pageable.sort}&direction=${pageable.direction}`;
     const response = await fetch(url, {
       method: "GET",
       headers: {

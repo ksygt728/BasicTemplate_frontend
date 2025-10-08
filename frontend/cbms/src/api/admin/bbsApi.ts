@@ -3,6 +3,7 @@ import { BbsReqDto } from "@/types/requestDto/BbsReqDto";
 import { BbsResDto } from "@/types/responseDto/BbsResDto";
 import { BbsCommentReqDto } from "@/types/requestDto/BbsCommentReqDto";
 import { BbsCommentResDto } from "@/types/responseDto/BbsCommentResDto";
+import { Pageable } from "@/types/requestDto/specialDto/Pageable";
 
 /**
  * @파일명 : bbsApi.ts
@@ -25,7 +26,7 @@ export class BbsApi {
   }
 
   // API 기본 URL 설정
-  private API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+  private API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
   private ADMIN_BBS_BASE_URL = `${this.API_BASE_URL}/admin/bbs`;
 
   /**
@@ -33,24 +34,23 @@ export class BbsApi {
    * @화면 : 시스템 관리 > 게시판 관리
    * @기능 : 게시판 리스트 조회
    * @param bbsReqDto 게시판 검색 조건 DTO
-   * @param page 페이지 번호
-   * @param size 페이지 크기
-   * @param sort 정렬 필드
-   * @param direction 정렬 방향
+   * @param pageable 페이지네이션 정보
    * @return 게시판 리스트 조회 결과
    */
   public async findAllBbsForAdmin(
     bbsReqDto: BbsReqDto,
-    page: number = 0,
-    size: number = 100,
-    sort: string = "writeDate",
-    direction: "ASC" | "DESC" = "DESC"
+    pageable: Pageable = {
+      page: 0,
+      size: 100,
+      sort: "writeDate",
+      direction: "DESC",
+    }
   ): Promise<ResponseApi<Map<string, object>>> {
     const params = new URLSearchParams({
-      page: page.toString(),
-      size: size.toString(),
-      sort: sort,
-      direction: direction,
+      page: pageable.page.toString(),
+      size: pageable.size.toString(),
+      sort: pageable.sort ?? "writeDate",
+      direction: pageable.direction ?? "DESC",
       ...Object.fromEntries(
         Object.entries(bbsReqDto).filter(
           ([_, value]) => value !== undefined && value !== null
@@ -184,12 +184,11 @@ export class BbsApi {
    */
   public async findAllBbsCommentForAdmin(
     bbsCommentReqDto: BbsCommentReqDto,
-    page: number = 0,
-    size: number = 100
+    pageable: Pageable = { page: 0, size: 100 }
   ): Promise<ResponseApi<Map<string, object>>> {
     const params = new URLSearchParams({
-      page: page.toString(),
-      size: size.toString(),
+      page: pageable.page.toString(),
+      size: pageable.size.toString(),
       ...Object.fromEntries(
         Object.entries(bbsCommentReqDto).filter(
           ([_, value]) => value !== undefined && value !== null

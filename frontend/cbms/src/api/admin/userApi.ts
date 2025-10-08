@@ -1,6 +1,7 @@
 import { ResponseApi } from "@/types/commonDto/ResponseApi";
 import { UserReqDto } from "@/types/requestDto/UserReqDto";
 import { UserResDto } from "@/types/responseDto/UserResDto";
+import { Pageable } from "@/types/requestDto/specialDto/Pageable";
 
 /**
  * @파일명 : userApi.ts
@@ -23,7 +24,7 @@ export class UserApi {
   }
 
   // API 기본 URL 설정
-  private API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+  private API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
   private ADMIN_USER_BASE_URL = `${this.API_BASE_URL}/admin/user`;
 
   /**
@@ -38,9 +39,12 @@ export class UserApi {
    */
   public async findAllUserForAdmin(
     userReqDto?: UserReqDto,
-    page: number = 0,
-    size: number = 2000,
-    sort: string = "userId"
+    pageable: Pageable = {
+      page: 0,
+      size: 2000,
+      sort: "userId",
+      direction: "ASC",
+    }
   ): Promise<ResponseApi<Map<string, object>>> {
     const url = new URL(`${this.ADMIN_USER_BASE_URL}/search`);
 
@@ -53,9 +57,12 @@ export class UserApi {
       });
     }
 
-    url.searchParams.append("page", page.toString());
-    url.searchParams.append("size", size.toString());
-    url.searchParams.append("sort", sort);
+    url.searchParams.append("page", pageable.page.toString());
+    url.searchParams.append("size", pageable.size.toString());
+    url.searchParams.append("sort", pageable.sort || "userId");
+    if (pageable.direction) {
+      url.searchParams.append("direction", pageable.direction);
+    }
 
     const response = await fetch(url.toString(), {
       method: "GET",

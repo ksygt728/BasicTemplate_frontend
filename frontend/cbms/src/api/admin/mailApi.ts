@@ -2,6 +2,7 @@ import { ResponseApi } from "@/types/commonDto/ResponseApi";
 import { MailMReqDto } from "@/types/requestDto/MailMReqDto";
 import { MailMResDto } from "@/types/responseDto/MailMResDto";
 import { MailHResDto } from "@/types/responseDto/MailHResDto";
+import { Pageable } from "@/types/requestDto/specialDto/Pageable";
 
 /**
  * @파일명 : mailApi.ts
@@ -24,31 +25,30 @@ export class MailApi {
   }
 
   // API 기본 URL 설정
-  private API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+  private API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
   private ADMIN_MAIL_BASE_URL = `${this.API_BASE_URL}/admin/mail`;
   /**
    * @REQ_ID : REQ_ADM_057
    * @화면 : 시스템 관리 > 메일 관리
    * @기능 : 메일 리스트 조회
    * @param mailMReqDto 메일 검색 조건 DTO
-   * @param page 페이지 번호
-   * @param size 페이지 크기
-   * @param sort 정렬 필드
-   * @param direction 정렬 방향
+   * @param pageable 페이지네이션 정보
    * @return 메일 리스트 조회 결과
    */
   public async findAllMailForAdmin(
     mailMReqDto: MailMReqDto,
-    page: number = 0,
-    size: number = 2000,
-    sort: string = "mailId",
-    direction: "ASC" | "DESC" = "ASC"
+    pageable: Pageable = {
+      page: 0,
+      size: 2000,
+      sort: "mailId",
+      direction: "ASC",
+    }
   ): Promise<ResponseApi<Map<string, object>>> {
     const params = new URLSearchParams({
-      page: page.toString(),
-      size: size.toString(),
-      sort: sort,
-      direction: direction,
+      page: pageable.page.toString(),
+      size: pageable.size.toString(),
+      sort: pageable.sort ?? "mailId",
+      direction: pageable.direction ?? "ASC",
       ...Object.fromEntries(
         Object.entries(mailMReqDto).filter(
           ([_, value]) => value !== undefined && value !== null
@@ -101,24 +101,23 @@ export class MailApi {
    * @화면 : 시스템 관리 > 메일 관리
    * @기능 : 메일 발송 이력 조회
    * @param mailId 메일 아이디
-   * @param page 페이지 번호
-   * @param size 페이지 크기
-   * @param sort 정렬 필드
-   * @param direction 정렬 방향
+   * @param pageable 페이지네이션 정보
    * @return 메일 발송 이력 조회 결과
    */
   public async findByMailHistoryForAdmin(
     mailId: string,
-    page: number = 0,
-    size: number = 2000,
-    sort: string = "sendDt",
-    direction: "ASC" | "DESC" = "DESC"
+    pageable: Pageable = {
+      page: 0,
+      size: 2000,
+      sort: "sendDt",
+      direction: "DESC",
+    }
   ): Promise<ResponseApi<Map<string, object>>> {
     const params = new URLSearchParams({
-      page: page.toString(),
-      size: size.toString(),
-      sort: sort,
-      direction: direction,
+      page: pageable.page.toString(),
+      size: pageable.size.toString(),
+      sort: pageable.sort ?? "sendDt",
+      direction: pageable.direction ?? "DESC",
     });
 
     const url = `${this.ADMIN_MAIL_BASE_URL}/history/${mailId}?${params}`;

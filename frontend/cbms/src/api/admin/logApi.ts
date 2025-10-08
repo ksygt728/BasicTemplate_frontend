@@ -3,6 +3,7 @@ import { LogApiReqDto } from "@/types/requestDto/LogApiReqDto";
 import { LogErrorReqDto } from "@/types/requestDto/LogErrorReqDto";
 import { LogApiResDto } from "@/types/responseDto/LogApiResDto";
 import { LogErrorResDto } from "@/types/responseDto/LogErrorResDto";
+import { Pageable } from "@/types/requestDto/specialDto/Pageable";
 
 /**
  * @파일명 : logApi.ts
@@ -25,31 +26,30 @@ export class LogApi {
   }
 
   // API 기본 URL 설정
-  private API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+  private API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
   private ADMIN_LOG_BASE_URL = `${this.API_BASE_URL}/admin/log`;
   /**
    * @REQ_ID : REQ_ADM_064
    * @화면 : 시스템 관리 > 로그 관리
    * @기능 : 사용자 접속로그 리스트 조회
    * @param logApiReqDto 로그 검색 조건 DTO
-   * @param page 페이지 번호
-   * @param size 페이지 크기
-   * @param sort 정렬 필드
-   * @param direction 정렬 방향
+   * @param pageable 페이지네이션 정보
    * @return 사용자 접속로그 리스트 조회 결과
    */
   public async findAllAccessLogForAdmin(
     logApiReqDto: LogApiReqDto,
-    page: number = 0,
-    size: number = 100,
-    sort: string = "endDate",
-    direction: "ASC" | "DESC" = "DESC"
+    pageable: Pageable = {
+      page: 0,
+      size: 100,
+      sort: "endDate",
+      direction: "DESC",
+    }
   ): Promise<ResponseApi<Map<string, object>>> {
     const params = new URLSearchParams({
-      page: page.toString(),
-      size: size.toString(),
-      sort: sort,
-      direction: direction,
+      page: pageable.page.toString(),
+      size: pageable.size.toString(),
+      sort: pageable.sort ?? "endDate",
+      direction: pageable.direction ?? "DESC",
       ...Object.fromEntries(
         Object.entries(logApiReqDto).filter(
           ([_, value]) => value !== undefined && value !== null
@@ -102,24 +102,23 @@ export class LogApi {
    * @화면 : 시스템 관리 > 로그 관리
    * @기능 : 에러 리스트 조회
    * @param logErrorReqDto 에러 로그 검색 조건 DTO
-   * @param page 페이지 번호
-   * @param size 페이지 크기
-   * @param sort 정렬 필드
-   * @param direction 정렬 방향
+   * @param pageable 페이지네이션 정보
    * @return 에러 리스트 조회 결과
    */
   public async findAllErrorLogForAdmin(
     logErrorReqDto: LogErrorReqDto,
-    page: number = 0,
-    size: number = 100,
-    sort: string = "createDate",
-    direction: "ASC" | "DESC" = "DESC"
+    pageable: Pageable = {
+      page: 0,
+      size: 100,
+      sort: "createDate",
+      direction: "DESC",
+    }
   ): Promise<ResponseApi<Map<string, object>>> {
     const params = new URLSearchParams({
-      page: page.toString(),
-      size: size.toString(),
-      sort: sort,
-      direction: direction,
+      page: pageable.page.toString(),
+      size: pageable.size.toString(),
+      sort: pageable.sort ?? "createDate",
+      direction: pageable.direction ?? "DESC",
       ...Object.fromEntries(
         Object.entries(logErrorReqDto).filter(
           ([_, value]) => value !== undefined && value !== null

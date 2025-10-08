@@ -1,6 +1,7 @@
 import { ResponseApi } from "@/types/commonDto/ResponseApi";
 import { InterfaceReqDto } from "@/types/requestDto/InterfaceReqDto";
 import { InterfaceResDto } from "@/types/responseDto/InterfaceResDto";
+import { Pageable } from "@/types/requestDto/specialDto/Pageable";
 
 /**
  * @파일명 : interfaceApi.ts
@@ -23,7 +24,7 @@ export class InterfaceApi {
   }
 
   // API 기본 URL 설정
-  private API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+  private API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
   private ADMIN_INTERFACE_BASE_URL = `${this.API_BASE_URL}/admin/interface`;
   /**
    * @REQ_ID : REQ_ADM_021_0
@@ -38,16 +39,13 @@ export class InterfaceApi {
    */
   public async findAllInterfaceWithConditionsForAdmin(
     interfaceReqDto: InterfaceReqDto,
-    page: number = 0,
-    size: number = 5,
-    sort: string = "ifId",
-    direction: "ASC" | "DESC" = "ASC"
+    pageable: Pageable = { page: 0, size: 5, sort: "ifId", direction: "ASC" }
   ): Promise<ResponseApi<Map<string, object>>> {
     const params = new URLSearchParams({
-      page: page.toString(),
-      size: size.toString(),
-      sort: sort,
-      direction: direction,
+      page: pageable.page.toString(),
+      size: pageable.size.toString(),
+      sort: pageable.sort || "ifId",
+      direction: pageable.direction || "ASC",
       ...Object.fromEntries(
         Object.entries(interfaceReqDto).filter(
           ([_, value]) => value !== undefined && value !== null
@@ -81,16 +79,13 @@ export class InterfaceApi {
    * @return 인터페이스 기준정보 리스트 조회 결과
    */
   public async findAllInterfaceForAdmin(
-    page: number = 0,
-    size: number = 10,
-    sort: string = "ifId",
-    direction: "ASC" | "DESC" = "ASC"
+    pageable: Pageable = { page: 0, size: 10, sort: "ifId", direction: "ASC" }
   ): Promise<ResponseApi<Map<string, object>>> {
     const params = new URLSearchParams({
-      page: page.toString(),
-      size: size.toString(),
-      sort: sort,
-      direction: direction,
+      page: pageable.page.toString(),
+      size: pageable.size.toString(),
+      sort: pageable.sort || "ifId",
+      direction: pageable.direction || "ASC",
     });
 
     const url = `${this.ADMIN_INTERFACE_BASE_URL}?${params}`;

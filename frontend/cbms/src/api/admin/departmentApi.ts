@@ -1,6 +1,7 @@
 import { ResponseApi } from "@/types/commonDto/ResponseApi";
 import { DepartmentReqDto } from "@/types/requestDto/DepartmentReqDto";
 import { DepartmentResDto } from "@/types/responseDto/DepartmentResDto";
+import { Pageable } from "@/types/requestDto/specialDto/Pageable";
 
 /**
  * @파일명 : departmentApi.ts
@@ -23,31 +24,30 @@ export class DepartmentApi {
   }
 
   // API 기본 URL 설정
-  private API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+  private API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
   private ADMIN_DEPARTMENT_BASE_URL = `${this.API_BASE_URL}/admin/department`;
   /**
    * @REQ_ID : REQ_ADM_005
    * @화면 : 조직 관리 > 부서 관리
    * @기능 : 부서 정보 리스트 조회
    * @param departmentReqDto 부서 검색 조건 DTO
-   * @param page 페이지 번호
-   * @param size 페이지 크기
-   * @param sort 정렬 필드
-   * @param direction 정렬 방향
+   * @param pageable 페이지네이션 정보
    * @return 부서 정보 리스트 조회 결과
    */
   public async findAllDepartmentForAdmin(
     departmentReqDto: DepartmentReqDto,
-    page: number = 0,
-    size: number = 2000,
-    sort: string = "deptCode",
-    direction: "ASC" | "DESC" = "ASC"
+    pageable: Pageable = {
+      page: 0,
+      size: 2000,
+      sort: "deptCode",
+      direction: "ASC",
+    }
   ): Promise<ResponseApi<Map<string, object>>> {
     const params = new URLSearchParams({
-      page: page.toString(),
-      size: size.toString(),
-      sort: sort,
-      direction: direction,
+      page: pageable.page.toString(),
+      size: pageable.size.toString(),
+      sort: pageable.sort ?? "deptCode",
+      direction: pageable.direction ?? "ASC",
       ...Object.fromEntries(
         Object.entries(departmentReqDto).filter(
           ([_, value]) => value !== undefined && value !== null

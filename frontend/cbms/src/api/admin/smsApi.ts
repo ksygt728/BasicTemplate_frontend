@@ -2,6 +2,7 @@ import { ResponseApi } from "@/types/commonDto/ResponseApi";
 import { SmsMReqDto } from "@/types/requestDto/SmsMReqDto";
 import { SmsMResDto } from "@/types/responseDto/SmsMResDto";
 import { SmsHResDto } from "@/types/responseDto/SmsHResDto";
+import { Pageable } from "@/types/requestDto/specialDto/Pageable";
 
 /**
  * @파일명 : smsApi.ts
@@ -24,7 +25,7 @@ export class SmsApi {
   }
 
   // API 기본 URL 설정
-  private API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+  private API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
   private ADMIN_SMS_BASE_URL = `${this.API_BASE_URL}/admin/sms`;
 
   /**
@@ -163,15 +164,21 @@ export class SmsApi {
    */
   public async findBySmsHistoryForAdmin(
     smsId: string,
-    page: number = 0,
-    size: number = 200,
-    sort: string = "sendDate"
+    pageable: Pageable = {
+      page: 0,
+      size: 200,
+      sort: "sendDate",
+      direction: "ASC",
+    }
   ): Promise<ResponseApi<Map<string, object>>> {
     const url = new URL(`${this.ADMIN_SMS_BASE_URL}/history/${smsId}`);
 
-    url.searchParams.append("page", page.toString());
-    url.searchParams.append("size", size.toString());
-    url.searchParams.append("sort", sort);
+    url.searchParams.append("page", pageable.page.toString());
+    url.searchParams.append("size", pageable.size.toString());
+    url.searchParams.append("sort", pageable.sort || "sendDate");
+    if (pageable.direction) {
+      url.searchParams.append("direction", pageable.direction);
+    }
 
     const response = await fetch(url.toString(), {
       method: "GET",

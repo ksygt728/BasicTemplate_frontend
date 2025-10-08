@@ -23,7 +23,7 @@ export class SequenceApi {
   }
 
   // API 기본 URL 설정
-  private API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+  private API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
   private ADMIN_SEQUENCE_BASE_URL = `${this.API_BASE_URL}/admin/sequence`;
 
   /**

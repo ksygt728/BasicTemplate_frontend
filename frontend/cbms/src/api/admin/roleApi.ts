@@ -5,6 +5,7 @@ import { RoleMenuReqDto } from "@/types/requestDto/RoleMenuReqDto";
 import { RoleMenuResDto } from "@/types/responseDto/RoleMenuResDto";
 import { RoleUserReqDto } from "@/types/requestDto/RoleUserReqDto";
 import { RoleUserResDto } from "@/types/responseDto/RoleUserResDto";
+import { Pageable } from "@/types/requestDto/specialDto/Pageable";
 
 /**
  * @파일명 : roleApi.ts
@@ -27,7 +28,7 @@ export class RoleApi {
   }
 
   // API 기본 URL 설정
-  private API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+  private API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
   private ADMIN_ROLE_BASE_URL = `${this.API_BASE_URL}/admin/role`;
 
   /**
@@ -42,9 +43,12 @@ export class RoleApi {
    */
   public async findAllRoleForAdmin(
     roleReqDto?: RoleReqDto,
-    page: number = 0,
-    size: number = 2000,
-    sort: string = "roleCd"
+    pageable: Pageable = {
+      page: 0,
+      size: 2000,
+      sort: "roleCd",
+      direction: "ASC",
+    }
   ): Promise<ResponseApi<Map<string, object>>> {
     const url = new URL(`${this.ADMIN_ROLE_BASE_URL}/search`);
 
@@ -57,9 +61,12 @@ export class RoleApi {
       });
     }
 
-    url.searchParams.append("page", page.toString());
-    url.searchParams.append("size", size.toString());
-    url.searchParams.append("sort", sort);
+    url.searchParams.append("page", pageable.page.toString());
+    url.searchParams.append("size", pageable.size.toString());
+    url.searchParams.append("sort", pageable.sort || "roleCd");
+    if (pageable.direction) {
+      url.searchParams.append("direction", pageable.direction);
+    }
 
     const response = await fetch(url.toString(), {
       method: "GET",
