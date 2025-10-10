@@ -90,9 +90,12 @@ export default function TripleSplitFrame({
   const handleVerticalMouseDown = useCallback(
     (e: React.MouseEvent) => {
       e.preventDefault();
+      e.stopPropagation();
       setIsDraggingVertical(true);
       startXRef.current = e.clientX;
       startWidthRef.current = leftWidthPx || 0;
+      document.body.style.userSelect = "none";
+      document.body.style.cursor = "col-resize";
     },
     [leftWidthPx]
   );
@@ -101,9 +104,12 @@ export default function TripleSplitFrame({
   const handleHorizontalMouseDown = useCallback(
     (e: React.MouseEvent) => {
       e.preventDefault();
+      e.stopPropagation();
       setIsDraggingHorizontal(true);
       startYRef.current = e.clientY;
       startHeightRef.current = rightTopHeightPx || 0;
+      document.body.style.userSelect = "none";
+      document.body.style.cursor = "row-resize";
     },
     [rightTopHeightPx]
   );
@@ -140,6 +146,8 @@ export default function TripleSplitFrame({
   const handleMouseUp = useCallback(() => {
     setIsDraggingVertical(false);
     setIsDraggingHorizontal(false);
+    document.body.style.userSelect = "";
+    document.body.style.cursor = "";
   }, []);
 
   // 마우스 이벤트 리스너
@@ -191,7 +199,7 @@ export default function TripleSplitFrame({
   return (
     <div
       ref={containerRef}
-      className={`w-full h-screen flex ${className} px-6 py-6 select-none`}
+      className={`w-full h-screen flex ${className} px-6 py-6`}
     >
       {/* 좌측 영역 */}
       <div
@@ -203,7 +211,7 @@ export default function TripleSplitFrame({
           maxWidth: "calc(100% - 200px)",
         }}
       >
-        <div className="w-full h-full bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 overflow-auto">
+        <div className="w-full h-full bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 overflow-auto relative">
           {leftContent}
         </div>
       </div>
@@ -211,11 +219,15 @@ export default function TripleSplitFrame({
       {/* 수직 리사이저 (좌우) */}
       <div
         className="w-1.5 bg-gray-400 dark:bg-gray-500 hover:bg-blue-500 cursor-col-resize transition-colors duration-200 flex-shrink-0 mx-2 rounded-sm border border-gray-300 dark:border-gray-600 shadow-sm"
-        style={{ height: "100%" }}
+        style={{
+          height: "100%",
+          zIndex: 10,
+        }}
         onMouseDown={handleVerticalMouseDown}
+        draggable={false}
       >
         {/* 가운데 grip 표시 */}
-        <div className="w-full h-full flex items-center justify-center">
+        <div className="w-full h-full flex items-center justify-center pointer-events-none">
           <div className="flex flex-col space-y-1">
             <div className="w-0.5 h-4 bg-gray-600 dark:bg-gray-300 rounded-full"></div>
             <div className="w-0.5 h-4 bg-gray-600 dark:bg-gray-300 rounded-full"></div>
@@ -239,7 +251,7 @@ export default function TripleSplitFrame({
             maxHeight: "calc(100% - 150px)",
           }}
         >
-          <div className="w-full h-full bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 overflow-auto">
+          <div className="w-full h-full bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 overflow-auto relative">
             {rightTopContent}
           </div>
         </div>
@@ -247,10 +259,12 @@ export default function TripleSplitFrame({
         {/* 수평 리사이저 (상하) */}
         <div
           className="h-1.5 my-2 bg-gray-400 dark:bg-gray-500 hover:bg-blue-500 cursor-row-resize transition-colors duration-200 flex-shrink-0 w-full rounded-sm border border-gray-300 dark:border-gray-600 shadow-sm"
+          style={{ zIndex: 10 }}
           onMouseDown={handleHorizontalMouseDown}
+          draggable={false}
         >
           {/* 가운데 grip 표시 */}
-          <div className="w-full h-full flex items-center justify-center">
+          <div className="w-full h-full flex items-center justify-center pointer-events-none">
             <div className="flex space-x-1">
               <div className="h-0.5 w-4 bg-gray-600 dark:bg-gray-300 rounded-full"></div>
               <div className="h-0.5 w-4 bg-gray-600 dark:bg-gray-300 rounded-full"></div>
@@ -264,7 +278,7 @@ export default function TripleSplitFrame({
           className={`${rightBottomClassName} flex-1 w-full`}
           style={{ minHeight: "100px" }}
         >
-          <div className="w-full h-full bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 overflow-auto">
+          <div className="w-full h-full bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 overflow-auto relative">
             {rightBottomContent}
           </div>
         </div>

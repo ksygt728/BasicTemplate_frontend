@@ -42,7 +42,7 @@ export default function FilterDropdown({
 
   return createPortal(
     <div
-      className="filter-menu fixed bg-white rounded-md shadow-xl border border-gray-200 dark:bg-gray-800 dark:border-gray-700"
+      className="filter-dropdown filter-menu-content fixed bg-white rounded-md shadow-xl border border-gray-200 dark:bg-gray-800 dark:border-gray-700"
       style={{
         width: "256px",
         zIndex: 999999,
@@ -51,7 +51,7 @@ export default function FilterDropdown({
       }}
       onClick={(e) => e.stopPropagation()}
     >
-      <div className="p-3">
+      <div className="filter-menu-content p-3">
         <div className="flex items-center gap-2 mb-3">
           <div className="relative flex-1">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -75,7 +75,7 @@ export default function FilterDropdown({
               value={searchTerm}
               onChange={(e) => onSearchChange(e.target.value)}
               onClick={(e) => e.stopPropagation()}
-              className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md text-xs placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              className="filter-search-input block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md text-xs placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             />
           </div>
           <div className="flex flex-col gap-1">
@@ -112,7 +112,7 @@ export default function FilterDropdown({
             filteredValues.map((value: any) => (
               <label
                 key={value}
-                className="flex items-center py-1 hover:bg-gray-50 dark:hover:bg-gray-700 rounded px-2"
+                className="filter-checkbox-item flex items-center py-1 hover:bg-gray-50 dark:hover:bg-gray-700 rounded px-2"
                 onClick={(e) => e.stopPropagation()}
               >
                 <input
@@ -123,7 +123,7 @@ export default function FilterDropdown({
                     onFilterToggle(value);
                   }}
                   onClick={(e) => e.stopPropagation()}
-                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-2"
+                  className="filter-checkbox rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-2"
                 />
                 <span className="text-xs text-gray-700 dark:text-gray-200 truncate">
                   {value}

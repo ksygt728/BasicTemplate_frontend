@@ -2,42 +2,12 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import React, {
-  useState,
-  useEffect,
-  useRef,
-  useCallback,
-  useMemo,
-} from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import FilterDropdown from "./FilterDropdown";
 import TablePagination from "./TablePagination";
 import TableToolbar from "./TableToolbar";
 
-// Props 인터페이스 정의
-interface TableColumn {
-  key: string;
-  label: string;
-  sortable: boolean;
-  width?: number;
-  sticky?: string;
-  editable?: boolean;
-  type?: string;
-  className?: string;
-  render?: (value: any) => React.ReactNode;
-  options?: string[];
-}
-
-interface BasicTableViewProps {
-  columns?: TableColumn[];
-  data?: any[];
-  title?: string;
-}
-
-export default function BasicTableView({
-  columns: propColumns,
-  data: propData,
-  title,
-}: BasicTableViewProps) {
+export default function BasicTableView() {
   // Refs for detecting clicks outside
   const filterMenuRef = useRef<HTMLDivElement>(null);
 
@@ -80,8 +50,8 @@ export default function BasicTableView({
     [key: string]: string;
   }>({});
 
-  // 기본 컬럼 정의 (props로 컬럼이 없을 때 사용)
-  const defaultColumns = [
+  // 컬럼 정의
+  const columns = [
     {
       key: "id",
       label: "ID",
@@ -90,7 +60,6 @@ export default function BasicTableView({
       editable: false,
       type: "text",
       className: "text-sm font-medium text-gray-900 dark:text-white",
-      sortable: true,
     },
     {
       key: "company",
@@ -99,7 +68,6 @@ export default function BasicTableView({
       editable: true,
       type: "text",
       className: "text-sm text-gray-900 dark:text-white",
-      sortable: true,
     },
     {
       key: "domain",
@@ -108,7 +76,6 @@ export default function BasicTableView({
       editable: true,
       type: "text",
       className: "text-sm text-blue-600 hover:text-blue-800",
-      sortable: true,
       render: (value: string) => (
         <a href={`https://${value}`} target="_blank" rel="noopener noreferrer">
           {value}
@@ -123,7 +90,6 @@ export default function BasicTableView({
       type: "select",
       options: ["Active", "Inactive", "Pending"],
       className: "",
-      sortable: true,
       render: (value: string) => (
         <span
           className={`inline-flex items-center px-1.5 py-0.3 text-xs font-medium rounded border ${getStatusColor(
@@ -187,61 +153,6 @@ export default function BasicTableView({
       render: (value: string) => <a href={`mailto:${value}`}>{value}</a>,
     },
   ];
-
-  // Props에서 전달받은 컬럼을 기본 컬럼과 통합하거나 기본 컬럼 사용
-  const columns = useMemo(() => {
-    return propColumns
-      ? propColumns.map((col) => ({
-          key: col.key,
-          label: col.label,
-          sortable: col.sortable,
-          width: `min-w-[${col.width || 120}px]`,
-          editable: col.editable || false,
-          type: col.type || "text",
-          className: col.className || "text-sm text-gray-900 dark:text-white",
-          sticky: col.sticky || "",
-          render: col.render,
-          options: col.options,
-        }))
-      : defaultColumns;
-  }, [propColumns]);
-
-  // 컬럼이 변경될 때마다 columnWidths 초기화
-  useEffect(() => {
-    const newColumnWidths: { [key: string]: number } = {
-      checkbox: 60,
-      actions: 80,
-    };
-
-    // 각 컬럼에 대해 기본 너비 설정
-    columns.forEach((column) => {
-      if (propColumns) {
-        // props에서 온 컬럼의 경우 width 속성 사용
-        newColumnWidths[column.key] = column.width
-          ? typeof column.width === "number"
-            ? column.width
-            : parseInt(column.width.toString().replace(/[^\d]/g, "")) || 120
-          : 120;
-      } else {
-        // 기본 컬럼의 경우 미리 정의된 너비 사용
-        const defaultWidths: { [key: string]: number } = {
-          id: 120,
-          company: 150,
-          domain: 180,
-          status: 100,
-          category: 120,
-          users: 80,
-          license: 80,
-          revenue: 100,
-          lastUpdate: 120,
-          contact: 180,
-        };
-        newColumnWidths[column.key] = defaultWidths[column.key] || 120;
-      }
-    });
-
-    setColumnWidths(newColumnWidths);
-  }, [propColumns]); // columns 대신 propColumns만 의존성으로 사용
 
   // 유틸리티 함수들
   const getStatusColor = (status: string) => {
@@ -340,7 +251,7 @@ export default function BasicTableView({
   };
 
   // 기존 헬퍼 함수들
-  const defaultTableData = [
+  const tableData = [
     {
       id: 1,
       company: "Catalog",
@@ -487,9 +398,6 @@ export default function BasicTableView({
     },
   ];
 
-  // Props에서 전달받은 데이터를 사용하거나 기본 데이터 사용
-  const tableData = propData || defaultTableData;
-
   // 페이지네이션 계산
   const filteredData = tableData.filter((row) => {
     return Object.entries(filters).every(([key, filterValues]) => {
@@ -540,24 +448,6 @@ export default function BasicTableView({
   const endIndex = startIndex + itemsPerPage;
   const currentData = sortedData.slice(startIndex, endIndex);
 
-  // selectAll 상태 자동 업데이트
-  useEffect(() => {
-    if (currentData.length === 0) {
-      setSelectAll(false);
-    } else {
-      const currentPageIds = currentData.map((row) => row.id);
-      const selectedCurrentPageIds = selectedRows.filter((id) =>
-        currentPageIds.includes(id)
-      );
-
-      if (selectedCurrentPageIds.length === currentData.length) {
-        setSelectAll(true);
-      } else {
-        setSelectAll(false);
-      }
-    }
-  }, [selectedRows, currentData]);
-
   // 전체 선택/해제
   const handleSelectAll = () => {
     if (selectAll) {
@@ -570,15 +460,11 @@ export default function BasicTableView({
 
   // 개별 행 선택/해제
   const handleRowSelect = (id: number) => {
-    let newSelectedRows: number[];
-
     if (selectedRows.includes(id)) {
-      newSelectedRows = selectedRows.filter((rowId) => rowId !== id);
+      setSelectedRows(selectedRows.filter((rowId) => rowId !== id));
     } else {
-      newSelectedRows = [...selectedRows, id];
+      setSelectedRows([...selectedRows, id]);
     }
-
-    setSelectedRows(newSelectedRows);
   };
 
   // 편집 시작
@@ -638,13 +524,11 @@ export default function BasicTableView({
     if (filterMenuOpen === columnKey) {
       setFilterMenuOpen(null);
     } else {
-      // 클릭한 요소의 위치 계산 (뷰포트 기준)
+      // 클릭한 요소의 위치 계산
       const rect = e.currentTarget.getBoundingClientRect();
-
-      // 뷰포트 기준 좌표를 그대로 사용 (window.scrollY 제거)
       setFilterMenuPosition({
-        x: rect.left,
-        y: rect.bottom,
+        x: rect.left + (columnKey === "id" ? 8 : 0),
+        y: rect.bottom + window.scrollY,
       });
 
       setFilterMenuOpen(columnKey);
@@ -818,7 +702,7 @@ export default function BasicTableView({
     setIsResizing(columnKey);
     setPreventSort(true);
     setStartX(e.clientX);
-    setStartWidth(columnWidths[columnKey] || 120); // 기본값 제공
+    setStartWidth(columnWidths[columnKey]);
   };
 
   // 마우스 move/up 이벤트 핸들러들을 useCallback으로 최적화
@@ -868,10 +752,7 @@ export default function BasicTableView({
         const isFilterMenuClick =
           target.closest(".filter-dropdown") ||
           target.closest("[data-filter-trigger]") ||
-          target.getAttribute("data-filter-trigger") !== null ||
-          target.closest(".filter-menu-content") ||
-          target.closest(".filter-search-input") ||
-          target.closest(".filter-checkbox-item");
+          target.getAttribute("data-filter-trigger") !== null;
 
         if (!isFilterMenuClick) {
           setFilterMenuOpen(null);
@@ -895,14 +776,6 @@ export default function BasicTableView({
 
   return (
     <section className="container px-4 mx-auto">
-      {title && (
-        <div className="mb-4">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-            {title}
-          </h2>
-        </div>
-      )}
-
       <TableToolbar
         recordCount={sortedData.length}
         sortConfig={sortConfig}
@@ -923,8 +796,8 @@ export default function BasicTableView({
               <tr>
                 {/* 체크박스 컬럼 */}
                 <th
-                  className="sticky left-0 z-30 px-4 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700"
-                  style={{ width: columnWidths.checkbox || 60 }}
+                  className="sticky left-0 z-30 px-4 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 relative"
+                  style={{ width: columnWidths.checkbox }}
                 >
                   <input
                     type="checkbox"
@@ -978,7 +851,7 @@ export default function BasicTableView({
                         : "cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
                     } ${column.sticky ? column.sticky + " z-30" : "z-20"}`}
                     style={{
-                      width: columnWidths[column.key] || 120,
+                      width: columnWidths[column.key],
                       // pointerEvents 제거 - 정상적인 클릭 허용
                     }}
                     onClick={(e) => {
@@ -1097,7 +970,7 @@ export default function BasicTableView({
                 {/* Actions 컬럼 */}
                 <th
                   className="px-4 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-wider relative"
-                  style={{ width: columnWidths.actions || 80 }}
+                  style={{ width: columnWidths.actions }}
                 >
                   Actions
                   {/* 리사이즈 핸들 */}
@@ -1149,7 +1022,7 @@ export default function BasicTableView({
                   {/* 체크박스 컬럼 */}
                   <td
                     className="sticky left-0 z-10 px-4 py-1 whitespace-nowrap bg-inherit border-r border-gray-200 dark:border-gray-700"
-                    style={{ width: columnWidths.checkbox || 60 }}
+                    style={{ width: columnWidths.checkbox }}
                   >
                     <input
                       type="checkbox"
@@ -1168,7 +1041,7 @@ export default function BasicTableView({
                       } ${
                         column.sticky ? column.sticky + " z-10" : ""
                       } bg-inherit`}
-                      style={{ width: columnWidths[column.key] || 120 }}
+                      style={{ width: columnWidths[column.key] }}
                     >
                       {renderCell(row, column, editingRow === row.id)}
                     </td>
@@ -1176,20 +1049,15 @@ export default function BasicTableView({
 
                   {/* Actions 컬럼 */}
                   <td
-                    className="px-4 py-1 whitespace-nowrap text-sm text-gray-500 relative z-10"
-                    style={{ width: columnWidths.actions || 80 }}
+                    className="px-4 py-1 whitespace-nowrap text-sm text-gray-500"
+                    style={{ width: columnWidths.actions }}
                   >
                     {editingRow === row.id ? (
                       <div className="flex space-x-2">
                         <button
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            handleSave();
-                          }}
-                          className="text-green-600 hover:text-green-800 p-1 rounded hover:bg-green-50 transition-colors"
+                          onClick={handleSave}
+                          className="text-green-600 hover:text-green-800"
                           title="Save"
-                          type="button"
                         >
                           <svg
                             className="w-4 h-4"
@@ -1206,14 +1074,9 @@ export default function BasicTableView({
                           </svg>
                         </button>
                         <button
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            handleCancel();
-                          }}
-                          className="text-red-600 hover:text-red-800 p-1 rounded hover:bg-red-50 transition-colors"
+                          onClick={handleCancel}
+                          className="text-red-600 hover:text-red-800"
                           title="Cancel"
-                          type="button"
                         >
                           <svg
                             className="w-4 h-4"
@@ -1233,14 +1096,9 @@ export default function BasicTableView({
                     ) : (
                       <div className="flex space-x-2">
                         <button
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            handleEdit(row);
-                          }}
-                          className="text-blue-600 hover:text-blue-800 p-1 rounded hover:bg-blue-50 transition-colors"
+                          onClick={() => handleEdit(row)}
+                          className="text-blue-600 hover:text-blue-800"
                           title="Edit"
-                          type="button"
                         >
                           <svg
                             className="w-4 h-4"
@@ -1257,15 +1115,8 @@ export default function BasicTableView({
                           </svg>
                         </button>
                         <button
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            // 삭제 로직 추가 필요
-                            console.log("Delete clicked for row:", row.id);
-                          }}
-                          className="text-red-600 hover:text-red-800 p-1 rounded hover:bg-red-50 transition-colors"
+                          className="text-red-600 hover:text-red-800"
                           title="Delete"
-                          type="button"
                         >
                           <svg
                             className="w-4 h-4"
