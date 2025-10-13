@@ -88,7 +88,7 @@ export default function TablePagination({
           {isPageSizeOpen && (
             <div className="absolute left-0 mt-2 w-40 bg-white rounded-md shadow-lg border border-gray-200 dark:bg-gray-800 dark:border-gray-700 z-50">
               <div className="py-1">
-                {[50, 100, 300, 500, 1000].map((size) => (
+                {[10, 50, 100, 300, 500, 1000].map((size) => (
                   <button
                     key={size}
                     onClick={() => {

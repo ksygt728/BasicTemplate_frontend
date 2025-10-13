@@ -31,12 +31,18 @@ interface BasicTableViewProps {
   columns?: TableColumn[];
   data?: any[];
   title?: string;
+  subTitle?: string;
+  description?: string;
+  onRowClick?: (row: any) => void;
 }
 
 export default function BasicTableView({
   columns: propColumns,
   data: propData,
   title,
+  subTitle,
+  description,
+  onRowClick,
 }: BasicTableViewProps) {
   // Refs for detecting clicks outside
   const filterMenuRef = useRef<HTMLDivElement>(null);
@@ -909,6 +915,8 @@ export default function BasicTableView({
         isMoreActionsOpen={isMoreActionsOpen}
         onMoreActionsToggle={() => setIsMoreActionsOpen(!isMoreActionsOpen)}
         onClearAllSorts={() => setSortConfig([])}
+        subTitle={subTitle}
+        description={description}
       />
 
       {/* 엑셀 스타일 테이블 */}
@@ -1144,7 +1152,8 @@ export default function BasicTableView({
                     index % 2 === 0
                       ? "bg-white dark:bg-gray-900"
                       : "bg-gray-50 dark:bg-gray-800/50"
-                  }`}
+                  } ${onRowClick ? "cursor-pointer" : ""}`}
+                  onClick={() => onRowClick?.(row)}
                 >
                   {/* 체크박스 컬럼 */}
                   <td

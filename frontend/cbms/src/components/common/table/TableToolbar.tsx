@@ -8,6 +8,8 @@ interface TableToolbarProps {
   isMoreActionsOpen: boolean;
   onMoreActionsToggle: () => void;
   onClearAllSorts: () => void;
+  subTitle?: string;
+  description?: string;
 }
 
 export default function TableToolbar({
@@ -16,6 +18,8 @@ export default function TableToolbar({
   isMoreActionsOpen,
   onMoreActionsToggle,
   onClearAllSorts,
+  subTitle,
+  description,
 }: TableToolbarProps) {
   const moreActionsRef = useRef<HTMLDivElement>(null);
   const statusRef = useRef<HTMLDivElement>(null);
@@ -68,14 +72,14 @@ export default function TableToolbar({
         <div>
           <div className="flex items-center gap-x-3">
             <h2 className="text-lg font-medium text-gray-800 dark:text-white">
-              고객 데이터
+              {subTitle}
             </h2>
             <span className="px-3 py-1 text-xs text-blue-600 bg-blue-100 rounded-full dark:bg-gray-800 dark:text-blue-400">
-              {recordCount} records
+              {recordCount} rows
             </span>
           </div>
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-300">
-            지난 12개월간 거래 기록이 있는 고객사입니다.
+            {description}
           </p>
         </div>
 

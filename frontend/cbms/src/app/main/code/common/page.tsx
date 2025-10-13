@@ -1,151 +1,182 @@
+"use client";
+
 import BasicTableView from "@/components/common/table/BasicTableView";
 import BasicFrame from "@/components/layout/frame/BasicFrame";
 import TripleSplitFrame from "@/components/layout/frame/TripleSplitFrame";
+import { useCodeApi } from "@/hooks/useCodeApi";
+import { useState, useMemo } from "react";
 import Image from "next/image";
 
 export default function Home() {
-  // 좌측 테이블 - 사용자 목록
+  const { codeData, loading, error, refetch } = useCodeApi();
+  const [selectedGroupCd, setSelectedGroupCd] = useState<string | null>(null);
+
+  // 좌측 테이블 데이터 (API에서 가져온 데이터를 그룹별로 변환)
+  const leftTableData = useMemo(() => {
+    if (!codeData?.content) return [];
+
+    // 중복 제거를 위해 Map 사용
+    const groupMap = new Map();
+    codeData.content.forEach((item: any) => {
+      const key = item.grpCd;
+      if (!groupMap.has(key)) {
+        groupMap.set(key, {
+          id: key, // 고유 ID로 사용
+          grpCdType: item.grpCdType,
+          grpCd: item.grpCd,
+          grpNm: item.grpNm,
+        });
+      }
+    });
+
+    return Array.from(groupMap.values());
+  }, [codeData]);
+
+  // 선택된 그룹의 속성 데이터 (comCodeInfo의 codeAttributes에서 추출)
+  const rightTopTableData = useMemo(() => {
+    if (!selectedGroupCd || !codeData?.content) return [];
+
+    const selectedGroup = codeData.content.find(
+      (item: any) => item.grpCd === selectedGroupCd
+    );
+    if (!selectedGroup?.comCodeInfo?.length) return [];
+
+    // 모든 codeAttributes를 수집하여 중복 제거
+    const attributesMap = new Map();
+    selectedGroup.comCodeInfo.forEach((codeInfo: any) => {
+      if (codeInfo.codeAttributes) {
+        codeInfo.codeAttributes.forEach((attr: any) => {
+          if (attr.attrCd && !attributesMap.has(attr.attrCd)) {
+            attributesMap.set(attr.attrCd, {
+              id: `${selectedGroupCd}_attr_${attr.attrCd}`,
+              attrCd: attr.attrCd,
+              attrNm: attr.attrNm,
+            });
+          }
+        });
+      }
+    });
+
+    return Array.from(attributesMap.values());
+  }, [selectedGroupCd, codeData]);
+
+  // 선택된 그룹의 상세 코드 데이터
+  const rightBottomTableData = useMemo(() => {
+    if (!selectedGroupCd || !codeData?.content) return [];
+
+    const selectedGroup = codeData.content.find(
+      (item: any) => item.grpCd === selectedGroupCd
+    );
+    if (!selectedGroup?.comCodeInfo) return [];
+
+    // dtlCd가 있는 데이터만 필터링
+    return selectedGroup.comCodeInfo
+      .filter((codeInfo: any) => codeInfo.dtlCd && codeInfo.dtlCd.trim() !== "")
+      .map((codeInfo: any, index: number) => {
+        const row: any = {
+          id: `${selectedGroupCd}_detail_${index}`,
+          dtlCd: codeInfo.dtlCd,
+          useYn: codeInfo.useYn || "",
+          dtlOrderNum: codeInfo.dtlOrderNum || 0,
+        };
+
+        // codeAttributes를 컬럼으로 추가 (dtlNm 값을 각 속성 컬럼의 값으로 사용)
+        if (codeInfo.codeAttributes) {
+          codeInfo.codeAttributes.forEach((attr: any) => {
+            if (attr.attrCd) {
+              row[attr.attrCd] = attr.dtlNm || "";
+            }
+          });
+        }
+
+        return row;
+      });
+  }, [selectedGroupCd, codeData]);
+
+  // 좌측 테이블 컬럼 정의
   const leftTableColumns = [
-    { key: "id", label: "ID", sortable: true, width: 80 },
-    { key: "name", label: "이름", sortable: true, width: 120 },
-    { key: "email", label: "이메일", sortable: true, width: 180 },
-    { key: "role", label: "역할", sortable: false, width: 100 },
-    { key: "status", label: "상태", sortable: true, width: 100 },
+    { key: "grpCdType", label: "그룹코드타입", width: 100, sortable: true },
+    { key: "grpCd", label: "그룹코드", width: 120, sortable: true },
+    { key: "grpNm", label: "그룹명", width: 150, sortable: true },
   ];
 
-  const leftTableData = [
-    {
-      id: 1,
-      name: "김철수",
-      email: "kim@example.com",
-      role: "관리자",
-      status: "활성",
-    },
-    {
-      id: 2,
-      name: "이영희",
-      email: "lee@example.com",
-      role: "사용자",
-      status: "활성",
-    },
-    {
-      id: 3,
-      name: "박민수",
-      email: "park@example.com",
-      role: "사용자",
-      status: "비활성",
-    },
-    {
-      id: 4,
-      name: "최유진",
-      email: "choi@example.com",
-      role: "매니저",
-      status: "활성",
-    },
-    {
-      id: 5,
-      name: "정호영",
-      email: "jung@example.com",
-      role: "사용자",
-      status: "활성",
-    },
-  ];
-
-  // 우측 상단 테이블 - 프로젝트 목록
+  // 우측 상단 테이블 컬럼 정의 (codeAttributes)
   const rightTopTableColumns = [
-    { key: "projectId", label: "프로젝트 ID", sortable: true, width: 120 },
-    { key: "projectName", label: "프로젝트명", sortable: true, width: 200 },
-    { key: "manager", label: "담당자", sortable: true, width: 120 },
-    { key: "progress", label: "진행률", sortable: true, width: 100 },
-    { key: "deadline", label: "마감일", sortable: true, width: 140 },
+    { key: "attrCd", label: "속성코드", width: 120, sortable: true },
+    { key: "attrNm", label: "속성명", width: 200, sortable: true },
   ];
 
-  const rightTopTableData = [
-    {
-      id: 1, // 고유한 ID로 변경
-      projectId: "P001",
-      projectName: "웹사이트 리뉴얼",
-      manager: "김철수",
-      progress: "75%",
-      deadline: "2024-12-31",
-    },
-    {
-      id: 2, // 고유한 ID로 변경
-      projectId: "P002",
-      projectName: "모바일 앱 개발",
-      manager: "이영희",
-      progress: "45%",
-      deadline: "2024-11-15",
-    },
-    {
-      id: 3, // 고유한 ID로 변경
-      projectId: "P003",
-      projectName: "API 개선",
-      manager: "박민수",
-      progress: "90%",
-      deadline: "2024-10-20",
-    },
-    {
-      id: 4, // 고유한 ID로 변경
-      projectId: "P004",
-      projectName: "데이터베이스 최적화",
-      manager: "최유진",
-      progress: "60%",
-      deadline: "2024-12-01",
-    },
-  ];
+  // 우측 하단 테이블 컬럼 정의 (상세코드 → 속성정보들 → 사용여부 → 정렬순서)
+  const rightBottomTableColumns = useMemo(() => {
+    // 1. 상세코드 컬럼 (고정)
+    const fixedStartColumns = [
+      { key: "dtlCd", label: "상세코드", width: 100, sortable: true },
+    ];
 
-  // 우측 하단 테이블 - 작업 로그
-  const rightBottomTableColumns = [
-    { key: "logId", label: "로그 ID", sortable: true, width: 100 },
-    { key: "action", label: "작업", sortable: false, width: 120 },
-    { key: "user", label: "사용자", sortable: true, width: 120 },
-    { key: "timestamp", label: "시간", sortable: true, width: 160 },
-    { key: "result", label: "결과", sortable: true, width: 80 },
-  ];
+    // 2. 동적 속성 컬럼들 (우측 상단에서 정의한 속성들)
+    let dynamicColumns: any[] = [];
+    if (selectedGroupCd && codeData?.content) {
+      const selectedGroup = codeData.content.find(
+        (item: any) => item.grpCd === selectedGroupCd
+      );
 
-  const rightBottomTableData = [
-    {
-      id: 1, // 고유한 ID 추가
-      logId: "L001",
-      action: "로그인",
-      user: "김철수",
-      timestamp: "2024-10-09 09:30",
-      result: "성공",
-    },
-    {
-      id: 2, // 고유한 ID 추가
-      logId: "L002",
-      action: "파일 업로드",
-      user: "이영희",
-      timestamp: "2024-10-09 10:15",
-      result: "성공",
-    },
-    {
-      id: 3, // 고유한 ID 추가
-      logId: "L003",
-      action: "데이터 수정",
-      user: "박민수",
-      timestamp: "2024-10-09 11:20",
-      result: "실패",
-    },
-    {
-      id: 4, // 고유한 ID 추가
-      logId: "L004",
-      action: "보고서 생성",
-      user: "최유진",
-      timestamp: "2024-10-09 14:45",
-      result: "성공",
-    },
-    {
-      id: 5, // 고유한 ID 추가
-      logId: "L005",
-      action: "로그아웃",
-      user: "정호영",
-      timestamp: "2024-10-09 17:30",
-      result: "성공",
-    },
-  ];
+      if (selectedGroup?.comCodeInfo?.length) {
+        const attributesMap = new Map();
+        selectedGroup.comCodeInfo.forEach((codeInfo: any) => {
+          if (codeInfo.codeAttributes) {
+            codeInfo.codeAttributes.forEach((attr: any) => {
+              if (attr.attrCd && !attributesMap.has(attr.attrCd)) {
+                attributesMap.set(attr.attrCd, {
+                  key: attr.attrCd,
+                  label: attr.attrNm || attr.attrCd,
+                  width: 120,
+                  sortable: true,
+                });
+              }
+            });
+          }
+        });
+
+        dynamicColumns = Array.from(attributesMap.values());
+      }
+    }
+
+    // 3. 고정 끝 컬럼들 (사용여부, 정렬순서)
+    const fixedEndColumns = [
+      { key: "useYn", label: "사용여부", width: 80, sortable: true },
+      { key: "dtlOrderNum", label: "정렬순서", width: 80, sortable: true },
+    ];
+
+    // 최종 컬럼 순서: 상세코드 → 속성정보들 → 사용여부 → 정렬순서
+    return [...fixedStartColumns, ...dynamicColumns, ...fixedEndColumns];
+  }, [selectedGroupCd, codeData]);
+
+  // 행 클릭 핸들러
+  const handleLeftTableRowClick = (row: any) => {
+    setSelectedGroupCd(row.grpCd);
+  };
+
+  // 로딩 상태 처리
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-full">로딩 중...</div>
+    );
+  }
+
+  // 에러 상태 처리
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full gap-4">
+        <div className="text-red-500">에러: {error}</div>
+        <button
+          onClick={() => refetch()}
+          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+        >
+          다시 시도
+        </button>
+      </div>
+    );
+  }
 
   return (
     <TripleSplitFrame
@@ -153,21 +184,40 @@ export default function Home() {
         <BasicTableView
           columns={leftTableColumns}
           data={leftTableData}
-          title="사용자 관리"
+          title="코드 그룹 관리"
+          subTitle="그뤂코드"
+          description="시스템에서 사용하는 공통 코드 그룹 목록입니다."
+          onRowClick={handleLeftTableRowClick}
         />
       }
       rightTopContent={
         <BasicTableView
           columns={rightTopTableColumns}
           data={rightTopTableData}
-          title="프로젝트 현황"
+          title={
+            selectedGroupCd ? `${selectedGroupCd} - 속성 정보` : "속성 정보"
+          }
+          subTitle="속성 코드"
+          description={
+            selectedGroupCd
+              ? `${selectedGroupCd} 그룹의 속성 정보입니다.`
+              : "좌측에서 그룹을 선택하면 속성 정보가 표시됩니다."
+          }
         />
       }
       rightBottomContent={
         <BasicTableView
           columns={rightBottomTableColumns}
           data={rightBottomTableData}
-          title="작업 로그"
+          title={
+            selectedGroupCd ? `${selectedGroupCd} - 상세 코드` : "상세 코드"
+          }
+          subTitle="상세 코드"
+          description={
+            selectedGroupCd
+              ? `${selectedGroupCd} 그룹의 상세 코드 목록입니다.`
+              : "좌측에서 그룹을 선택하면 상세 코드가 표시됩니다."
+          }
         />
       }
     />
