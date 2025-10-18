@@ -1,3 +1,42 @@
+/**
+ * @파일명 : BasicTableView.tsx
+ * @설명 : 기본 테이블 뷰 컴포넌트. 컬럼 정의, 데이터 표시, 정렬, 필터, 페이징, 행 편집/추가/삭제, 엑셀 내보내기 등 다양한 기능을 제공.
+ * @작성자 : 김승연
+ * @작성일 : 2025.10.17
+ * @변경이력 :
+ *       2025.10.17 김승연 최초 생성
+ *
+ * @interface TableColumn
+ * @property {string} key - 컬럼의 고유 키
+ * @property {string} label - 컬럼 헤더 라벨
+ * @property {boolean} sortable - 정렬 가능 여부
+ * @property {number} [width] - 컬럼 너비(px)
+ * @property {string} [sticky] - sticky 스타일 클래스
+ * @property {boolean} [editable] - 편집 가능 여부
+ * @property {string} [type] - 데이터 타입(text, number, select 등)
+ * @property {boolean} [required] - 필수 입력 여부
+ * @property {string} [className] - 추가 CSS 클래스
+ * @property {(value: any) => React.ReactNode} [render] - 셀 커스텀 렌더 함수
+ * @property {string[]} [options] - select 타입 옵션 목록
+ *
+ * @interface BasicTableViewProps
+ * @property {TableColumn[]} [columns] - 테이블 컬럼 정의 배열
+ * @property {any[]} [data] - 테이블 데이터 배열
+ * @property {string} [title] - 테이블 제목
+ * @property {string} [subTitle] - 테이블 부제목
+ * @property {string} [description] - 테이블 설명
+ * @property {(row: any) => void} [onRowClick] - 행 클릭 이벤트 핸들러
+ * @property {(rowData: any) => void} [onSaveNewRow] - 새 행 저장 이벤트 핸들러
+ * @property {(rowData: any) => void} [onUpdateRow] - 기존 행 수정 이벤트 핸들러
+ * @property {(rowData: any) => Promise<any>} [onInsert] - 새 행 추가 API 호출 함수
+ * @property {(id: string | number, rowData: any) => Promise<any>} [onUpdate] - 기존 행 수정 API 호출 함수
+ * @property {(id: string | number) => Promise<any>} [onDelete] - 행 삭제 API 호출 함수
+ *
+ * @component
+ * @param {BasicTableViewProps} props - 테이블 뷰 컴포넌트 props
+ * @returns {JSX.Element} 테이블 뷰 UI
+ */
+
 "use client";
 
 import Link from "next/link";
@@ -23,6 +62,7 @@ interface TableColumn {
   editable?: boolean;
   type?: string;
   className?: string;
+  required?: boolean; // 필수 입력 여부
   render?: (value: any) => React.ReactNode;
   options?: string[];
 }
@@ -34,6 +74,12 @@ interface BasicTableViewProps {
   subTitle?: string;
   description?: string;
   onRowClick?: (row: any) => void;
+  onSaveNewRow?: (rowData: any) => void;
+  onUpdateRow?: (rowData: any) => void;
+  // API 함수들
+  onInsert?: (rowData: any) => Promise<any>; // Add Record 버튼 클릭시 호출
+  onUpdate?: (id: string | number, rowData: any) => Promise<any>; // Edit 후 Check 버튼 클릭시 호출
+  onDelete?: (id: string | number) => Promise<any>; // 휴지통 버튼 후 Check 버튼 클릭시 호출
 }
 
 export default function BasicTableView({
@@ -43,16 +89,22 @@ export default function BasicTableView({
   subTitle,
   description,
   onRowClick,
+  onSaveNewRow,
+  onUpdateRow,
+  onInsert,
+  onUpdate,
+  onDelete,
 }: BasicTableViewProps) {
   // Refs for detecting clicks outside
   const filterMenuRef = useRef<HTMLDivElement>(null);
+  const moreActionsRef = useRef<HTMLDivElement>(null);
 
   // State 관리
   const [selectedRows, setSelectedRows] = useState<number[]>([]);
   const [selectAll, setSelectAll] = useState(false);
   const [itemsPerPage, setItemsPerPage] = useState(50);
   const [currentPage, setCurrentPage] = useState(1);
-  const [editingRow, setEditingRow] = useState<number | null>(null);
+  const [editingRow, setEditingRow] = useState<string | number | null>(null);
   const [editData, setEditData] = useState<any>({});
   const [columnWidths, setColumnWidths] = useState<{ [key: string]: number }>({
     checkbox: 60,
@@ -79,6 +131,8 @@ export default function BasicTableView({
       direction: "asc" | "desc";
     }>
   >([]);
+  const [newRows, setNewRows] = useState<any[]>([]);
+  const [deletingRow, setDeletingRow] = useState<string | number | null>(null); // 삭제 중인 행 ID
   const [filterMenuOpen, setFilterMenuOpen] = useState<string | null>(null);
   const [filterMenuPosition, setFilterMenuPosition] = useState({ x: 0, y: 0 });
   const [filters, setFilters] = useState<{ [key: string]: string[] }>({});
@@ -86,130 +140,24 @@ export default function BasicTableView({
     [key: string]: string;
   }>({});
 
-  // 기본 컬럼 정의 (props로 컬럼이 없을 때 사용)
-  const defaultColumns = [
-    {
-      key: "id",
-      label: "ID",
-      width: "min-w-[120px]",
-      sticky: "sticky left-14 z-10",
-      editable: false,
-      type: "text",
-      className: "text-sm font-medium text-gray-900 dark:text-white",
-      sortable: true,
-    },
-    {
-      key: "company",
-      label: "Company",
-      width: "min-w-[150px]",
-      editable: true,
-      type: "text",
-      className: "text-sm text-gray-900 dark:text-white",
-      sortable: true,
-    },
-    {
-      key: "domain",
-      label: "Domain",
-      width: "min-w-[180px]",
-      editable: true,
-      type: "text",
-      className: "text-sm text-blue-600 hover:text-blue-800",
-      sortable: true,
-      render: (value: string) => (
-        <a href={`https://${value}`} target="_blank" rel="noopener noreferrer">
-          {value}
-        </a>
-      ),
-    },
-    {
-      key: "status",
-      label: "Status",
-      width: "min-w-[100px]",
-      editable: true,
-      type: "select",
-      options: ["Active", "Inactive", "Pending"],
-      className: "",
-      sortable: true,
-      render: (value: string) => (
-        <span
-          className={`inline-flex items-center px-1.5 py-0.3 text-xs font-medium rounded border ${getStatusColor(
-            value
-          )}`}
-        >
-          {value}
-        </span>
-      ),
-    },
-    {
-      key: "category",
-      label: "Category",
-      width: "min-w-[120px]",
-      editable: true,
-      type: "text",
-      className: "text-sm text-gray-900 dark:text-white",
-    },
-    {
-      key: "users",
-      label: "Users",
-      width: "min-w-[80px]",
-      editable: true,
-      type: "number",
-      className: "text-sm text-gray-900 dark:text-white text-right",
-      render: (value: number) => value.toLocaleString(),
-    },
-    {
-      key: "license",
-      label: "License %",
-      width: "min-w-[80px]",
-      editable: true,
-      type: "number",
-      className: "text-sm text-gray-900 dark:text-white text-right",
-      render: (value: number) => `${value}%`,
-    },
-    {
-      key: "revenue",
-      label: "Revenue",
-      width: "min-w-[100px]",
-      editable: true,
-      type: "text",
-      className:
-        "text-sm font-medium text-green-600 dark:text-green-400 text-right",
-    },
-    {
-      key: "lastUpdate",
-      label: "Last Update",
-      width: "min-w-[120px]",
-      editable: true,
-      type: "date",
-      className: "text-sm text-gray-900 dark:text-white",
-    },
-    {
-      key: "contact",
-      label: "Contact",
-      width: "min-w-[180px]",
-      editable: true,
-      type: "email",
-      className: "text-sm text-blue-600 hover:text-blue-800",
-      render: (value: string) => <a href={`mailto:${value}`}>{value}</a>,
-    },
-  ];
-
-  // Props에서 전달받은 컬럼을 기본 컬럼과 통합하거나 기본 컬럼 사용
+  // Props에서 전달받은 컬럼만 사용 (기본 컬럼 제거)
   const columns = useMemo(() => {
-    return propColumns
-      ? propColumns.map((col) => ({
-          key: col.key,
-          label: col.label,
-          sortable: col.sortable,
-          width: `min-w-[${col.width || 120}px]`,
-          editable: col.editable || false,
-          type: col.type || "text",
-          className: col.className || "text-sm text-gray-900 dark:text-white",
-          sticky: col.sticky || "",
-          render: col.render,
-          options: col.options,
-        }))
-      : defaultColumns;
+    if (!propColumns) {
+      return [];
+    }
+    return propColumns.map((col) => ({
+      key: col.key,
+      label: col.label,
+      sortable: col.sortable,
+      width: `min-w-[${col.width || 120}px]`,
+      editable: col.editable || false,
+      type: col.type || "text",
+      required: col.required || false,
+      className: col.className || "text-sm text-gray-900 dark:text-white",
+      sticky: col.sticky || "",
+      render: col.render,
+      options: col.options,
+    }));
   }, [propColumns]);
 
   // 컬럼이 변경될 때마다 columnWidths 초기화
@@ -219,35 +167,61 @@ export default function BasicTableView({
       actions: 80,
     };
 
-    // 각 컬럼에 대해 기본 너비 설정
+    // 각 컬럼에 대해 기본 너비 설정 (props에서 온 컬럼만 처리)
     columns.forEach((column) => {
-      if (propColumns) {
-        // props에서 온 컬럼의 경우 width 속성 사용
-        newColumnWidths[column.key] = column.width
-          ? typeof column.width === "number"
-            ? column.width
-            : parseInt(column.width.toString().replace(/[^\d]/g, "")) || 120
-          : 120;
-      } else {
-        // 기본 컬럼의 경우 미리 정의된 너비 사용
-        const defaultWidths: { [key: string]: number } = {
-          id: 120,
-          company: 150,
-          domain: 180,
-          status: 100,
-          category: 120,
-          users: 80,
-          license: 80,
-          revenue: 100,
-          lastUpdate: 120,
-          contact: 180,
-        };
-        newColumnWidths[column.key] = defaultWidths[column.key] || 120;
-      }
+      newColumnWidths[column.key] = column.width
+        ? typeof column.width === "number"
+          ? column.width
+          : parseInt(column.width.toString().replace(/[^\d]/g, "")) || 120
+        : 120;
     });
 
     setColumnWidths(newColumnWidths);
-  }, [propColumns]); // columns 대신 propColumns만 의존성으로 사용
+  }, [columns, propColumns]);
+
+  // 데이터가 변경될 때 새 행 상태 초기화
+  useEffect(() => {
+    if (newRows.length > 0) {
+      setNewRows([]);
+      setEditingRow(null);
+      setEditData({});
+    }
+  }, [propData]); // propData가 변경될 때마다 실행
+
+  // More Actions 드롭다운 외부 클릭 감지
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        isMoreActionsOpen &&
+        moreActionsRef.current &&
+        !moreActionsRef.current.contains(event.target as Node)
+      ) {
+        setIsMoreActionsOpen(false);
+      }
+    };
+
+    if (isMoreActionsOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => {
+        document.removeEventListener("mousedown", handleClickOutside);
+      };
+    }
+  }, [isMoreActionsOpen]);
+
+  // 편집 데이터 업데이트 함수
+  const updateEditData = (columnKey: string, value: any, item: any) => {
+    // 새 행인 경우 newRows 배열 직접 업데이트
+    if (item.isNew) {
+      setNewRows((prev) =>
+        prev.map((row) =>
+          row.id === item.id ? { ...row, [columnKey]: value } : row
+        )
+      );
+    } else {
+      // 기존 행인 경우에만 editData 사용
+      setEditData({ ...editData, [columnKey]: value });
+    }
+  };
 
   // 유틸리티 함수들
   const getStatusColor = (status: string) => {
@@ -266,235 +240,232 @@ export default function BasicTableView({
   // 셀 렌더링 함수
   const renderCell = (item: any, column: any, isEditing: boolean) => {
     const value = item[column.key];
+    // 새로운 행인 경우 item의 값을 직접 사용, 기존 행인 경우 editData 사용
+    // editData에 해당 키가 있으면 그 값을 사용 (빈 문자열이라도), 없으면 원래 값 사용
+    const displayValue = item.isNew
+      ? value
+      : column.key in editData
+      ? editData[column.key]
+      : value;
 
-    if (isEditing && column.editable) {
+    // 편집 모드일 때 편집 가능 여부 확인 (id 컬럼 제외)
+    // 새 행인 경우 모든 컬럼 편집 가능, 기존 행인 경우 editable이 false가 아닌 컬럼만 편집 가능
+    if (
+      isEditing &&
+      column.key !== "id" &&
+      (item.isNew || column.editable !== false)
+    ) {
+      // 필수 필드 스타일링
+      const requiredClass = column.required
+        ? "border-red-300 focus:border-red-500 focus:ring-red-500"
+        : "border-gray-300 focus:ring-blue-500";
+
       // 편집 모드
       switch (column.type) {
         case "select":
           return (
-            <select
-              value={editData[column.key] || value}
-              onChange={(e) =>
-                setEditData({ ...editData, [column.key]: e.target.value })
-              }
-              className="w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              {column.options?.map((option: string) => (
-                <option key={option} value={option}>
-                  {option}
+            <div className="relative">
+              <select
+                value={displayValue}
+                onChange={(e) =>
+                  updateEditData(column.key, e.target.value, item)
+                }
+                className={`w-full px-2 py-1 border rounded focus:outline-none focus:ring-2 ${requiredClass}`}
+              >
+                <option value="">
+                  {column.required ? "필수 선택" : "선택하세요"}
                 </option>
-              ))}
-            </select>
+                {column.options?.map((option: string) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+              {column.required && (
+                <span className="absolute -top-2 -right-2 text-red-500 text-xs">
+                  *
+                </span>
+              )}
+            </div>
           );
         case "number":
           return (
-            <input
-              type="number"
-              value={editData[column.key] || value}
-              onChange={(e) =>
-                setEditData({ ...editData, [column.key]: e.target.value })
-              }
-              className="w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+            <div className="relative">
+              <input
+                type="number"
+                value={displayValue}
+                placeholder={column.required ? "필수 입력" : ""}
+                onChange={(e) =>
+                  updateEditData(column.key, e.target.value, item)
+                }
+                className={`w-full px-2 py-1 border rounded focus:outline-none focus:ring-2 ${requiredClass}`}
+              />
+              {column.required && (
+                <span className="absolute -top-2 -right-2 text-red-500 text-xs">
+                  *
+                </span>
+              )}
+            </div>
           );
         case "date":
           return (
-            <input
-              type="date"
-              value={editData[column.key] || value}
-              onChange={(e) =>
-                setEditData({ ...editData, [column.key]: e.target.value })
-              }
-              className="w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+            <div className="relative">
+              <input
+                type="date"
+                value={displayValue}
+                onChange={(e) =>
+                  updateEditData(column.key, e.target.value, item)
+                }
+                className={`w-full px-2 py-1 border rounded focus:outline-none focus:ring-2 ${requiredClass}`}
+              />
+              {column.required && (
+                <span className="absolute -top-2 -right-2 text-red-500 text-xs">
+                  *
+                </span>
+              )}
+            </div>
           );
         case "email":
           return (
-            <input
-              type="email"
-              value={editData[column.key] || value}
-              onChange={(e) =>
-                setEditData({ ...editData, [column.key]: e.target.value })
-              }
-              className="w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+            <div className="relative">
+              <input
+                type="email"
+                value={displayValue}
+                placeholder={column.required ? "필수 입력" : ""}
+                onChange={(e) =>
+                  updateEditData(column.key, e.target.value, item)
+                }
+                className={`w-full px-2 py-1 border rounded focus:outline-none focus:ring-2 ${requiredClass}`}
+              />
+              {column.required && (
+                <span className="absolute -top-2 -right-2 text-red-500 text-xs">
+                  *
+                </span>
+              )}
+            </div>
           );
         default:
           return (
-            <input
-              type="text"
-              value={editData[column.key] || value}
-              onChange={(e) =>
-                setEditData({ ...editData, [column.key]: e.target.value })
-              }
-              className="w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+            <div className="relative">
+              <input
+                type="text"
+                value={displayValue}
+                placeholder={column.required ? "필수 입력" : ""}
+                onChange={(e) =>
+                  updateEditData(column.key, e.target.value, item)
+                }
+                className={`w-full px-2 py-1 border rounded focus:outline-none focus:ring-2 ${requiredClass}`}
+              />
+              {column.required && (
+                <span className="absolute -top-2 -right-2 text-red-500 text-xs">
+                  *
+                </span>
+              )}
+            </div>
           );
       }
     } else {
       // 표시 모드
-      if (column.render) {
-        return column.render(value);
+      const displayContent = () => {
+        if (column.render) {
+          return column.render(value);
+        }
+
+        if (column.type === "number" && typeof value === "number") {
+          return column.key === "license"
+            ? `${value}%`
+            : value.toLocaleString();
+        }
+
+        return value;
+      };
+
+      // editable: false인 컬럼(Primary Key 등)을 편집 모드에서 비활성화 스타일로 표시
+      // 단, 새 행인 경우에는 모든 컬럼이 편집 가능하므로 비활성화 스타일 적용 안함
+      if (column.editable === false && isEditing && !item.isNew) {
+        return (
+          <div className="bg-gray-50 px-2 py-1 text-gray-400 cursor-not-allowed border border-gray-200 rounded opacity-60">
+            {displayContent()}
+          </div>
+        );
       }
 
-      if (column.type === "number" && typeof value === "number") {
-        return column.key === "license" ? `${value}%` : value.toLocaleString();
-      }
-
-      return value;
+      return displayContent();
     }
   };
 
-  // 기존 헬퍼 함수들
-  const defaultTableData = [
-    {
-      id: 1,
-      company: "Catalog",
-      domain: "catalogapp.io",
-      status: "Active",
-      category: "Content",
-      users: 245,
-      license: 67,
-      revenue: "$45,200",
-      lastUpdate: "2024-10-01",
-      contact: "john@catalog.io",
-    },
-    {
-      id: 2,
-      company: "Circooles",
-      domain: "getcirooles.com",
-      status: "Inactive",
-      category: "Design",
-      users: 156,
-      license: 40,
-      revenue: "$23,100",
-      lastUpdate: "2024-09-28",
-      contact: "sarah@circooles.com",
-    },
-    {
-      id: 3,
-      company: "Sisyphus",
-      domain: "sisyphus.com",
-      status: "Active",
-      category: "Automation",
-      users: 389,
-      license: 92,
-      revenue: "$78,500",
-      lastUpdate: "2024-10-05",
-      contact: "mike@sisyphus.com",
-    },
-    {
-      id: 4,
-      company: "Hourglass",
-      domain: "hourglass.app",
-      status: "Pending",
-      category: "Productivity",
-      users: 124,
-      license: 33,
-      revenue: "$12,800",
-      lastUpdate: "2024-09-30",
-      contact: "alice@hourglass.app",
-    },
-    {
-      id: 5,
-      company: "Quotient",
-      domain: "quotient.co",
-      status: "Active",
-      category: "Sales",
-      users: 67,
-      license: 17,
-      revenue: "$8,400",
-      lastUpdate: "2024-10-03",
-      contact: "bob@quotient.co",
-    },
-    {
-      id: 6,
-      company: "DataFlow",
-      domain: "dataflow.io",
-      status: "Active",
-      category: "Analytics",
-      users: 512,
-      license: 95,
-      revenue: "$125,600",
-      lastUpdate: "2024-10-07",
-      contact: "emma@dataflow.io",
-    },
-    {
-      id: 7,
-      company: "CloudSync",
-      domain: "cloudsync.net",
-      status: "Inactive",
-      category: "Storage",
-      users: 89,
-      license: 22,
-      revenue: "$15,300",
-      lastUpdate: "2024-09-25",
-      contact: "david@cloudsync.net",
-    },
-    {
-      id: 8,
-      company: "TeamHub",
-      domain: "teamhub.com",
-      status: "Active",
-      category: "Collaboration",
-      users: 334,
-      license: 78,
-      revenue: "$56,700",
-      lastUpdate: "2024-10-06",
-      contact: "lisa@teamhub.com",
-    },
-    {
-      id: 9,
-      company: "TeamHub",
-      domain: "teamhub.com",
-      status: "Active",
-      category: "Collaboration",
-      users: 334,
-      license: 78,
-      revenue: "$56,700",
-      lastUpdate: "2024-10-06",
-      contact: "lisa@teamhub.com",
-    },
-    {
-      id: 10,
-      company: "TeamHub",
-      domain: "teamhub.com",
-      status: "Active",
-      category: "Collaboration",
-      users: 334,
-      license: 78,
-      revenue: "$56,700",
-      lastUpdate: "2024-10-06",
-      contact: "lisa@teamhub.com",
-    },
-    {
-      id: 10,
-      company: "TeamHub",
-      domain: "teamhub.com",
-      status: "Active",
-      category: "Collaboration",
-      users: 334,
-      license: 78,
-      revenue: "$56,700",
-      lastUpdate: "2024-10-06",
-      contact: "lisa@teamhub.com",
-    },
-    {
-      id: 11,
-      company: "TeamHub",
-      domain: "teamhub.com",
-      status: "Active",
-      category: "Collaboration",
-      users: 334,
-      license: 78,
-      revenue: "$56,700",
-      lastUpdate: "2024-10-06",
-      contact: "lisa@teamhub.com",
-    },
-  ];
+  // Props에서 전달받은 데이터만 사용 (기본 데이터 제거)
+  const baseTableData = propData || [];
 
-  // Props에서 전달받은 데이터를 사용하거나 기본 데이터 사용
-  const tableData = propData || defaultTableData;
+  // 새 행 추가 기능
+  const handleAddRecord = () => {
+    const newRow: any = {
+      id: `new_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`, // 더 고유한 ID 생성
+      isNew: true,
+    };
+
+    // 각 컬럼에 대해 빈 값으로 초기화
+    columns.forEach((column) => {
+      if (column.key !== "id") {
+        newRow[column.key] = "";
+      }
+    });
+
+    // 새 행 배열에 추가
+    setNewRows((prev) => [...prev, newRow]);
+
+    // 새 행을 편집 모드로 설정 (항상)
+    setEditingRow(newRow.id);
+    setEditData(newRow);
+  };
+
+  // Excel 내보내기 기능
+  const handleExportExcel = () => {
+    try {
+      // CSV 형태로 데이터 변환
+      const headers = columns.map((col) => col.label).join(",");
+      const csvData = tableData
+        .map((row) =>
+          columns
+            .map((col) => {
+              const value = row[col.key] || "";
+              // 쉼표가 포함된 값은 따옴표로 감싸기
+              return typeof value === "string" && value.includes(",")
+                ? `"${value}"`
+                : value;
+            })
+            .join(",")
+        )
+        .join("\n");
+
+      const csvContent = `${headers}\n${csvData}`;
+
+      // BOM 추가 (한글 깨짐 방지)
+      const BOM = "\uFEFF";
+      const blob = new Blob([BOM + csvContent], {
+        type: "text/csv;charset=utf-8;",
+      });
+      const link = document.createElement("a");
+
+      const url = URL.createObjectURL(blob);
+      link.setAttribute("href", url);
+      link.setAttribute(
+        "download",
+        `${title || "table_data"}_${new Date().toISOString().split("T")[0]}.csv`
+      );
+      link.style.visibility = "hidden";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error("Excel 내보내기 오류:", error);
+      alert("Excel 내보내기 중 오류가 발생했습니다.");
+    }
+  };
+
+  // 새 행들이 있을 경우 테이블 데이터에 추가
+  const tableData =
+    newRows.length > 0 ? [...baseTableData, ...newRows] : baseTableData;
 
   // 페이지네이션 계산
   const filteredData = tableData.filter((row) => {
@@ -593,17 +564,151 @@ export default function BasicTableView({
     setEditData({ ...row });
   };
 
+  // 필수 값 검증 함수
+  const validateRequiredFields = (rowData: any) => {
+    const missingFields: string[] = [];
+
+    columns.forEach((column) => {
+      if (column.required && column.key !== "id") {
+        const value = rowData[column.key];
+        if (!value || (typeof value === "string" && value.trim() === "")) {
+          missingFields.push(column.label);
+        }
+      }
+    });
+
+    return missingFields;
+  };
+
   // 편집 저장
-  const handleSave = () => {
-    // 실제로는 여기서 API 호출을 통해 데이터를 저장
-    setEditingRow(null);
-    setEditData({});
+  const handleSave = async () => {
+    const currentRow = newRows.find((row) => row.id === editingRow);
+
+    // 저장할 데이터 결정
+    const dataToSave = currentRow && currentRow.isNew ? currentRow : editData;
+
+    // 필수 값 검증
+    const missingFields = validateRequiredFields(dataToSave);
+    if (missingFields.length > 0) {
+      alert(
+        `필수 값이 작성되지 않았습니다.\n누락된 필드: ${missingFields.join(
+          ", "
+        )}`
+      );
+      return;
+    }
+
+    try {
+      if (currentRow && currentRow.isNew) {
+        // 새 행 저장 로직 (INSERT)
+        console.log("새 행 저장:", currentRow);
+
+        // API 호출
+        if (onInsert) {
+          const finalRowData = { ...currentRow };
+          delete finalRowData.isNew; // isNew 속성 제거
+          delete finalRowData.id; // 임시 ID 제거 (서버에서 생성)
+
+          const result = await onInsert(finalRowData);
+          console.log("Insert API 결과:", result);
+        }
+
+        // 기존 콜백도 유지
+        if (onSaveNewRow) {
+          const finalRowData = { ...currentRow };
+          delete finalRowData.isNew;
+          onSaveNewRow(finalRowData);
+        }
+
+        // 저장된 새 행을 배열에서 제거
+        setNewRows((prev) => prev.filter((row) => row.id !== editingRow));
+      } else {
+        // 기존 행 수정 로직 (UPDATE)
+        console.log("기존 행 수정:", editData);
+
+        // API 호출
+        if (onUpdate && editingRow) {
+          const result = await onUpdate(editingRow, editData);
+          console.log("Update API 결과:", result);
+        }
+
+        // 기존 콜백도 유지
+        if (onUpdateRow) {
+          onUpdateRow(editData);
+        }
+      }
+
+      setEditingRow(null);
+      setEditData({});
+    } catch (error) {
+      console.error("저장 중 오류 발생:", error);
+      alert("저장 중 오류가 발생했습니다.");
+    }
   };
 
   // 편집 취소
   const handleCancel = () => {
+    const currentRow = newRows.find((row) => row.id === editingRow);
+
+    if (currentRow && currentRow.isNew) {
+      // 취소할 새 행을 배열에서 제거
+      setNewRows((prev) => prev.filter((row) => row.id !== editingRow));
+    }
+
     setEditingRow(null);
     setEditData({});
+    setDeletingRow(null); // 삭제 상태도 초기화
+  };
+
+  // 새 행 즉시 삭제 함수 (편집 중이 아닌 행도 삭제 가능)
+  const handleDeleteNewRow = (rowId: string | number) => {
+    setNewRows((prev) => prev.filter((row) => row.id !== rowId));
+
+    // 삭제된 행이 현재 편집 중인 행이면 편집 상태 초기화
+    if (editingRow === rowId) {
+      setEditingRow(null);
+      setEditData({});
+    }
+
+    // 선택된 행이 삭제되는 경우 선택 해제
+    setSelectedRows((prev) => prev.filter((id) => id !== rowId));
+  };
+
+  // 삭제 시작 (휴지통 버튼 클릭)
+  const handleStartDelete = (rowId: string | number) => {
+    setDeletingRow(rowId);
+  };
+
+  // 삭제 확인 (check 버튼 클릭)
+  const handleConfirmDelete = async (rowId: string | number) => {
+    try {
+      // 새 행인 경우 배열에서만 제거
+      const isNewRow = newRows.some((row) => row.id === rowId);
+
+      if (isNewRow) {
+        setNewRows((prev) => prev.filter((row) => row.id !== rowId));
+
+        // 편집 중인 행이 삭제되는 경우 편집 상태 초기화
+        if (editingRow === rowId) {
+          setEditingRow(null);
+          setEditData({});
+        }
+
+        // 선택된 행이 삭제되는 경우 선택 해제
+        setSelectedRows((prev) => prev.filter((id) => id !== rowId));
+      } else {
+        // 기존 행인 경우 API 호출
+        if (onDelete) {
+          const result = await onDelete(rowId);
+          console.log("Delete API 결과:", result);
+        }
+      }
+
+      setDeletingRow(null);
+    } catch (error) {
+      console.error("삭제 중 오류 발생:", error);
+      alert("삭제 중 오류가 발생했습니다.");
+    }
   };
 
   // 정렬 함수 (다중 정렬 지원)
@@ -911,13 +1016,169 @@ export default function BasicTableView({
 
       <TableToolbar
         recordCount={sortedData.length}
-        sortConfig={sortConfig}
-        isMoreActionsOpen={isMoreActionsOpen}
-        onMoreActionsToggle={() => setIsMoreActionsOpen(!isMoreActionsOpen)}
-        onClearAllSorts={() => setSortConfig([])}
         subTitle={subTitle}
         description={description}
       />
+
+      {/* 버튼 영역 - Export Excel, More Actions, Add Record */}
+      <div className="flex items-center justify-end mb-4 gap-x-3">
+        <button
+          onClick={handleExportExcel}
+          className="flex items-center justify-center px-4 py-2 text-sm text-gray-700 transition-colors duration-200 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 dark:bg-gray-900 dark:text-gray-200 dark:border-gray-700 cursor-pointer"
+        >
+          <svg
+            className="w-4 h-4 mr-2"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+            />
+          </svg>
+          Export Excel
+        </button>
+
+        <div ref={moreActionsRef} className="relative more-actions-dropdown">
+          <button
+            onClick={() => setIsMoreActionsOpen(!isMoreActionsOpen)}
+            className="flex items-center justify-center px-4 py-2 text-sm text-gray-700 transition-colors duration-200 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 dark:bg-gray-900 dark:text-gray-200 dark:border-gray-700 cursor-pointer"
+          >
+            <svg
+              className="w-4 h-4 mr-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+              />
+            </svg>
+            More Actions
+            <svg
+              className={`w-4 h-4 ml-2 transition-transform duration-200 ${
+                isMoreActionsOpen ? "rotate-180" : ""
+              }`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 9l-7 7-7-7"
+              />
+            </svg>
+          </button>
+
+          {/* 드롭다운 메뉴 */}
+          {isMoreActionsOpen && (
+            <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-200 dark:bg-gray-800 dark:border-gray-700 z-50">
+              <div className="py-1">
+                <button className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700 cursor-pointer">
+                  <svg
+                    className="w-4 h-4 mr-3"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                    />
+                  </svg>
+                  Bulk Export
+                </button>
+                <button className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700 cursor-pointer">
+                  <svg
+                    className="w-4 h-4 mr-3"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                    />
+                  </svg>
+                  Bulk Delete
+                </button>
+                <button className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700 cursor-pointer">
+                  <svg
+                    className="w-4 h-4 mr-3"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                    />
+                  </svg>
+                  Bulk Edit
+                </button>
+                <div className="border-t border-gray-100 dark:border-gray-600 my-1"></div>
+                <button
+                  className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700 cursor-pointer"
+                  onClick={() => {
+                    setSortConfig([]);
+                    setIsMoreActionsOpen(false);
+                  }}
+                  disabled={sortConfig.length === 0}
+                >
+                  <svg
+                    className="w-4 h-4 mr-3"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                    />
+                  </svg>
+                  Clear All Sorts ({sortConfig.length})
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <button
+          onClick={handleAddRecord}
+          className="flex items-center justify-center px-4 py-2 text-sm text-white transition-colors duration-200 bg-blue-600 rounded-lg hover:bg-blue-700 cursor-pointer"
+        >
+          <svg
+            className="w-4 h-4 mr-2"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+            />
+          </svg>
+          Add Record
+        </button>
+      </div>
 
       {/* 엑셀 스타일 테이블 */}
       <div className="border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm relative">
@@ -1024,8 +1285,17 @@ export default function BasicTableView({
                     data-filter-trigger="true"
                   >
                     <div className="flex items-center justify-between">
-                      <span className="font-medium text-gray-900 dark:text-gray-100">
+                      <span
+                        className={`font-medium flex items-center ${
+                          column.editable === false
+                            ? "text-gray-500 dark:text-gray-400"
+                            : "text-gray-900 dark:text-gray-100"
+                        }`}
+                      >
                         {column.label}
+                        {column.required && (
+                          <span className="text-red-500 ml-1">*</span>
+                        )}
                       </span>
                       <div className="flex items-center space-x-1">
                         {renderSortIcon(column.key)}
@@ -1179,7 +1449,11 @@ export default function BasicTableView({
                       } bg-inherit`}
                       style={{ width: columnWidths[column.key] || 120 }}
                     >
-                      {renderCell(row, column, editingRow === row.id)}
+                      {renderCell(
+                        row,
+                        column,
+                        editingRow === row.id || row.isNew
+                      )}
                     </td>
                   ))}
 
@@ -1188,7 +1462,7 @@ export default function BasicTableView({
                     className="px-4 py-1 whitespace-nowrap text-sm text-gray-500 relative z-10"
                     style={{ width: columnWidths.actions || 80 }}
                   >
-                    {editingRow === row.id ? (
+                    {editingRow === row.id || row.isNew ? (
                       <div className="flex space-x-2">
                         <button
                           onClick={(e) => {
@@ -1218,10 +1492,66 @@ export default function BasicTableView({
                           onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
-                            handleCancel();
+                            // 새 행인 경우 즉시 삭제, 기존 행인 경우 편집 취소
+                            if (row.isNew) {
+                              handleDeleteNewRow(row.id);
+                            } else {
+                              handleCancel();
+                            }
                           }}
                           className="text-red-600 hover:text-red-800 p-1 rounded hover:bg-red-50 transition-colors"
                           title="Cancel"
+                          type="button"
+                        >
+                          <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M6 18L18 6M6 6l12 12"
+                            />
+                          </svg>
+                        </button>
+                      </div>
+                    ) : deletingRow === row.id ? (
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleConfirmDelete(row.id);
+                          }}
+                          className="text-green-600 hover:text-green-800 p-1 rounded hover:bg-green-50 transition-colors"
+                          title="Confirm Delete"
+                          type="button"
+                        >
+                          <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M5 13l4 4L19 7"
+                            />
+                          </svg>
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setDeletingRow(null);
+                          }}
+                          className="text-red-600 hover:text-red-800 p-1 rounded hover:bg-red-50 transition-colors"
+                          title="Cancel Delete"
                           type="button"
                         >
                           <svg
@@ -1269,8 +1599,7 @@ export default function BasicTableView({
                           onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
-                            // 삭제 로직 추가 필요
-                            console.log("Delete clicked for row:", row.id);
+                            handleStartDelete(row.id);
                           }}
                           className="text-red-600 hover:text-red-800 p-1 rounded hover:bg-red-50 transition-colors"
                           title="Delete"

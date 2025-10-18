@@ -107,6 +107,7 @@ export class CodeApi {
     comCodeM: ComCodeMReqDto
   ): Promise<ResponseApi<Map<string, object>>> {
     const url = `${this.ADMIN_CODE_BASE_URL}/group`;
+
     const response = await fetch(url, {
       method: "POST",
       headers: {
@@ -133,6 +134,7 @@ export class CodeApi {
     comCodeM: ComCodeMReqDto
   ): Promise<ResponseApi<Map<string, object>>> {
     const url = `${this.ADMIN_CODE_BASE_URL}/group`;
+    console.log("comCodeM ", comCodeM);
     const response = await fetch(url, {
       method: "PUT",
       headers: {
@@ -204,6 +206,92 @@ export class CodeApi {
     return response.json();
   }
 
+  /**
+   * @REQ_ID REQ_ADM_014
+   * @화면 기준 정보 > 코드 관리
+   * @기능 속성 코드 추가
+   * @param comCodeT 속성 코드 정보 DTO
+   * @returns 속성 코드 추가 결과
+   */
+  public async insertAttrCodeForAdmin(
+    comCodeT: ComCodeTReqDto
+  ): Promise<ResponseApi<Map<string, object>>> {
+    const url = `${this.ADMIN_CODE_BASE_URL}/attribute`;
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(comCodeT),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return response.json();
+  }
+
+  /**
+   * @REQ_ID REQ_ADM_015
+   * @화면 기준 정보 > 코드 관리
+   * @기능 속성 코드 수정
+   * @param comCodeT 속성 코드 정보 DTO
+   * @returns 속성 코드 수정 결과
+   */
+  public async updateAttrCodeForAdmin(
+    comCodeT: ComCodeTReqDto
+  ): Promise<ResponseApi<Map<string, object>>> {
+    const url = `${this.ADMIN_CODE_BASE_URL}/attribute`;
+    const response = await fetch(url, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(comCodeT),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return response.json();
+  }
+
+  /**
+   * @REQ_ID REQ_ADM_016
+   * @화면 기준 정보 > 코드 관리
+   * @기능 속성 코드 삭제
+   * @param grpCd 그룹 코드
+   * @param attrCd 속성 코드
+   * @returns 속성 코드 삭제 결과
+   */
+  public async deleteAttrCodeForAdmin(
+    grpCd: string,
+    attrCd: string
+  ): Promise<ResponseApi<Map<string, object>>> {
+    const url = `${this.ADMIN_CODE_BASE_URL}/attribute/${grpCd}/${attrCd}`;
+    const response = await fetch(url, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return response.json();
+  }
+
+  /**
+   * @REQ_ID REQ_ADM_018
+   * @화면 기준 정보 > 코드 관리
+   * @기능 상세 코드 추가
+   * @param comCodeD 상세 코드 정보 DTO
+   * @returns 상세 코드 추가 결과
+   */
   public async insertDetailCodeForAdmin(
     comCodeD: ComCodeDReqDto
   ): Promise<ResponseApi<Map<string, object>>> {
@@ -223,6 +311,13 @@ export class CodeApi {
     return response.json();
   }
 
+  /**
+   * @REQ_ID REQ_ADM_019
+   * @화면 기준 정보 > 코드 관리
+   * @기능 상세 코드 수정
+   * @param comCodeD 상세 코드 정보 DTO
+   * @returns 상세 코드 수정 결과
+   */
   public async updateDetailCodeForAdmin(
     comCodeD: ComCodeDReqDto
   ): Promise<ResponseApi<Map<string, object>>> {
@@ -242,11 +337,21 @@ export class CodeApi {
     return response.json();
   }
 
+  /**
+   * @REQ_ID REQ_ADM_020
+   * @화면 기준 정보 > 코드 관리
+   * @기능 상세 코드 삭제
+   * @param grpCd 그룹 코드
+   * @param attrCd 속성 코드
+   * @param dtlCd 상세 코드
+   * @returns 상세 코드 삭제 결과
+   */
   public async deleteDetailCodeForAdmin(
     grpCd: string,
+    attrCd: string,
     dtlCd: string
   ): Promise<ResponseApi<Map<string, object>>> {
-    const url = `${this.ADMIN_CODE_BASE_URL}/detail/${grpCd}/${dtlCd}`;
+    const url = `${this.ADMIN_CODE_BASE_URL}/detail/${grpCd}/${attrCd}/${dtlCd}`;
     const response = await fetch(url, {
       method: "DELETE",
       headers: {
