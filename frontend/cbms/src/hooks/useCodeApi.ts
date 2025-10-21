@@ -34,6 +34,7 @@ interface ComCodeInfo {
     attrCd: string | null;
     attrNm: string | null;
     dtlNm: string | null;
+    attrOrderNum: number;
   }>;
   useYn: string | null;
   dtlOrderNum: number;

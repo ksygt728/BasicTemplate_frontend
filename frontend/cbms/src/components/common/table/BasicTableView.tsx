@@ -242,11 +242,14 @@ export default function BasicTableView({
     const value = item[column.key];
     // 새로운 행인 경우 item의 값을 직접 사용, 기존 행인 경우 editData 사용
     // editData에 해당 키가 있으면 그 값을 사용 (빈 문자열이라도), 없으면 원래 값 사용
-    const displayValue = item.isNew
+    const rawDisplayValue = item.isNew
       ? value
       : column.key in editData
       ? editData[column.key]
       : value;
+
+    // displayValue가 undefined나 null이면 빈 문자열로 변환하여 controlled input 오류 방지
+    const displayValue = rawDisplayValue ?? "";
 
     // 편집 모드일 때 편집 가능 여부 확인 (id 컬럼 제외)
     // 새 행인 경우 모든 컬럼 편집 가능, 기존 행인 경우 editable이 false가 아닌 컬럼만 편집 가능
@@ -1192,7 +1195,7 @@ export default function BasicTableView({
               <tr>
                 {/* 체크박스 컬럼 */}
                 <th
-                  className="sticky left-0 z-30 px-4 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700"
+                  className="sticky left-0 z-30 px-4 py-1 text-left text-xs font-medium text-gray-500 tracking-wider bg-gray-50 dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700"
                   style={{ width: columnWidths.checkbox || 60 }}
                 >
                   <input
@@ -1240,7 +1243,7 @@ export default function BasicTableView({
                 {columns.map((column) => (
                   <th
                     key={column.key}
-                    className={`px-4 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-200 dark:border-gray-700 relative ${
+                    className={`px-4 py-1 text-left text-xs font-medium text-gray-500 tracking-wider border-r border-gray-200 dark:border-gray-700 relative ${
                       // 리사이즈 중일 때만 hover 효과 제거, 평상시에는 정상 동작
                       isResizing
                         ? "cursor-default"
@@ -1374,7 +1377,7 @@ export default function BasicTableView({
 
                 {/* Actions 컬럼 */}
                 <th
-                  className="px-4 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-wider relative"
+                  className="px-4 py-1 text-left text-xs font-medium text-gray-500 tracking-wider relative"
                   style={{ width: columnWidths.actions || 80 }}
                 >
                   Actions

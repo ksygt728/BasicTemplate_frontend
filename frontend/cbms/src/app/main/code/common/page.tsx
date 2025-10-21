@@ -92,15 +92,16 @@ export default function Home() {
 
     // 모든 codeAttributes를 수집하여 중복 제거
     const attributesMap = new Map();
+
     selectedGroup.comCodeInfo.forEach((codeInfo: any) => {
       if (codeInfo.codeAttributes) {
-        codeInfo.codeAttributes.forEach((attr: any, index: number) => {
+        codeInfo.codeAttributes.forEach((attr: any) => {
           if (attr.attrCd && !attributesMap.has(attr.attrCd)) {
             attributesMap.set(attr.attrCd, {
               id: `${selectedGroupCd}_attr_${attr.attrCd}`, // 고유 식별자
               attrCd: attr.attrCd, // 속성코드 (Primary Key)
               attrNm: attr.attrNm, // 속성명
-              orderNum: index + 1, // 기본 정렬순서
+              orderNum: attr.attrOrderNum || 1, // 백엔드에서 추가된 attrOrderNum 사용
             });
           }
         });
@@ -252,15 +253,15 @@ export default function Home() {
         type: "text",
         required: true, // 필수 입력 필드
       },
-      {
-        key: "dtlNm",
-        label: "상세명",
-        width: 150,
-        sortable: true,
-        editable: true, // 편집 가능
-        type: "text",
-        required: false, // 선택적 필드
-      },
+      // {
+      //   key: "dtlNm",
+      //   label: "상세명",
+      //   width: 150,
+      //   sortable: true,
+      //   editable: true, // 편집 가능
+      //   type: "text",
+      //   required: false, // 선택적 필드
+      // },
     ];
 
     /**
@@ -291,13 +292,17 @@ export default function Home() {
                   editable: true, // 편집 가능
                   type: "text",
                   required: false, // 선택적 필드
+                  attrOrderNum: attr.attrOrderNum || 999, // 정렬순서 저장 (기본값 999)
                 });
               }
             });
           }
         });
 
-        dynamicColumns = Array.from(attributesMap.values());
+        // attrOrderNum으로 정렬하여 동적 컬럼 배열 생성
+        dynamicColumns = Array.from(attributesMap.values()).sort(
+          (a, b) => a.attrOrderNum - b.attrOrderNum
+        );
       }
     }
 
@@ -512,11 +517,11 @@ export default function Home() {
 
   /**
    * @기능 상세코드 추가 처리
-   * @설명 사용자 입력 데이터를 ComCodeDReqDto 형태로 변환하여 API 호출
+   * @설명 사용자 입력 데이터를 여러 개의 ComCodeDReqDto 배열로 변환하여 API 호출
    * @param {Object} rowData - 테이블에서 입력받은 행 데이터
    * @returns {Promise<Object>} API 호출 결과
    * @전제조건 selectedGroupCd가 null이 아니어야 함
-   * @알고리즘 기본 속성코드가 없으면 "DEFAULT" 사용
+   * @알고리즘 값이 있는 모든 동적 속성 컬럼에 대해 각각 API 호출
    */
   const handleInsertDetailCode = async (rowData: any) => {
     // 그룹코드 선택 여부 확인
@@ -524,34 +529,63 @@ export default function Home() {
       throw new Error("그룹 코드가 선택되지 않았습니다.");
     }
 
-    // 기본 속성코드 결정: 첫 번째 속성 또는 "DEFAULT" 사용
-    const defaultAttrCd =
-      rightTopTableData.length > 0 ? rightTopTableData[0].attrCd : "DEFAULT";
+    // 값이 있는 모든 동적 속성 컬럼 수집
+    const validAttributes: Array<{ attrCd: string; dtlNm: string }> = [];
 
-    // 테이블 입력 데이터를 API 요청 DTO 형태로 변환
-    const comCodeD = {
-      grpCd: selectedGroupCd, // 현재 선택된 그룹코드
-      attrCd: defaultAttrCd, // 기본 속성코드
-      dtlCd: rowData.dtlCd, // 상세코드
-      dtlNm: rowData.dtlNm || rowData.dtlCd, // 상세명 (없으면 상세코드 사용)
-      useYn: rowData.useYn || "Y", // 사용여부 (기본값: Y)
-      orderNum: rowData.dtlOrderNum || 1, // 정렬순서 (기본값: 1)
-    };
+    if (rightTopTableData.length > 0) {
+      rightTopTableData.forEach((attr) => {
+        if (rowData[attr.attrCd] && rowData[attr.attrCd].trim() !== "") {
+          validAttributes.push({
+            attrCd: attr.attrCd,
+            dtlNm: rowData[attr.attrCd],
+          });
+        }
+      });
+    }
 
-    const result = await insertDetailCode(comCodeD);
-    if (result?.success) {
+    // 값이 있는 속성이 없으면 기본 처리
+    if (validAttributes.length === 0) {
+      const defaultAttrCd =
+        rightTopTableData.length > 0 ? rightTopTableData[0].attrCd : "DEFAULT";
+      validAttributes.push({
+        attrCd: defaultAttrCd,
+        dtlNm: rowData.dtlCd,
+      });
+    }
+
+    // 각 속성에 대해 개별 API 호출
+    const results = [];
+    for (const attr of validAttributes) {
+      const comCodeD = {
+        grpCd: selectedGroupCd, // 현재 선택된 그룹코드
+        attrCd: attr.attrCd, // 해당 속성코드
+        dtlCd: rowData.dtlCd, // 상세코드
+        dtlNm: attr.dtlNm, // 해당 속성의 상세명
+        useYn: rowData.useYn || "Y", // 사용여부 (기본값: Y)
+        orderNum: rowData.dtlOrderNum || 1, // 정렬순서 (기본값: 1)
+      };
+
+      const result = await insertDetailCode(comCodeD);
+      results.push(result);
+    }
+
+    // 모든 API 호출이 성공했을 때만 refetch
+    const allSuccess = results.every((result) => result?.success);
+    if (allSuccess) {
       refetch(); // 성공 시 전체 데이터 새로고침
     }
-    return result;
+
+    return { success: allSuccess, results };
   };
 
   /**
    * @기능 상세코드 수정 처리
-   * @설명 수정된 데이터를 ComCodeDReqDto 형태로 변환하여 API 호출
+   * @설명 수정된 데이터를 여러 개의 ComCodeDReqDto로 변환하여 API 호출
    * @param {string|number} id - 수정할 행의 식별자
    * @param {Object} rowData - 수정된 행 데이터
    * @returns {Promise<Object>} API 호출 결과
    * @전제조건 selectedGroupCd가 null이 아니어야 함
+   * @알고리즘 값이 있는 모든 동적 속성 컬럼에 대해 각각 API 호출
    */
   const handleUpdateDetailCode = async (id: string | number, rowData: any) => {
     // 그룹코드 선택 여부 확인
@@ -560,25 +594,53 @@ export default function Home() {
       return;
     }
 
-    // 기본 속성코드 결정: 첫 번째 속성 또는 "DEFAULT" 사용
-    const defaultAttrCd =
-      rightTopTableData.length > 0 ? rightTopTableData[0].attrCd : "DEFAULT";
+    // 값이 있는 모든 동적 속성 컬럼 수집
+    const validAttributes: Array<{ attrCd: string; dtlNm: string }> = [];
 
-    // 테이블 수정 데이터를 API 요청 DTO 형태로 변환
-    const comCodeD = {
-      grpCd: selectedGroupCd as string,
-      attrCd: defaultAttrCd,
-      dtlCd: rowData.dtlCd,
-      dtlNm: rowData.dtlNm || rowData.dtlCd,
-      useYn: rowData.useYn || "Y",
-      orderNum: rowData.dtlOrderNum || 1,
-    };
+    if (rightTopTableData.length > 0) {
+      rightTopTableData.forEach((attr) => {
+        if (rowData[attr.attrCd] && rowData[attr.attrCd].trim() !== "") {
+          validAttributes.push({
+            attrCd: attr.attrCd,
+            dtlNm: rowData[attr.attrCd],
+          });
+        }
+      });
+    }
 
-    const result = await updateDetailCode(comCodeD);
-    if (result?.success) {
+    // 값이 있는 속성이 없으면 기본 처리
+    if (validAttributes.length === 0) {
+      const defaultAttrCd =
+        rightTopTableData.length > 0 ? rightTopTableData[0].attrCd : "DEFAULT";
+      validAttributes.push({
+        attrCd: defaultAttrCd,
+        dtlNm: rowData.dtlCd,
+      });
+    }
+
+    // 각 속성에 대해 개별 API 호출
+    const results = [];
+    for (const attr of validAttributes) {
+      const comCodeD = {
+        grpCd: selectedGroupCd as string,
+        attrCd: attr.attrCd, // 해당 속성코드
+        dtlCd: rowData.dtlCd,
+        dtlNm: attr.dtlNm, // 해당 속성의 상세명
+        useYn: rowData.useYn || "Y",
+        orderNum: rowData.dtlOrderNum || 1,
+      };
+
+      const result = await updateDetailCode(comCodeD);
+      results.push(result);
+    }
+
+    // 모든 API 호출이 성공했을 때만 refetch
+    const allSuccess = results.every((result) => result?.success);
+    if (allSuccess) {
       refetch(); // 성공 시 전체 데이터 새로고침
     }
-    return result;
+
+    return { success: allSuccess, results };
   };
 
   /**
