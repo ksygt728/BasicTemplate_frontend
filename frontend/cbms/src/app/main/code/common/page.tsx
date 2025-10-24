@@ -189,7 +189,7 @@ export default function Home() {
       sortable: true,
       editable: true, // 편집 가능
       type: "text",
-      required: false, // 선택적 필드
+      required: true, // 선택적 필드
     },
   ];
 

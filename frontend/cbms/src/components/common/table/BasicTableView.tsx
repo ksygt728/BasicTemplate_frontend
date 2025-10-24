@@ -210,7 +210,7 @@ export default function BasicTableView({
 
   // 편집 데이터 업데이트 함수
   const updateEditData = (columnKey: string, value: any, item: any) => {
-    // 새 행인 경우 newRows 배열 직접 업데이트
+    // 새 행인 경우 newRows 배열만 업데이트 (각 행의 독립적 데이터 관리)
     if (item.isNew) {
       setNewRows((prev) =>
         prev.map((row) =>
@@ -219,7 +219,7 @@ export default function BasicTableView({
       );
     } else {
       // 기존 행인 경우에만 editData 사용
-      setEditData({ ...editData, [columnKey]: value });
+      setEditData((prev: any) => ({ ...prev, [columnKey]: value }));
     }
   };
 
@@ -417,9 +417,9 @@ export default function BasicTableView({
     // 새 행 배열에 추가
     setNewRows((prev) => [...prev, newRow]);
 
-    // 새 행을 편집 모드로 설정 (항상)
+    // 새 행을 편집 모드로 설정 (신규 행은 newRows에서 관리하므로 editData는 빈 객체로)
     setEditingRow(newRow.id);
-    setEditData(newRow);
+    setEditData({});
   };
 
   // Excel 내보내기 기능
@@ -584,11 +584,27 @@ export default function BasicTableView({
   };
 
   // 편집 저장
-  const handleSave = async () => {
-    const currentRow = newRows.find((row) => row.id === editingRow);
+  const handleSave = async (targetRowId?: string | number) => {
+    // 저장할 행 ID 결정 (파라미터로 받거나 현재 편집 중인 행)
+    const rowIdToSave = targetRowId || editingRow;
 
-    // 저장할 데이터 결정
-    const dataToSave = currentRow && currentRow.isNew ? currentRow : editData;
+    // 해당 행이 신규 행인지 확인
+    const currentRow = newRows.find((row) => row.id === rowIdToSave);
+
+    // 저장할 데이터 결정 - 지정된 행의 데이터만 사용
+    let dataToSave: any;
+    if (currentRow && currentRow.isNew) {
+      // 신규 행: newRows에서 해당 행의 최신 데이터만 사용
+      dataToSave = { ...currentRow };
+    } else {
+      // 기존 행: editData 사용 (현재 편집 중인 행과 저장할 행이 같은 경우만)
+      if (rowIdToSave === editingRow) {
+        dataToSave = editData;
+      } else {
+        console.error("기존 행 데이터를 찾을 수 없습니다:", rowIdToSave);
+        return;
+      }
+    }
 
     // 필수 값 검증
     const missingFields = validateRequiredFields(dataToSave);
@@ -624,14 +640,14 @@ export default function BasicTableView({
         }
 
         // 저장된 새 행을 배열에서 제거
-        setNewRows((prev) => prev.filter((row) => row.id !== editingRow));
+        setNewRows((prev) => prev.filter((row) => row.id !== rowIdToSave));
       } else {
         // 기존 행 수정 로직 (UPDATE)
         console.log("기존 행 수정:", editData);
 
         // API 호출
-        if (onUpdate && editingRow) {
-          const result = await onUpdate(editingRow, editData);
+        if (onUpdate && rowIdToSave) {
+          const result = await onUpdate(rowIdToSave, editData);
           console.log("Update API 결과:", result);
         }
 
@@ -641,8 +657,11 @@ export default function BasicTableView({
         }
       }
 
-      setEditingRow(null);
-      setEditData({});
+      // 저장된 행이 현재 편집 중인 행이면 편집 상태 해제
+      if (rowIdToSave === editingRow) {
+        setEditingRow(null);
+        setEditData({});
+      }
     } catch (error) {
       console.error("저장 중 오류 발생:", error);
       alert("저장 중 오류가 발생했습니다.");
@@ -1471,7 +1490,7 @@ export default function BasicTableView({
                           onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
-                            handleSave();
+                            handleSave(row.id);
                           }}
                           className="text-green-600 hover:text-green-800 p-1 rounded hover:bg-green-50 transition-colors"
                           title="Save"
