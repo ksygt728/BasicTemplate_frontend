@@ -66,10 +66,6 @@ export class BbsApi {
       },
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
     return response.json();
   }
 
@@ -90,10 +86,6 @@ export class BbsApi {
         "Content-Type": "application/json",
       },
     });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
 
     return response.json();
   }
@@ -117,10 +109,6 @@ export class BbsApi {
       body: JSON.stringify(bbs),
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
     return response.json();
   }
 
@@ -143,10 +131,6 @@ export class BbsApi {
       body: JSON.stringify(bbs),
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
     return response.json();
   }
 
@@ -167,10 +151,6 @@ export class BbsApi {
         "Content-Type": "application/json",
       },
     });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
 
     return response.json();
   }
@@ -203,10 +183,6 @@ export class BbsApi {
         "Content-Type": "application/json",
       },
     });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
 
     return response.json();
   }

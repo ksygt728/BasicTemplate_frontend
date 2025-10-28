@@ -61,9 +61,6 @@ export class InterfaceApi {
       },
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
 
     return response.json();
   }
@@ -96,9 +93,6 @@ export class InterfaceApi {
       },
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
 
     return response.json();
   }
@@ -121,9 +115,6 @@ export class InterfaceApi {
       },
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
 
     return response.json();
   }
@@ -147,9 +138,6 @@ export class InterfaceApi {
       body: JSON.stringify(ifc),
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
 
     return response.json();
   }
@@ -172,9 +160,6 @@ export class InterfaceApi {
       },
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
 
     return response.json();
   }
@@ -198,9 +183,6 @@ export class InterfaceApi {
       body: JSON.stringify(ifc),
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
 
     return response.json();
   }
@@ -224,9 +206,6 @@ export class InterfaceApi {
       body: JSON.stringify(ifc),
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
 
     return response.json();
   }
@@ -249,9 +228,6 @@ export class InterfaceApi {
       },
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
 
     return response.json();
   }

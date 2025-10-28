@@ -63,10 +63,6 @@ export class MulLangApi {
       },
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
     return response.json();
   }
 
@@ -90,10 +86,6 @@ export class MulLangApi {
       },
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
     return response.json();
   }
 
@@ -116,10 +108,6 @@ export class MulLangApi {
       body: JSON.stringify(mulLang),
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
     return response.json();
   }
 
@@ -141,10 +129,6 @@ export class MulLangApi {
       },
       body: JSON.stringify(mulLang),
     });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
 
     return response.json();
   }
@@ -169,10 +153,6 @@ export class MulLangApi {
       },
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
     return response.json();
   }
 
@@ -191,10 +171,6 @@ export class MulLangApi {
         "Content-Type": "application/json",
       },
     });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
 
     return response.json();
   }

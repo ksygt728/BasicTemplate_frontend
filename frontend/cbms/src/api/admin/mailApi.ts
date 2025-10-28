@@ -64,9 +64,6 @@ export class MailApi {
       },
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
 
     return response.json();
   }
@@ -89,9 +86,6 @@ export class MailApi {
       },
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
 
     return response.json();
   }
@@ -128,9 +122,6 @@ export class MailApi {
       },
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
 
     return response.json();
   }
@@ -153,9 +144,6 @@ export class MailApi {
       body: JSON.stringify(mailMReqDto),
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
 
     return response.json();
   }
@@ -178,9 +166,6 @@ export class MailApi {
       body: JSON.stringify(mailM),
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
 
     return response.json();
   }
@@ -203,9 +188,6 @@ export class MailApi {
       },
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
 
     return response.json();
   }
@@ -229,9 +211,6 @@ export class MailApi {
       body: JSON.stringify({ recipients }),
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
 
     return response.json();
   }

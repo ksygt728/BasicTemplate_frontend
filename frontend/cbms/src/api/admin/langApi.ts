@@ -66,9 +66,6 @@ export class LangApi {
       },
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
 
     return response.json();
   }
@@ -93,9 +90,6 @@ export class LangApi {
       },
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
 
     return response.json();
   }
@@ -118,9 +112,6 @@ export class LangApi {
       body: JSON.stringify(mulLang),
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
 
     return response.json();
   }
@@ -144,9 +135,6 @@ export class LangApi {
       body: JSON.stringify(mulLang),
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
 
     return response.json();
   }
@@ -171,9 +159,6 @@ export class LangApi {
       },
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
 
     return response.json();
   }
@@ -194,9 +179,6 @@ export class LangApi {
       },
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
 
     return response.json();
   }
@@ -216,9 +198,6 @@ export class LangApi {
       },
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
 
     return response.json();
   }
@@ -243,9 +222,6 @@ export class LangApi {
       body: formData,
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
 
     return response.json();
   }

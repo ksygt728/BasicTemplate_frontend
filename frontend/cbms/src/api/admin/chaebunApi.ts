@@ -64,10 +64,6 @@ export class ChaebunApi {
       },
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
     return response.json();
   }
 
@@ -88,10 +84,6 @@ export class ChaebunApi {
         "Content-Type": "application/json",
       },
     });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
 
     return response.json();
   }
@@ -115,10 +107,6 @@ export class ChaebunApi {
       body: JSON.stringify(chaebunReqDto),
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
     return response.json();
   }
 
@@ -141,10 +129,6 @@ export class ChaebunApi {
       body: JSON.stringify(chaebunReqDto),
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
     return response.json();
   }
 
@@ -165,10 +149,6 @@ export class ChaebunApi {
         "Content-Type": "application/json",
       },
     });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
 
     return response.json();
   }
@@ -191,10 +171,6 @@ export class ChaebunApi {
         "Content-Type": "application/json",
       },
     });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
 
     return response.json();
   }

@@ -65,10 +65,6 @@ export class LogApi {
       },
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
     return response.json();
   }
 
@@ -89,10 +85,6 @@ export class LogApi {
         "Content-Type": "application/json",
       },
     });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
 
     return response.json();
   }
@@ -134,10 +126,6 @@ export class LogApi {
       },
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
     return response.json();
   }
 
@@ -158,10 +146,6 @@ export class LogApi {
         "Content-Type": "application/json",
       },
     });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
 
     return response.json();
   }

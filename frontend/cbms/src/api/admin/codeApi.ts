@@ -64,10 +64,6 @@ export class CodeApi {
       },
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
     return response.json();
   }
 
@@ -88,10 +84,6 @@ export class CodeApi {
         "Content-Type": "application/json",
       },
     });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
 
     return response.json();
   }
@@ -116,10 +108,6 @@ export class CodeApi {
       body: JSON.stringify(comCodeM),
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
     return response.json();
   }
 
@@ -143,10 +131,6 @@ export class CodeApi {
       body: JSON.stringify(comCodeM),
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
     return response.json();
   }
 
@@ -167,10 +151,6 @@ export class CodeApi {
         "Content-Type": "application/json",
       },
     });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
 
     return response.json();
   }
@@ -199,10 +179,6 @@ export class CodeApi {
       },
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
     return response.json();
   }
 
@@ -225,10 +201,6 @@ export class CodeApi {
       body: JSON.stringify(comCodeT),
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
     return response.json();
   }
 
@@ -250,10 +222,6 @@ export class CodeApi {
       },
       body: JSON.stringify(comCodeT),
     });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
 
     return response.json();
   }
@@ -278,10 +246,6 @@ export class CodeApi {
       },
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
     return response.json();
   }
 
@@ -304,10 +268,6 @@ export class CodeApi {
       body: JSON.stringify(comCodeD),
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
     return response.json();
   }
 
@@ -329,10 +289,6 @@ export class CodeApi {
       },
       body: JSON.stringify(comCodeD),
     });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
 
     return response.json();
   }
@@ -358,10 +314,6 @@ export class CodeApi {
         "Content-Type": "application/json",
       },
     });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
 
     return response.json();
   }
