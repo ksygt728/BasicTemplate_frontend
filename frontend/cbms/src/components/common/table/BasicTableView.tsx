@@ -51,6 +51,7 @@ import React, {
 import FilterDropdown from "./FilterDropdown";
 import TablePagination from "./TablePagination";
 import TableToolbar from "./TableToolbar";
+import { useAlert } from "@/contexts/AlertContext";
 
 // Props 인터페이스 정의
 interface TableColumn {
@@ -95,6 +96,9 @@ export default function BasicTableView({
   onUpdate,
   onDelete,
 }: BasicTableViewProps) {
+  // Alert 훅
+  const { showAlert } = useAlert();
+
   // Refs for detecting clicks outside
   const filterMenuRef = useRef<HTMLDivElement>(null);
   const moreActionsRef = useRef<HTMLDivElement>(null);
@@ -423,7 +427,7 @@ export default function BasicTableView({
   };
 
   // Excel 내보내기 기능
-  const handleExportExcel = () => {
+  const handleExportExcel = async () => {
     try {
       // CSV 형태로 데이터 변환
       const headers = columns.map((col) => col.label).join(",");
@@ -461,8 +465,12 @@ export default function BasicTableView({
       link.click();
       document.body.removeChild(link);
     } catch (error) {
-      console.error("Excel 내보내기 오류:", error);
-      alert("Excel 내보내기 중 오류가 발생했습니다.");
+      await showAlert({
+        type: "error",
+        title: "Excel 내보내기 오류",
+        message: "Excel 내보내기 중 오류가 발생했습니다.",
+        data: error,
+      });
     }
   };
 
@@ -609,27 +617,26 @@ export default function BasicTableView({
     // 필수 값 검증
     const missingFields = validateRequiredFields(dataToSave);
     if (missingFields.length > 0) {
-      alert(
-        `필수 값이 작성되지 않았습니다.\n누락된 필드: ${missingFields.join(
-          ", "
-        )}`
-      );
+      await showAlert({
+        type: "warning",
+        title: "필수 값 누락",
+        message:
+          "필수 값이 작성되지 않았습니다.\n누락된 필드: " +
+          missingFields.join(", "),
+      });
       return;
     }
 
     try {
       if (currentRow && currentRow.isNew) {
         // 새 행 저장 로직 (INSERT)
-        console.log("새 행 저장:", currentRow);
-
         // API 호출
         if (onInsert) {
           const finalRowData = { ...currentRow };
           delete finalRowData.isNew; // isNew 속성 제거
           delete finalRowData.id; // 임시 ID 제거 (서버에서 생성)
 
-          const result = await onInsert(finalRowData);
-          console.log("Insert API 결과:", result);
+          await onInsert(finalRowData);
         }
 
         // 기존 콜백도 유지
@@ -643,12 +650,9 @@ export default function BasicTableView({
         setNewRows((prev) => prev.filter((row) => row.id !== rowIdToSave));
       } else {
         // 기존 행 수정 로직 (UPDATE)
-        console.log("기존 행 수정:", editData);
-
         // API 호출
         if (onUpdate && rowIdToSave) {
-          const result = await onUpdate(rowIdToSave, editData);
-          console.log("Update API 결과:", result);
+          await onUpdate(rowIdToSave, editData);
         }
 
         // 기존 콜백도 유지
@@ -663,8 +667,12 @@ export default function BasicTableView({
         setEditData({});
       }
     } catch (error) {
-      console.error("저장 중 오류 발생:", error);
-      alert("저장 중 오류가 발생했습니다.");
+      await showAlert({
+        type: "error",
+        title: "저장 오류",
+        message: "저장 중 오류가 발생했습니다.",
+        data: error,
+      });
     }
   };
 
@@ -698,7 +706,15 @@ export default function BasicTableView({
 
   // 삭제 시작 (휴지통 버튼 클릭)
   const handleStartDelete = (rowId: string | number) => {
-    setDeletingRow(rowId);
+    showAlert({
+      message: "삭제하시겠습니까?",
+      type: "info",
+      title: "삭제 확인",
+      showCancel: true,
+      onOk: () => {
+        handleConfirmDelete(rowId);
+      },
+    });
   };
 
   // 삭제 확인 (check 버튼 클릭)
@@ -721,15 +737,18 @@ export default function BasicTableView({
       } else {
         // 기존 행인 경우 API 호출
         if (onDelete) {
-          const result = await onDelete(rowId);
-          console.log("Delete API 결과:", result);
+          await onDelete(rowId);
         }
       }
 
       setDeletingRow(null);
     } catch (error) {
-      console.error("삭제 중 오류 발생:", error);
-      alert("삭제 중 오류가 발생했습니다.");
+      await showAlert({
+        type: "error",
+        title: "삭제 오류",
+        message: "삭제 중 오류가 발생했습니다.",
+        data: error,
+      });
     }
   };
 

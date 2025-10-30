@@ -6,6 +6,7 @@ import TripleSplitFrame from "@/components/layout/frame/TripleSplitFrame";
 import { useCodeApi } from "@/hooks/useCodeApi";
 import { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
+import { useAlert } from "@/contexts/AlertContext";
 
 /**
  * @파일명 : page.tsx
@@ -16,6 +17,12 @@ import Image from "next/image";
  *       2025.10.18 김승연 최초 생성 및 JavaDoc 주석 추가
  */
 export default function Home() {
+  /**
+   * @기능 Alert 훅 사용
+   * @설명 전역 알림창 관리를 위한 훅
+   */
+  const { showAlert } = useAlert();
+
   /**
    * @기능 코드 관리 API 훅 사용
    * @설명 그룹코드, 속성코드, 상세코드 CRUD 작업을 위한 API 함수들과 상태 관리
@@ -543,14 +550,23 @@ export default function Home() {
       });
     }
 
-    // 값이 있는 속성이 없으면 기본 처리
+    // 값이 있는 속성이 없으면 빈값으로 처리
     if (validAttributes.length === 0) {
-      const defaultAttrCd =
-        rightTopTableData.length > 0 ? rightTopTableData[0].attrCd : "DEFAULT";
-      validAttributes.push({
-        attrCd: defaultAttrCd,
-        dtlNm: rowData.dtlCd,
-      });
+      // 모든 속성에 대해 빈값으로 처리
+      if (rightTopTableData.length > 0) {
+        rightTopTableData.forEach((attr) => {
+          validAttributes.push({
+            attrCd: attr.attrCd,
+            dtlNm: "", // 빈값으로 처리
+          });
+        });
+      } else {
+        // 속성이 없으면 기본 속성으로 빈값 처리
+        validAttributes.push({
+          attrCd: "DEFAULT",
+          dtlNm: "",
+        });
+      }
     }
 
     // 각 속성에 대해 개별 API 호출
@@ -590,7 +606,12 @@ export default function Home() {
   const handleUpdateDetailCode = async (id: string | number, rowData: any) => {
     // 그룹코드 선택 여부 확인
     if (!selectedGroupCd) {
-      alert("그룹 코드가 선택되지 않았습니다.");
+      await showAlert({
+        type: "warning",
+        title: "그룹 선택 필요",
+        message:
+          "그룹 코드가 선택되지 않았습니다. 먼저 좌측에서 그룹을 선택해주세요.",
+      });
       return;
     }
 
@@ -608,14 +629,23 @@ export default function Home() {
       });
     }
 
-    // 값이 있는 속성이 없으면 기본 처리
+    // 값이 있는 속성이 없으면 빈값으로 처리
     if (validAttributes.length === 0) {
-      const defaultAttrCd =
-        rightTopTableData.length > 0 ? rightTopTableData[0].attrCd : "DEFAULT";
-      validAttributes.push({
-        attrCd: defaultAttrCd,
-        dtlNm: rowData.dtlCd,
-      });
+      // 모든 속성에 대해 빈값으로 처리
+      if (rightTopTableData.length > 0) {
+        rightTopTableData.forEach((attr) => {
+          validAttributes.push({
+            attrCd: attr.attrCd,
+            dtlNm: "", // 빈값으로 처리
+          });
+        });
+      } else {
+        // 속성이 없으면 기본 속성으로 빈값 처리
+        validAttributes.push({
+          attrCd: "DEFAULT",
+          dtlNm: "",
+        });
+      }
     }
 
     // 각 속성에 대해 개별 API 호출

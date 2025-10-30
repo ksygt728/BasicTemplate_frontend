@@ -9,6 +9,7 @@ import { ComCodeTReqDto } from "@/types/requestDto/ComCodeTReqDto";
 import { CodeSearchFormResDto } from "@/types/responseDto/specialDto/CodeSearchFormResDto";
 import { Pageable } from "@/types/requestDto/specialDto/Pageable";
 import { ResponseApi } from "@/types/commonDto/ResponseApi";
+import { useAlert } from "@/contexts/AlertContext";
 
 /**
  * @파일명 : useCodeApi.ts
@@ -108,6 +109,7 @@ export const useCodeApi = () => {
   const [error, setError] = useState<string | null>(null);
 
   const codeApi = CodeApi.getInstance();
+  const { showAlert } = useAlert();
 
   /**
    * @기능 공통 API 호출 처리 함수
@@ -127,15 +129,40 @@ export const useCodeApi = () => {
 
       const result = await apiCall();
 
+      // ResponseApi 타입의 응답인지 확인하고 success 필드 체크
+      if (result && typeof result === "object" && "success" in result) {
+        const apiResponse = result as any;
+
+        if (!apiResponse.success) {
+          // Alert를 비동기로 표시하되 기다리지 않음
+          showAlert({
+            type: "error",
+            title: "[API] Error Code : " + apiResponse.errorCode,
+            message: apiResponse.message,
+          });
+
+          return null;
+        }
+      }
+
       if (successCallback) {
         successCallback(result);
       }
 
       return result;
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "알 수 없는 오류가 발생했습니다."
-      );
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : "[Front End Error] 알 수 없는 오류가 발생했습니다.";
+
+      // 네트워크 오류나 예외 발생 시 Alert 표시 (비동기, 기다리지 않음)
+      showAlert({
+        type: "error",
+        title: "네트워크 오류",
+        message: errorMessage,
+      });
+
       return null;
     } finally {
       setLoading(false);
@@ -166,8 +193,6 @@ export const useCodeApi = () => {
             } else {
               setCodeData(dataMap);
             }
-          } else {
-            setError(response.message || "데이터 조회에 실패했습니다.");
           }
         }
       );
@@ -188,8 +213,6 @@ export const useCodeApi = () => {
         (response) => {
           if (response.success && response.data) {
             setGroupCodeData(response.data);
-          } else {
-            setError(response.message || "그룹 코드 조회에 실패했습니다.");
           }
         }
       );
@@ -210,8 +233,6 @@ export const useCodeApi = () => {
         (response) => {
           if (response.success) {
             console.log("그룹 코드 추가 성공:", response.data);
-          } else {
-            setError(response.message || "그룹 코드 추가에 실패했습니다.");
           }
         }
       );
@@ -232,8 +253,6 @@ export const useCodeApi = () => {
         (response) => {
           if (response.success) {
             console.log("그룹 코드 수정 성공:", response.data);
-          } else {
-            setError(response.message || "그룹 코드 수정에 실패했습니다.");
           }
         }
       );
@@ -254,44 +273,12 @@ export const useCodeApi = () => {
         (response) => {
           if (response.success) {
             console.log("그룹 코드 삭제 성공:", response.data);
-          } else {
-            setError(response.message || "그룹 코드 삭제에 실패했습니다.");
           }
         }
       );
     },
     [codeApi]
   );
-
-  // /**
-  //  * @기능 상세 코드 리스트 조회 함수
-  //  * @param {CodeSearchFormReqDto} codeSearchForm - 검색 조건 DTO
-  //  * @param {Pageable} [pageable] - 페이징 정보 (기본값: page=0, size=20, sort="searchCdId", direction="ASC")
-  //  * @returns {Promise} 상세 코드 리스트 조회 결과
-  //  */
-  // const fetchDetailCodeList = useCallback(
-  //   async (
-  //     codeSearchForm: CodeSearchFormReqDto,
-  //     pageable: Pageable = {
-  //       page: 0,
-  //       size: 20,
-  //       sort: "grpCd",
-  //       direction: "ASC",
-  //     }
-  //   ) => {
-  //     return handleApiCall(
-  //       () => codeApi.codeFormD(codeSearchForm, pageable),
-  //       (response) => {
-  //         if (response.success && response.data) {
-  //           setDetailCodeData(response.data);
-  //         } else {
-  //           setError(response.message || "상세 코드 조회에 실패했습니다.");
-  //         }
-  //       }
-  //     );
-  //   },
-  //   [codeApi]
-  // );
 
   /**
    * @기능 속성 코드 추가 함수
@@ -306,8 +293,6 @@ export const useCodeApi = () => {
         (response) => {
           if (response.success) {
             console.log("속성 코드 추가 성공:", response.data);
-          } else {
-            setError(response.message || "속성 코드 추가에 실패했습니다.");
           }
         }
       );
@@ -328,8 +313,6 @@ export const useCodeApi = () => {
         (response) => {
           if (response.success) {
             console.log("속성 코드 수정 성공:", response.data);
-          } else {
-            setError(response.message || "속성 코드 수정에 실패했습니다.");
           }
         }
       );
@@ -351,8 +334,6 @@ export const useCodeApi = () => {
         (response) => {
           if (response.success) {
             console.log("속성 코드 삭제 성공:", response.data);
-          } else {
-            setError(response.message || "속성 코드 삭제에 실패했습니다.");
           }
         }
       );
@@ -372,8 +353,6 @@ export const useCodeApi = () => {
         (response) => {
           if (response.success) {
             console.log("상세 코드 추가 성공:", response.data);
-          } else {
-            setError(response.message || "상세 코드 추가에 실패했습니다.");
           }
         }
       );
@@ -393,8 +372,6 @@ export const useCodeApi = () => {
         (response) => {
           if (response.success) {
             console.log("상세 코드 수정 성공:", response.data);
-          } else {
-            setError(response.message || "상세 코드 수정에 실패했습니다.");
           }
         }
       );
@@ -417,8 +394,6 @@ export const useCodeApi = () => {
         (response) => {
           if (response.success) {
             console.log("상세 코드 삭제 성공:", response.data);
-          } else {
-            setError(response.message || "상세 코드 삭제에 실패했습니다.");
           }
         }
       );
