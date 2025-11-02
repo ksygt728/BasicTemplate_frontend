@@ -1,6 +1,9 @@
 "use client";
 
 import BasicTableView from "@/components/common/table/BasicTableView";
+import SearchForm, {
+  SearchOption,
+} from "@/components/common/searchForm/SearchForm";
 import BasicFrame from "@/components/layout/frame/BasicFrame";
 import TripleSplitFrame from "@/components/layout/frame/TripleSplitFrame";
 import { useCodeApi } from "@/hooks/useCodeApi";
@@ -31,6 +34,7 @@ export default function Home() {
     codeData, // 전체 코드 데이터
     loading, // 로딩 상태
     error, // 에러 상태
+    fetchCodeData, // 검색 API 함수
     refetch, // 데이터 새로고침 함수
     insertGroupCode, // 그룹코드 추가
     updateGroupCode, // 그룹코드 수정
@@ -50,12 +54,110 @@ export default function Home() {
   const [selectedGroupCd, setSelectedGroupCd] = useState<string | null>(null);
 
   /**
+   * @상태 검색 조건
+   * @설명 SearchForm에서 입력받은 검색 조건들
+   */
+  const [searchParams, setSearchParams] = useState<Record<string, any>>({});
+
+  /**
+   * @상태 SearchForm 데이터
+   * @설명 SearchForm의 상태를 외부에서 관리하여 리렌더링 문제 해결
+   */
+  const [searchFormData, setSearchFormData] = useState<Record<string, any>>({});
+
+  /**
+   * @설정 검색 폼 옵션들
+   * @설명 SearchForm 컴포넌트에서 사용할 검색 조건 옵션 정의
+   */
+  const searchOptions: SearchOption[] = useMemo(
+    () => [
+      {
+        label: "그룹코드타입",
+        value: "grpCdType",
+        type: "text",
+        placeholder: "그룹코드타입을 입력하세요",
+      },
+      {
+        label: "그룹코드",
+        value: "grpCd",
+        type: "text",
+        placeholder: "그룹코드를 입력하세요",
+      },
+      {
+        label: "그룹명",
+        value: "grpNm",
+        type: "text",
+        placeholder: "그룹명을 입력하세요",
+      },
+    ],
+    []
+  );
+
+  /**
    * @기능 컴포넌트 초기화
    * @설명 컴포넌트 마운트 시 전체 코드 데이터를 로딩
    */
   useEffect(() => {
     refetch();
   }, [refetch]);
+
+  /**
+   * @기능 검색 처리 함수
+   * @설명 SearchForm에서 전달받은 검색 조건으로 데이터를 조회
+   * @param {Record<string, any>} searchData - 검색 조건 데이터
+   */
+  const handleSearch = async (searchData: Record<string, any>) => {
+    console.log("검색 조건:", searchData);
+
+    // 검색 조건 상태 저장
+    setSearchParams(searchData);
+
+    // 실제 검색 API 호출
+    try {
+      // SearchForm 데이터를 CodeSearchFormReqDto로 변환
+      const searchForm: any = {};
+
+      // 그룹코드타입
+      if (searchData.grpCdType && searchData.grpCdType.trim() !== "") {
+        searchForm.grpCdType = searchData.grpCdType;
+      }
+
+      // 그룹코드
+      if (searchData.grpCd && searchData.grpCd.trim() !== "") {
+        searchForm.grpCd = searchData.grpCd;
+      }
+
+      // 그룹명
+      if (searchData.grpNm && searchData.grpNm.trim() !== "") {
+        searchForm.grpNm = searchData.grpNm;
+      }
+
+      // 사용여부
+      if (searchData.useYn && searchData.useYn.trim() !== "") {
+        searchForm.useYn = searchData.useYn;
+      }
+
+      // 날짜 범위 처리
+      if (searchData.regDate_start && searchData.regDate_end) {
+        searchForm.startDate = searchData.regDate_start;
+        searchForm.endDate = searchData.regDate_end;
+      }
+
+      console.log("변환된 검색 조건:", searchForm);
+
+      // 실제 API 호출
+      await fetchCodeData(searchForm, 0, 2000);
+
+      // 검색 완료 알림 제거 - 불필요한 알림
+    } catch (error) {
+      console.error("검색 중 오류 발생:", error);
+      showAlert({
+        type: "error",
+        title: "검색 실패",
+        message: "검색 중 오류가 발생했습니다.",
+      });
+    }
+  };
 
   /**
    * @기능 좌측 테이블 데이터 변환
@@ -79,6 +181,7 @@ export default function Home() {
       }
     });
 
+    // API 검색 결과를 그대로 사용 (클라이언트 측 필터링 제거)
     return Array.from(groupMap.values());
   }, [codeData]);
 
@@ -224,7 +327,7 @@ export default function Home() {
       sortable: true,
       editable: true, // 편집 가능
       type: "text",
-      required: false, // 선택적 필드
+      required: true, // 선택적 필드
     },
     {
       key: "orderNum",
@@ -775,19 +878,33 @@ export default function Home() {
    *   - 우측 하단: 상세코드 관리 테이블 (선택된 그룹의 상세코드들 + 동적 속성 컬럼들)
    * @데이터흐름 좌측 그룹 선택 → 우측 두 테이블 필터링
    */
-  // 좌측 패널: 그룹코드 관리 테이블 컴포넌트
+  // 좌측 패널: 검색폼 + 그룹코드 관리 테이블 컴포넌트
   const leftPanelContent = (
-    <BasicTableView
-      columns={leftTableColumns}
-      data={leftTableData}
-      title="코드 그룹 관리"
-      subTitle="그룹코드"
-      description="시스템에서 사용하는 공통 코드 그룹 목록입니다."
-      onRowClick={handleLeftTableRowClick}
-      onInsert={handleInsertGroupCode}
-      onUpdate={handleUpdateGroupCode}
-      onDelete={handleDeleteGroupCode}
-    />
+    <div className="space-y-4">
+      {/* 검색 폼 */}
+      <SearchForm
+        key="code-search-form"
+        searchOptions={searchOptions}
+        onSearch={handleSearch}
+        loading={loading}
+        className="mb-4"
+        searchData={searchFormData}
+        onSearchDataChange={setSearchFormData}
+      />
+
+      {/* 그룹코드 관리 테이블 */}
+      <BasicTableView
+        columns={leftTableColumns}
+        data={leftTableData}
+        title="코드 그룹 관리"
+        subTitle="그룹코드"
+        description="시스템에서 사용하는 공통 코드 그룹 목록입니다."
+        onRowClick={handleLeftTableRowClick}
+        onInsert={handleInsertGroupCode}
+        onUpdate={handleUpdateGroupCode}
+        onDelete={handleDeleteGroupCode}
+      />
+    </div>
   );
 
   // 우측 상단 패널: 속성코드 관리 테이블 컴포넌트
