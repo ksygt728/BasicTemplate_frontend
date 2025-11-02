@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useNavBarMenu } from "@/hooks/common/menuHook";
 import type { MenuResDto } from "@/types/responseDto/MenuResDto";
 import MainLogo from "@/components/common/logo/MainLogo";
+import Breadcrumb from "@/components/common/breadcrumb/Breadcrumb";
 
 export default function NavBar() {
   // Hook을 사용하여 메뉴 데이터 가져오기
@@ -162,6 +163,11 @@ export default function NavBar() {
                       placeholder="Search"
                     />
                   </div>
+                </div>
+
+                {/* Breadcrumb navigation */}
+                <div className="hidden md:block ml-6">
+                  <Breadcrumb />
                 </div>
               </div>
 
