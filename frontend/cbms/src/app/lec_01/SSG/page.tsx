@@ -10,15 +10,40 @@ interface User {
 
 // SSG: 빌드 타임에 데이터를 가져옴
 async function getUsers(): Promise<User[]> {
-  const res = await fetch("http://localhost:8080/admin/user/search", {
-    cache: "force-cache", // SSG를 위해 캐시 활성화
-  });
+  try {
+    const res = await fetch("http://localhost:8080/admin/user/search", {
+      cache: "force-cache", // SSG를 위해 캐시 활성화
+    });
 
-  if (!res.ok) {
-    throw new Error("Failed to fetch data");
+    if (!res.ok) {
+      throw new Error("Failed to fetch data");
+    }
+    const data = await res.json();
+    return data.data.data.content;
+  } catch (error) {
+    console.warn("Failed to fetch users data:", error);
+    // 빌드 시점에 API 서버가 없을 경우를 대비한 fallback 데이터
+    return [
+      {
+        userId: "demo-1",
+        name: "Demo User 1",
+        phoneNum: "010-1234-5678",
+        email: "demo1@example.com",
+        role: "USER",
+        userType: "LOCAL",
+        gender: "MALE",
+      },
+      {
+        userId: "demo-2",
+        name: "Demo User 2",
+        phoneNum: "010-9876-5432",
+        email: "demo2@example.com",
+        role: "ADMIN",
+        userType: "SOCIAL",
+        gender: "FEMALE",
+      },
+    ];
   }
-  const data = await res.json();
-  return data.data.data.content;
 }
 
 export default async function SSGPage() {
