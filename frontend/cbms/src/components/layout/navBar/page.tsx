@@ -1,100 +1,133 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import Image from "next/image";
-import MenuButton from "@/components/common/button/page";
+import Link from "next/link";
+import { useNavBarMenu } from "@/hooks/common/menuHook";
+import type { MenuResDto } from "@/types/responseDto/MenuResDto";
+import MainLogo from "@/components/common/logo/MainLogo";
+import Breadcrumb from "@/components/common/breadcrumb/Breadcrumb";
 
 export default function NavBar() {
+  // Hook을 사용하여 메뉴 데이터 가져오기
+  const { menuData, loading, error } = useNavBarMenu();
+
   const [isOpen, setIsOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const [activeSubMenus, setActiveSubMenus] = useState<{
+    [key: string]: string;
+  }>({});
 
-  const menuItems = [
-    {
-      name: "News",
-      items: [
-        "Breaking News",
-        "Tech News",
-        "Industry Updates",
-        "Latest Trends",
-      ],
-    },
-    {
-      name: "Articles",
-      items: ["Tutorials", "Best Practices", "Case Studies", "Reviews"],
-    },
-    {
-      name: "Videos",
-      items: ["Coding Tutorials", "Tech Talks", "Webinars", "Live Streams"],
-    },
-    {
-      name: "Tricks",
-      items: ["Code Snippets", "Quick Tips", "Shortcuts", "Hacks"],
-    },
-    {
-      name: "PHP",
-      items: ["PHP 8", "Frameworks", "Libraries", "Tools"],
-    },
-    {
-      name: "Laravel",
-      items: ["Laravel 11", "Packages", "Eloquent", "Blade"],
-    },
-    {
-      name: "Vue",
-      items: ["Vue 3", "Composition API", "Components", "Plugins"],
-    },
-    {
-      name: "React",
-      items: ["React 18", "Hooks", "Components", "State Management"],
-    },
-    {
-      name: "Tailwindcss",
-      items: ["Utilities", "Components", "Plugins", "Customization"],
-    },
-    {
-      name: "Meraki UI",
-      items: ["Components", "Templates", "Examples", "Documentation"],
-    },
-    {
-      name: "CPP",
-      items: ["C++20", "STL", "Algorithms", "Best Practices"],
-    },
-    {
-      name: "JavaScript",
-      items: ["ES2024", "Frameworks", "Libraries", "Tools"],
-    },
-    {
-      name: "Ruby",
-      items: ["Ruby 3", "Rails", "Gems", "Testing"],
-    },
-    {
-      name: "Mysql",
-      items: ["Queries", "Optimization", "Schema", "Administration"],
-    },
-    {
-      name: "Pest",
-      items: ["Testing", "Assertions", "Mocking", "Coverage"],
-    },
-    {
-      name: "PHPUnit",
-      items: ["Unit Tests", "Integration", "Mocking", "Coverage"],
-    },
-    {
-      name: "Netlify",
-      items: ["Deployment", "Functions", "Forms", "Analytics"],
-    },
-    {
-      name: "VS Code",
-      items: ["Extensions", "Settings", "Shortcuts", "Debugging"],
-    },
-    {
-      name: "PHPStorm",
-      items: ["Features", "Plugins", "Debugging", "Refactoring"],
-    },
-    {
-      name: "Sublime",
-      items: ["Packages", "Themes", "Shortcuts", "Customization"],
-    },
-  ];
+  // 메뉴 아이템을 재귀적으로 렌더링하는 함수
+  const renderMenuItem = (
+    menu: MenuResDto,
+    level: number = 1
+  ): React.ReactElement => {
+    const hasChildren = menu.childMenus && menu.childMenus.length > 0;
+    const sortedChildren = hasChildren ? menu.childMenus : [];
+
+    return (
+      <div
+        key={menu.menuCd}
+        className={`${
+          level === 1
+            ? "relative inline-block group mt-3"
+            : "relative group/sub"
+        }`}
+        onMouseEnter={() => {
+          if (level === 1) {
+            setActiveDropdown(menu.menuCd);
+          } else {
+            setActiveSubMenus((prev) => ({
+              ...prev,
+              [`level${level}`]: menu.menuCd,
+            }));
+          }
+        }}
+        onMouseLeave={() => {
+          if (level === 1) {
+            setActiveDropdown(null);
+          }
+          // level > 1인 경우 onMouseLeave를 제거하여 서브메뉴 간 이동시 메뉴가 유지되도록 함
+        }}
+      >
+        <Link
+          href={menu.menuUrl || "#"}
+          className={`${
+            level === 1
+              ? "mx-4 text-sm leading-5 text-gray-700 transition-colors duration-300 transform dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 hover:underline md:my-0 cursor-pointer"
+              : "flex items-center justify-between px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200"
+          }`}
+          onClick={(e) => {
+            // URL이 없거나 #인 경우 기본 동작 방지
+            if (!menu.menuUrl || menu.menuUrl === "#") {
+              e.preventDefault();
+            }
+          }}
+        >
+          {menu.menuNm}
+          {hasChildren && level > 1 && (
+            <svg
+              className="w-4 h-4 ml-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 5l7 7-7 7"
+              />
+            </svg>
+          )}
+        </Link>
+
+        {/* 서브메뉴 렌더링 */}
+        {hasChildren && (
+          <>
+            {level === 1 && activeDropdown === menu.menuCd && (
+              <div
+                className="absolute top-full left-0 w-48 bg-white dark:bg-gray-800 rounded-md shadow-xl border border-gray-200 dark:border-gray-700"
+                style={{ zIndex: 9999, display: "block" }}
+                onMouseEnter={() => setActiveDropdown(menu.menuCd)}
+                onMouseLeave={() => {
+                  setActiveSubMenus({}); // 최상위 드롭다운을 벗어날 때 모든 서브메뉴도 닫기
+                }}
+              >
+                <div className="py-2">
+                  {sortedChildren.map((child: MenuResDto) =>
+                    renderMenuItem(child, level + 1)
+                  )}
+                </div>
+              </div>
+            )}
+            {level > 1 && activeSubMenus[`level${level}`] === menu.menuCd && (
+              <div
+                className="absolute top-0 w-48 bg-white dark:bg-gray-800 rounded-md shadow-xl border border-gray-200 dark:border-gray-700"
+                style={{
+                  zIndex: 10000 + level,
+                  left: "calc(100%)",
+                }}
+                onMouseEnter={() =>
+                  setActiveSubMenus((prev) => ({
+                    ...prev,
+                    [`level${level}`]: menu.menuCd,
+                  }))
+                }
+              >
+                <div className="py-2">
+                  {sortedChildren.map((child: MenuResDto) =>
+                    renderMenuItem(child, level + 1)
+                  )}
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    );
+  };
 
   return (
     <>
@@ -103,15 +136,7 @@ export default function NavBar() {
           <div className="flex flex-col md:flex-row md:justify-between md:items-center">
             <div className="flex items-center justify-between">
               <div className="flex items-center">
-                <a href="#">
-                  <Image
-                    className="w-auto h-6 sm:h-7"
-                    src="https://merakiui.com/images/full-logo.svg"
-                    alt="Logo"
-                    width={200}
-                    height={32}
-                  />
-                </a>
+                <MainLogo />
 
                 {/* Search input on desktop screen */}
                 <div className="hidden mx-10 md:block">
@@ -138,6 +163,11 @@ export default function NavBar() {
                       placeholder="Search"
                     />
                   </div>
+                </div>
+
+                {/* Breadcrumb navigation */}
+                <div className="hidden md:block ml-6">
+                  <Breadcrumb />
                 </div>
               </div>
 
@@ -193,30 +223,30 @@ export default function NavBar() {
               }`}
             >
               <div className="flex flex-col md:flex-row md:mx-1">
-                <a
+                <Link
                   className="my-2 text-sm leading-5 text-gray-700 transition-colors duration-300 transform dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 hover:underline md:mx-4 md:my-0"
                   href="#"
                 >
-                  Home
-                </a>
-                <a
+                  예비버튼1
+                </Link>
+                <Link
                   className="my-2 text-sm leading-5 text-gray-700 transition-colors duration-300 transform dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 hover:underline md:mx-4 md:my-0"
                   href="#"
                 >
-                  Blog
-                </a>
-                <a
+                  예비버튼2
+                </Link>
+                <Link
                   className="my-2 text-sm leading-5 text-gray-700 transition-colors duration-300 transform dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 hover:underline md:mx-4 md:my-0"
                   href="#"
                 >
-                  Components
-                </a>
-                <a
+                  캐시삭제
+                </Link>
+                <Link
                   className="my-2 text-sm leading-5 text-gray-700 transition-colors duration-300 transform dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 hover:underline md:mx-4 md:my-0"
-                  href="#"
+                  href="/signIn"
                 >
-                  Courses
-                </a>
+                  Sign In
+                </Link>
               </div>
 
               {/* Search input on mobile screen */}
@@ -248,48 +278,17 @@ export default function NavBar() {
             </div>
           </div>
 
-          <div className="py-3 mt-1 -mx-5 whitespace-nowrap relative overflow-visible">
-            {menuItems.map((menuItem) => (
-              <div
-                key={menuItem.name}
-                className="relative inline-block group"
-                onMouseEnter={() => {
-                  // console.log("Mouse enter:", menuItem.name);
-                  setActiveDropdown(menuItem.name);
-                }}
-                onMouseLeave={() => {
-                  // console.log("Mouse leave:", menuItem.name);
-                  setActiveDropdown(null);
-                }}
-              >
-                <a
-                  className="mx-4 text-sm leading-5 text-gray-700 transition-colors duration-300 transform dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 hover:underline md:my-0 cursor-pointer"
-                  href="#"
-                >
-                  {menuItem.name}
-                </a>
-
-                {/* Dropdown Menu */}
-                {activeDropdown === menuItem.name && (
-                  <div
-                    className="absolute top-full left-0  w-48 bg-white dark:bg-gray-800 rounded-md shadow-xl border border-gray-200 dark:border-gray-700"
-                    style={{ zIndex: 9999, display: "block" }}
-                  >
-                    <div className="py-2">
-                      {menuItem.items.map((subItem, subIndex) => (
-                        <a
-                          key={subIndex}
-                          href="#"
-                          className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200"
-                        >
-                          {subItem}
-                        </a>
-                      ))}
-                    </div>
-                  </div>
-                )}
+          {/* Desktop Menu List*/}
+          <div className="py-1 mt-1 -mx-5 whitespace-nowrap relative overflow-visible">
+            {loading ? (
+              <div className="text-gray-500">loading...</div>
+            ) : error ? (
+              <div className="text-red-500">
+                메뉴 로딩 중 오류가 발생했습니다: {error}
               </div>
-            ))}
+            ) : (
+              menuData.map((menu) => renderMenuItem(menu))
+            )}
           </div>
         </div>
       </nav>

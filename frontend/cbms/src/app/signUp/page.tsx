@@ -1,4 +1,6 @@
+import MainLogo from "@/components/common/logo/MainLogo";
 import Image from "next/image";
+import Link from "next/link";
 
 export default function Home() {
   return (
@@ -6,11 +8,7 @@ export default function Home() {
       <div className="container flex items-center justify-center min-h-screen px-6 mx-auto">
         <form className="w-full max-w-md">
           <div className="flex justify-center mx-auto">
-            <img
-              className="w-auto h-7 sm:h-8"
-              src="https://merakiui.com/images/logo.svg"
-              alt=""
-            />
+            <MainLogo />
           </div>
 
           <div className="flex items-center justify-center mt-6">
