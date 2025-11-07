@@ -81,6 +81,9 @@ interface BasicTableViewProps {
   onInsert?: (rowData: any) => Promise<any>; // Add Record 버튼 클릭시 호출
   onUpdate?: (id: string | number, rowData: any) => Promise<any>; // Edit 후 Check 버튼 클릭시 호출
   onDelete?: (id: string | number) => Promise<any>; // 휴지통 버튼 후 Check 버튼 클릭시 호출
+  // Bulk 작업 함수들
+  onBulkCopy?: (selectedRows: any[]) => Promise<any>; // Bulk Copy 버튼 클릭시 호출
+  onBulkDelete?: (selectedRows: any[]) => Promise<any>; // Bulk Delete 버튼 클릭시 호출
 }
 
 export default function BasicTableView({
@@ -95,6 +98,8 @@ export default function BasicTableView({
   onInsert,
   onUpdate,
   onDelete,
+  onBulkCopy,
+  onBulkDelete,
 }: BasicTableViewProps) {
   // Alert 훅
   const { showAlert } = useAlert();
@@ -102,10 +107,14 @@ export default function BasicTableView({
   // Refs for detecting clicks outside
   const filterMenuRef = useRef<HTMLDivElement>(null);
   const moreActionsRef = useRef<HTMLDivElement>(null);
+  const isShiftClickingRef = useRef<boolean>(false); // Shift 클릭 상태 추적
 
   // State 관리
   const [selectedRows, setSelectedRows] = useState<number[]>([]);
   const [selectAll, setSelectAll] = useState(false);
+  const [lastSelectedRowIndex, setLastSelectedRowIndex] = useState<
+    number | null
+  >(null);
   const [itemsPerPage, setItemsPerPage] = useState(50);
   const [currentPage, setCurrentPage] = useState(1);
   const [editingRow, setEditingRow] = useState<string | number | null>(null);
@@ -239,6 +248,19 @@ export default function BasicTableView({
       default:
         return "bg-gray-100 text-gray-800 border-gray-200";
     }
+  };
+
+  // 편집 중인 행인지 확인하는 함수
+  const isRowEditing = (row: any) => {
+    // 기존 행이 편집 중인 경우
+    if (editingRow === row.id) {
+      return true;
+    }
+    // 새 행이면서 newRows에 존재하는 경우 (편집 가능한 상태)
+    if (row.isNew && newRows.find((newRow) => newRow.id === row.id)) {
+      return true;
+    }
+    return false;
   };
 
   // 셀 렌더링 함수
@@ -424,6 +446,11 @@ export default function BasicTableView({
     // 새 행을 편집 모드로 설정 (신규 행은 newRows에서 관리하므로 editData는 빈 객체로)
     setEditingRow(newRow.id);
     setEditData({});
+
+    // 새 행을 선택에서 제외 (편집 중인 행은 선택할 수 없음)
+    if (selectedRows.includes(newRow.id)) {
+      setSelectedRows((prev) => prev.filter((id) => id !== newRow.id));
+    }
   };
 
   // Excel 내보내기 기능
@@ -533,46 +560,103 @@ export default function BasicTableView({
     if (currentData.length === 0) {
       setSelectAll(false);
     } else {
-      const currentPageIds = currentData.map((row) => row.id);
-      const selectedCurrentPageIds = selectedRows.filter((id) =>
-        currentPageIds.includes(id)
+      // 편집 중이지 않은 행들만 고려
+      const selectableRows = currentData.filter((row) => !isRowEditing(row));
+      const selectableRowIds = selectableRows.map((row) => row.id);
+      const selectedSelectableIds = selectedRows.filter((id) =>
+        selectableRowIds.includes(id)
       );
 
-      if (selectedCurrentPageIds.length === currentData.length) {
+      if (
+        selectableRows.length > 0 &&
+        selectedSelectableIds.length === selectableRows.length
+      ) {
         setSelectAll(true);
       } else {
         setSelectAll(false);
       }
     }
-  }, [selectedRows, currentData]);
+  }, [selectedRows, currentData, editingRow, newRows]);
+
+  // 페이지나 데이터 변경 시 범위 선택 상태 초기화
+  useEffect(() => {
+    setLastSelectedRowIndex(null);
+  }, [currentPage, propData]);
 
   // 전체 선택/해제
   const handleSelectAll = () => {
     if (selectAll) {
       setSelectedRows([]);
     } else {
-      setSelectedRows(currentData.map((row) => row.id));
+      // 편집 중인 행들을 제외하고 선택 가능한 행들만 선택
+      const selectableRows = currentData.filter((row) => !isRowEditing(row));
+      setSelectedRows(selectableRows.map((row) => row.id));
     }
     setSelectAll(!selectAll);
+    // 전체 선택/해제 시 범위 선택 상태 초기화
+    setLastSelectedRowIndex(null);
   };
 
-  // 개별 행 선택/해제
-  const handleRowSelect = (id: number) => {
+  // 개별 행 선택/해제 (범위 선택 기능 포함)
+  const handleRowSelect = (
+    id: number,
+    event?: React.ChangeEvent<HTMLInputElement> | React.MouseEvent
+  ) => {
+    const currentRowIndex = currentData.findIndex((row) => row.id === id);
+
+    // Shift 키가 눌린 상태에서 클릭한 경우 범위 선택
+    const hasShiftKey = event && "shiftKey" in event ? event.shiftKey : false;
+
+    if (hasShiftKey && lastSelectedRowIndex !== null) {
+      // 범위 선택 로직
+      if (currentRowIndex !== -1) {
+        const startIndex = Math.min(lastSelectedRowIndex, currentRowIndex);
+        const endIndex = Math.max(lastSelectedRowIndex, currentRowIndex);
+
+        // 범위 내의 선택 가능한 행들만 필터링
+        const rangeRows = currentData
+          .slice(startIndex, endIndex + 1)
+          .filter((row) => !isRowEditing(row))
+          .map((row) => row.id);
+
+        // 기존 선택 상태 유지하면서 범위 내 행들 추가
+        const newSelectedRows = [...new Set([...selectedRows, ...rangeRows])];
+        setSelectedRows(newSelectedRows);
+
+        // 마지막 선택 인덱스는 현재 클릭한 행으로 업데이트
+        setLastSelectedRowIndex(currentRowIndex);
+        return;
+      }
+    }
+
+    // 일반 클릭: 토글 (기존 선택 유지하면서 해당 행만 추가/제거)
     let newSelectedRows: number[];
 
     if (selectedRows.includes(id)) {
+      // 이미 선택된 행이면 제거
       newSelectedRows = selectedRows.filter((rowId) => rowId !== id);
     } else {
+      // 선택되지 않은 행이면 추가
       newSelectedRows = [...selectedRows, id];
     }
 
     setSelectedRows(newSelectedRows);
+
+    // 마지막 선택 행 인덱스 업데이트 (편집 중이지 않은 행만)
+    if (!isRowEditing(currentData.find((row) => row.id === id))) {
+      setLastSelectedRowIndex(currentRowIndex);
+    }
   };
 
   // 편집 시작
   const handleEdit = (row: any) => {
     setEditingRow(row.id);
     setEditData({ ...row });
+
+    // 편집 중인 행을 선택에서 제외
+    if (selectedRows.includes(row.id)) {
+      setSelectedRows((prev) => prev.filter((id) => id !== row.id));
+    }
   };
 
   // 필수 값 검증 함수
@@ -676,6 +760,147 @@ export default function BasicTableView({
     }
   };
 
+  // Save All 핸들러 - 모든 편집 중인 행들을 일괄 저장
+  const handleSaveAll = async () => {
+    try {
+      // 저장할 행들 찾기 (새 행들과 현재 편집 중인 기존 행)
+      const rowsToSave = [];
+
+      // 새 행들 (isNew가 true인 행들)
+      newRows.forEach((row) => {
+        rowsToSave.push({ row, type: "new" });
+      });
+
+      // 현재 편집 중인 기존 행
+      if (editingRow && !newRows.find((row) => row.id === editingRow)) {
+        // 편집 중인 행이 새 행이 아닌 경우
+        const editingRowData = tableData.find((row) => row.id === editingRow);
+        if (editingRowData) {
+          rowsToSave.push({
+            row: { ...editingRowData, ...editData },
+            type: "edit",
+          });
+        }
+      }
+
+      if (rowsToSave.length === 0) {
+        await showAlert({
+          type: "warning",
+          title: "저장할 항목 없음",
+          message: "저장할 편집 중인 행이 없습니다.",
+        });
+        return;
+      }
+
+      // 1단계: 모든 행에 대해 필수 값 검증 먼저 수행
+      let validationErrors = [];
+
+      for (const { row, type } of rowsToSave) {
+        const missingFields = validateRequiredFields(row);
+        if (missingFields.length > 0) {
+          validationErrors.push({
+            row,
+            reason: `필수 값 누락: ${missingFields.join(", ")}`,
+          });
+        }
+      }
+
+      // 검증 실패가 하나라도 있으면 전체 저장 중단
+      if (validationErrors.length > 0) {
+        // 중복된 필드명 제거
+        const uniqueMissingFields = [
+          ...new Set(
+            validationErrors
+              .map((item) => item.reason.replace("필수 값 누락: ", ""))
+              .join(", ")
+              .split(", ")
+          ),
+        ];
+
+        await showAlert({
+          type: "warning",
+          title: "필수 값 누락",
+          message:
+            "필수 값이 작성되지 않았습니다.\n누락된 필드: " +
+            uniqueMissingFields.join(", "),
+        });
+        return;
+      }
+
+      // 2단계: 모든 검증이 통과했을 때만 실제 저장 진행
+      let successCount = 0;
+      let failedRows = [];
+
+      for (const { row, type } of rowsToSave) {
+        try {
+          if (type === "new") {
+            // 새 행 저장 로직 (INSERT)
+            if (onInsert) {
+              const finalRowData = { ...row };
+              delete finalRowData.isNew;
+              delete finalRowData.id;
+
+              await onInsert(finalRowData);
+              successCount++;
+            } else if (onSaveNewRow) {
+              const finalRowData = { ...row };
+              delete finalRowData.isNew;
+              onSaveNewRow(finalRowData);
+              successCount++;
+            }
+          } else if (type === "edit") {
+            // 기존 행 수정 로직 (UPDATE)
+            if (onUpdate) {
+              await onUpdate(row.id, row);
+              successCount++;
+            } else if (onUpdateRow) {
+              onUpdateRow(row);
+              successCount++;
+            }
+          }
+        } catch (error) {
+          failedRows.push({
+            row,
+            reason: "저장 중 오류 발생",
+          });
+        }
+      }
+
+      // 성공한 새 행들을 배열에서 제거
+      if (successCount > 0) {
+        setNewRows([]);
+        setEditingRow(null);
+        setEditData({});
+      }
+
+      // 결과 메시지 표시
+      if (failedRows.length === 0) {
+        await showAlert({
+          type: "success",
+          title: "일괄 저장 완료",
+          message: `총 ${successCount}개 행이 성공적으로 저장되었습니다.`,
+        });
+      } else {
+        await showAlert({
+          type: "warning",
+          title: "일괄 저장 부분 완료",
+          message: `${successCount}개 행 저장 성공, ${
+            failedRows.length
+          }개 행 저장 실패\n\n실패 사유:\n${failedRows
+            .map((item, index) => `${index + 1}. ${item.reason}`)
+            .join("\n")}`,
+        });
+      }
+    } catch (error) {
+      await showAlert({
+        type: "error",
+        title: "일괄 저장 오류",
+        message: "일괄 저장 중 오류가 발생했습니다.",
+        data: error,
+      });
+    }
+  };
+
   // 편집 취소
   const handleCancel = () => {
     const currentRow = newRows.find((row) => row.id === editingRow);
@@ -747,6 +972,153 @@ export default function BasicTableView({
         type: "error",
         title: "삭제 오류",
         message: "삭제 중 오류가 발생했습니다.",
+        data: error,
+      });
+    }
+  };
+
+  // Bulk Copy 핸들러
+  const handleBulkCopy = async () => {
+    if (selectedRows.length === 0) {
+      await showAlert({
+        type: "warning",
+        title: "선택 필요",
+        message: "선택된 행이 없습니다.",
+      });
+      return;
+    }
+
+    try {
+      // 선택된 행들의 데이터 가져오기 (ID로 필터링하되, 편집 중인 행은 제외)
+      const selectedData = tableData.filter(
+        (row: any) => selectedRows.includes(row.id) && !isRowEditing(row)
+      );
+
+      // 편집 중인 행이 선택에 포함되어 있다면 알림 표시
+      const editingSelectedRows = tableData.filter(
+        (row: any) => selectedRows.includes(row.id) && isRowEditing(row)
+      );
+
+      if (editingSelectedRows.length > 0) {
+        await showAlert({
+          type: "info",
+          title: "알림",
+          message: `편집 중인 ${editingSelectedRows.length}개 행은 복사에서 제외됩니다.`,
+        });
+      }
+
+      if (selectedData.length === 0) {
+        await showAlert({
+          type: "warning",
+          title: "복사 불가",
+          message:
+            "복사 가능한 행이 없습니다. (편집 중인 행은 복사할 수 없습니다)",
+        });
+        return;
+      }
+
+      if (onBulkCopy) {
+        await onBulkCopy(selectedData);
+
+        // 사용자 정의 onBulkCopy 함수가 있는 경우에도 기본 복사 로직 실행
+        const copiedRows = selectedData.map((row: any) => {
+          const copiedRow = { ...row };
+          // ID를 새로 생성하여 중복 방지
+          copiedRow.id = `copy_${Date.now()}_${Math.random()
+            .toString(36)
+            .substr(2, 9)}`;
+          copiedRow.isNew = true;
+          return copiedRow;
+        });
+
+        setNewRows((prev) => [...prev, ...copiedRows]);
+      } else {
+        // onBulkCopy가 정의되지 않은 경우 기본 복사 로직
+        const copiedRows = selectedData.map((row: any) => {
+          const copiedRow = { ...row };
+          // ID를 새로 생성하여 중복 방지
+          copiedRow.id = `copy_${Date.now()}_${Math.random()
+            .toString(36)
+            .substr(2, 9)}`;
+          copiedRow.isNew = true;
+          return copiedRow;
+        });
+
+        setNewRows((prev) => [...prev, ...copiedRows]);
+      }
+
+      // 선택 상태 유지 (선택 해제 제거)
+      // setIsMoreActionsOpen(false); // 드롭다운 유지를 위해 제거
+    } catch (error) {
+      await showAlert({
+        type: "error",
+        title: "복사 오류",
+        message: "복사 중 오류가 발생했습니다.",
+        data: error,
+      });
+    }
+  };
+
+  // Bulk Delete 핸들러
+  const handleBulkDelete = async () => {
+    if (selectedRows.length === 0) {
+      await showAlert({
+        type: "warning",
+        title: "선택 필요",
+        message: "선택된 행이 없습니다.",
+      });
+      return;
+    }
+
+    try {
+      await showAlert({
+        message: `선택된 ${selectedRows.length}개 행을 삭제하시겠습니까?`,
+        type: "info",
+        title: "일괄 삭제 확인",
+        showCancel: true,
+        onOk: async () => {
+          try {
+            // 선택된 행들의 데이터 가져오기 (ID로 필터링)
+            const selectedData = tableData.filter((row: any) =>
+              selectedRows.includes(row.id)
+            );
+
+            if (onBulkDelete) {
+              await onBulkDelete(selectedData);
+            } else {
+              // onBulkDelete가 정의되지 않은 경우 개별 삭제 호출
+              for (const row of selectedData) {
+                if (onDelete) {
+                  await onDelete(row.id);
+                }
+              }
+            }
+
+            await showAlert({
+              type: "success",
+              title: "삭제 완료",
+              message: `${selectedRows.length}개 행이 삭제되었습니다.`,
+            });
+
+            // 선택 해제
+            setSelectedRows([]);
+            setSelectAll(false);
+            setIsMoreActionsOpen(false);
+          } catch (error) {
+            await showAlert({
+              type: "error",
+              title: "삭제 오류",
+              message: "일괄 삭제 중 오류가 발생했습니다.",
+              data: error,
+            });
+          }
+        },
+      });
+    } catch (error) {
+      await showAlert({
+        type: "error",
+        title: "삭제 오류",
+        message: "일괄 삭제 중 오류가 발생했습니다.",
         data: error,
       });
     }
@@ -1123,7 +1495,7 @@ export default function BasicTableView({
           {isMoreActionsOpen && (
             <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-200 dark:bg-gray-800 dark:border-gray-700 z-50">
               <div className="py-1">
-                <button className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700 cursor-pointer">
+                {/* <button className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700 cursor-pointer">
                   <svg
                     className="w-4 h-4 mr-3"
                     fill="none"
@@ -1138,8 +1510,30 @@ export default function BasicTableView({
                     />
                   </svg>
                   Bulk Export
+                </button> */}
+                <button
+                  className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700 cursor-pointer"
+                  onClick={handleBulkCopy}
+                >
+                  <svg
+                    className="w-4 h-4 mr-3"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                    />
+                  </svg>
+                  Bulk Copy
                 </button>
-                <button className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700 cursor-pointer">
+                <button
+                  className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700 cursor-pointer"
+                  onClick={handleBulkDelete}
+                >
                   <svg
                     className="w-4 h-4 mr-3"
                     fill="none"
@@ -1155,7 +1549,13 @@ export default function BasicTableView({
                   </svg>
                   Bulk Delete
                 </button>
-                <button className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700 cursor-pointer">
+                <button
+                  className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700 cursor-pointer"
+                  onClick={() => {
+                    handleSaveAll();
+                    setIsMoreActionsOpen(false);
+                  }}
+                >
                   <svg
                     className="w-4 h-4 mr-3"
                     fill="none"
@@ -1166,11 +1566,12 @@ export default function BasicTableView({
                       strokeLinecap="round"
                       strokeLinejoin="round"
                       strokeWidth={2}
-                      d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                      d="M5 13l4 4L19 7"
                     />
                   </svg>
-                  Bulk Edit
+                  All Save
                 </button>
+
                 <div className="border-t border-gray-100 dark:border-gray-600 my-1"></div>
                 <button
                   className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700 cursor-pointer"
@@ -1460,22 +1861,60 @@ export default function BasicTableView({
                 <tr
                   key={`${row.id}-${index}`}
                   className={`hover:bg-gray-50 dark:hover:bg-gray-800 ${
-                    index % 2 === 0
+                    isRowEditing(row)
+                      ? "bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-400"
+                      : index % 2 === 0
                       ? "bg-white dark:bg-gray-900"
                       : "bg-gray-50 dark:bg-gray-800/50"
                   } ${onRowClick ? "cursor-pointer" : ""}`}
-                  onClick={() => onRowClick?.(row)}
+                  onClick={(e) => {
+                    // Shift+클릭이면 범위 선택
+                    if (e.shiftKey && !isRowEditing(row)) {
+                      e.preventDefault();
+                      handleRowSelect(row.id, e);
+                    } else {
+                      // 일반 클릭이면 기존 onRowClick 실행
+                      onRowClick?.(row);
+                    }
+                  }}
                 >
                   {/* 체크박스 컬럼 */}
                   <td
-                    className="sticky left-0 z-10 px-4 py-1 whitespace-nowrap bg-inherit border-r border-gray-200 dark:border-gray-700"
+                    className={`sticky left-0 z-10 px-4 py-1 whitespace-nowrap bg-inherit border-r border-gray-200 dark:border-gray-700 ${
+                      isRowEditing(row) ? "bg-blue-50 dark:bg-blue-900/20" : ""
+                    }`}
                     style={{ width: columnWidths.checkbox || 60 }}
                   >
                     <input
                       type="checkbox"
                       checked={selectedRows.includes(row.id)}
-                      onChange={() => handleRowSelect(row.id)}
-                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      onChange={(e) => {
+                        // Shift 클릭 중이면 onChange 무시
+                        if (isShiftClickingRef.current) {
+                          isShiftClickingRef.current = false; // 플래그 리셋
+                          return;
+                        }
+                        handleRowSelect(row.id, e);
+                      }}
+                      onMouseDown={(e) => {
+                        // Shift+클릭 시에는 플래그 설정하고 범위 선택 실행
+                        if (e.shiftKey) {
+                          isShiftClickingRef.current = true;
+                          e.preventDefault();
+                          handleRowSelect(row.id, e);
+                        }
+                      }}
+                      disabled={isRowEditing(row)}
+                      className={`rounded border-gray-300 text-blue-600 focus:ring-blue-500 ${
+                        isRowEditing(row)
+                          ? "opacity-50 cursor-not-allowed bg-gray-100 dark:bg-gray-700"
+                          : ""
+                      }`}
+                      title={
+                        isRowEditing(row)
+                          ? "편집 중인 행은 선택할 수 없습니다"
+                          : ""
+                      }
                     />
                   </td>
 
@@ -1485,9 +1924,11 @@ export default function BasicTableView({
                       key={column.key}
                       className={`px-4 py-1 whitespace-nowrap border-r border-gray-200 dark:border-gray-700 ${
                         column.className
-                      } ${
-                        column.sticky ? column.sticky + " z-10" : ""
-                      } bg-inherit`}
+                      } ${column.sticky ? column.sticky + " z-10" : ""} ${
+                        isRowEditing(row)
+                          ? "bg-blue-50 dark:bg-blue-900/20"
+                          : "bg-inherit"
+                      }`}
                       style={{ width: columnWidths[column.key] || 120 }}
                     >
                       {renderCell(

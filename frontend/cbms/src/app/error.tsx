@@ -56,7 +56,7 @@ export default function Error({ error, reset }: ErrorProps) {
             </button>
 
             <button
-              onClick={() => router.push("/")}
+              onClick={() => router.push("/main")}
               className="inline-flex items-center justify-center px-6 py-3 border border-slate-600 text-gray-300 bg-slate-700 hover:bg-slate-600 text-sm font-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 focus:ring-offset-slate-800 transition-colors duration-200"
             >
               <svg
