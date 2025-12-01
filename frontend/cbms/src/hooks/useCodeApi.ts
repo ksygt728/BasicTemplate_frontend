@@ -1,13 +1,11 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { CodeApi } from "@/api/admin/codeApi";
 import { CodeSearchFormReqDto } from "@/types/requestDto/specialDto/CodeSearchFormReqDto";
 import { ComCodeMReqDto } from "@/types/requestDto/ComCodeMReqDto";
 import { ComCodeDReqDto } from "@/types/requestDto/ComCodeDReqDto";
 import { ComCodeTReqDto } from "@/types/requestDto/ComCodeTReqDto";
 import { CodeSearchFormResDto } from "@/types/responseDto/specialDto/CodeSearchFormResDto";
-import { Pageable } from "@/types/requestDto/specialDto/Pageable";
-import { ResponseApi } from "@/types/commonDto/ResponseApi";
-import { useAlert } from "@/contexts/AlertContext";
+import { useCommonApi } from "@/hooks/common/useCommonApi";
 
 /**
  * @파일명 : useCodeApi.ts
@@ -103,69 +101,9 @@ export const useCodeApi = () => {
   const [detailCodeData, setDetailCodeData] = useState<CodeSearchFormResDto[]>(
     []
   );
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
 
   const codeApi = CodeApi.getInstance();
-  const { showAlert } = useAlert();
-
-  /**
-   * @기능 공통 API 호출 처리 함수
-   * @설명 로딩 상태 관리, 에러 처리, 성공 콜백 실행을 담당
-   * @template T - API 응답 타입
-   * @param {Function} apiCall - 실행할 API 호출 함수
-   * @param {Function} [successCallback] - 성공 시 실행할 콜백 함수
-   * @returns {Promise<T | null>} API 호출 결과 또는 null
-   */
-  const handleApiCall = async <T>(
-    apiCall: () => Promise<T>,
-    successCallback?: (data: T) => void
-  ): Promise<T | null> => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const result = await apiCall();
-
-      // ResponseApi 타입의 응답인지 확인하고 success 필드 체크
-      if (result && typeof result === "object" && "success" in result) {
-        const apiResponse = result as any;
-
-        if (!apiResponse.success) {
-          // Alert를 비동기로 표시하되 기다리지 않음
-          showAlert({
-            type: "error",
-            title: "[API] Error Code : " + apiResponse.errorCode,
-            message: apiResponse.message,
-          });
-
-          return null;
-        }
-      }
-
-      if (successCallback) {
-        successCallback(result);
-      }
-
-      return result;
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error
-          ? err.message
-          : "[Front End Error] 알 수 없는 오류가 발생했습니다.";
-
-      // 네트워크 오류나 예외 발생 시 Alert 표시 (비동기, 기다리지 않음)
-      showAlert({
-        type: "error",
-        title: "네트워크 오류",
-        message: errorMessage,
-      });
-
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { loading, error, handleApiCall } = useCommonApi();
 
   /**
    * @기능 공통코드 검색 함수
@@ -226,14 +164,7 @@ export const useCodeApi = () => {
    */
   const insertGroupCode = useCallback(
     async (comCodeM: ComCodeMReqDto) => {
-      return handleApiCall(
-        () => codeApi.insertGroupCodeForAdmin(comCodeM),
-        (response) => {
-          if (response.success) {
-            console.log("그룹 코드 추가 성공:", response.data);
-          }
-        }
-      );
+      return handleApiCall(() => codeApi.insertGroupCodeForAdmin(comCodeM));
     },
     [codeApi]
   );
@@ -246,14 +177,7 @@ export const useCodeApi = () => {
    */
   const updateGroupCode = useCallback(
     async (comCodeM: ComCodeMReqDto) => {
-      return handleApiCall(
-        () => codeApi.updateGroupCodeForAdmin(comCodeM),
-        (response) => {
-          if (response.success) {
-            console.log("그룹 코드 수정 성공:", response.data);
-          }
-        }
-      );
+      return handleApiCall(() => codeApi.updateGroupCodeForAdmin(comCodeM));
     },
     [codeApi]
   );
@@ -266,14 +190,7 @@ export const useCodeApi = () => {
    */
   const deleteGroupCode = useCallback(
     async (grpCd: string) => {
-      return handleApiCall(
-        () => codeApi.deleteGroupCodeForAdmin(grpCd),
-        (response) => {
-          if (response.success) {
-            console.log("그룹 코드 삭제 성공:", response.data);
-          }
-        }
-      );
+      return handleApiCall(() => codeApi.deleteGroupCodeForAdmin(grpCd));
     },
     [codeApi]
   );
@@ -286,14 +203,7 @@ export const useCodeApi = () => {
    */
   const insertAttrCode = useCallback(
     async (comCodeT: ComCodeTReqDto) => {
-      return handleApiCall(
-        () => codeApi.insertAttrCodeForAdmin(comCodeT),
-        (response) => {
-          if (response.success) {
-            console.log("속성 코드 추가 성공:", response.data);
-          }
-        }
-      );
+      return handleApiCall(() => codeApi.insertAttrCodeForAdmin(comCodeT));
     },
     [codeApi]
   );
@@ -306,14 +216,7 @@ export const useCodeApi = () => {
    */
   const updateAttrCode = useCallback(
     async (comCodeT: ComCodeTReqDto) => {
-      return handleApiCall(
-        () => codeApi.updateAttrCodeForAdmin(comCodeT),
-        (response) => {
-          if (response.success) {
-            console.log("속성 코드 수정 성공:", response.data);
-          }
-        }
-      );
+      return handleApiCall(() => codeApi.updateAttrCodeForAdmin(comCodeT));
     },
     [codeApi]
   );
@@ -327,14 +230,7 @@ export const useCodeApi = () => {
    */
   const deleteAttrCode = useCallback(
     async (grpCd: string, attrCd: string) => {
-      return handleApiCall(
-        () => codeApi.deleteAttrCodeForAdmin(grpCd, attrCd),
-        (response) => {
-          if (response.success) {
-            console.log("속성 코드 삭제 성공:", response.data);
-          }
-        }
-      );
+      return handleApiCall(() => codeApi.deleteAttrCodeForAdmin(grpCd, attrCd));
     },
     [codeApi]
   );
@@ -346,14 +242,7 @@ export const useCodeApi = () => {
    */
   const insertDetailCode = useCallback(
     async (comCodeD: ComCodeDReqDto) => {
-      return handleApiCall(
-        () => codeApi.insertDetailCodeForAdmin(comCodeD),
-        (response) => {
-          if (response.success) {
-            console.log("상세 코드 추가 성공:", response.data);
-          }
-        }
-      );
+      return handleApiCall(() => codeApi.insertDetailCodeForAdmin(comCodeD));
     },
     [codeApi]
   );
@@ -365,14 +254,7 @@ export const useCodeApi = () => {
    */
   const updateDetailCode = useCallback(
     async (comCodeD: ComCodeDReqDto) => {
-      return handleApiCall(
-        () => codeApi.updateDetailCodeForAdmin(comCodeD),
-        (response) => {
-          if (response.success) {
-            console.log("상세 코드 수정 성공:", response.data);
-          }
-        }
-      );
+      return handleApiCall(() => codeApi.updateDetailCodeForAdmin(comCodeD));
     },
     [codeApi]
   );
@@ -387,13 +269,8 @@ export const useCodeApi = () => {
    */
   const deleteDetailCode = useCallback(
     async (grpCd: string, attrCd: string, dtlCd: string) => {
-      return handleApiCall(
-        () => codeApi.deleteDetailCodeForAdmin(grpCd, attrCd, dtlCd),
-        (response) => {
-          if (response.success) {
-            console.log("상세 코드 삭제 성공:", response.data);
-          }
-        }
+      return handleApiCall(() =>
+        codeApi.deleteDetailCodeForAdmin(grpCd, attrCd, dtlCd)
       );
     },
     [codeApi]
