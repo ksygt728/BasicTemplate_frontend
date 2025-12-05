@@ -1,13 +1,17 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useNavBarMenu } from "@/hooks/common/menuHook";
 import type { MenuResDto } from "@/types/responseDto/MenuResDto";
 import MainLogo from "@/components/common/logo/MainLogo";
 import Breadcrumb from "@/components/common/breadcrumb/Breadcrumb";
-import { useAppSelector } from "@/store/hooks";
+import { useAppSelector, useAppDispatch } from "@/store/hooks";
+import { logout } from "@/store/slices/authSlice";
+import { useAlert } from "@/contexts/AlertContext";
+import Cookies from "js-cookie";
 
 export default function NavBar() {
   // Hook을 사용하여 메뉴 데이터 가져오기
@@ -15,6 +19,10 @@ export default function NavBar() {
 
   // Redux에서 인증 상태 가져오기
   const { user, isAuthenticated } = useAppSelector((state) => state.auth);
+  const dispatch = useAppDispatch();
+  const router = useRouter();
+  const { showAlert } = useAlert();
+  const userDropdownRef = useRef<HTMLDivElement>(null);
 
   const [isOpen, setIsOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
@@ -22,6 +30,54 @@ export default function NavBar() {
     [key: string]: string;
   }>({});
   const [clickedMenu, setClickedMenu] = useState<string | null>(null);
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+
+  // 외부 클릭 감지하여 드롭다운 닫기
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        userDropdownRef.current &&
+        !userDropdownRef.current.contains(event.target as Node)
+      ) {
+        setUserDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  // 로그아웃 핸들러
+  const handleLogout = () => {
+    Cookies.remove("accessToken");
+    Cookies.remove("refreshToken");
+    dispatch(logout());
+    setUserDropdownOpen(false);
+    router.push("/main");
+  };
+
+  // 캐시 삭제 핸들러
+  const handleClearCache = () => {
+    showAlert({
+      type: "info",
+      title: "캐시 삭제",
+      message: "캐시를 삭제하시겠습니까?",
+      showCancel: true,
+      okText: "예",
+      cancelText: "아니오",
+      onOk: () => {
+        // 토큰 쿠키 삭제
+        Cookies.remove("accessToken");
+        Cookies.remove("refreshToken");
+        // Redux 상태 초기화
+        dispatch(logout());
+        // 페이지 새로고침
+        window.location.reload();
+      },
+    });
+  };
 
   // 메뉴 아이템을 재귀적으로 렌더링하는 함수
   const renderMenuItem = (
@@ -240,7 +296,7 @@ export default function NavBar() {
                   : "opacity-0 -translate-x-full"
               }`}
             >
-              <div className="flex flex-col md:flex-row md:mx-1">
+              <div className="flex flex-col md:flex-row md:mx-1 md:items-center">
                 <Link
                   className="my-2 text-sm leading-5 text-gray-700 transition-colors duration-300 transform dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 hover:underline md:mx-4 md:my-0"
                   href="#"
@@ -253,16 +309,88 @@ export default function NavBar() {
                 >
                   예비버튼2
                 </Link>
-                <Link
-                  className="my-2 text-sm leading-5 text-gray-700 transition-colors duration-300 transform dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 hover:underline md:mx-4 md:my-0"
-                  href="#"
+                <button
+                  onClick={handleClearCache}
+                  className="my-2 text-sm leading-5 text-gray-700 transition-colors duration-300 transform dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 hover:underline md:mx-4 md:my-0 text-left"
                 >
                   캐시삭제
-                </Link>
+                </button>
                 {isAuthenticated && user ? (
-                  <span className="my-2 text-sm leading-5 text-gray-700 dark:text-gray-200 md:mx-4 md:my-0 font-semibold">
-                    {user.name}님
-                  </span>
+                  <div
+                    className="relative md:mx-4 flex items-center"
+                    ref={userDropdownRef}
+                  >
+                    <button
+                      onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+                      className="flex items-center gap-2 my-2 md:my-0 text-sm leading-5 text-gray-700 dark:text-gray-200 font-medium hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200"
+                    >
+                      <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-xs font-semibold shadow-sm hover:shadow-md transition-shadow duration-200">
+                        {user.name?.charAt(0) || "U"}
+                      </div>
+                      <span className="hidden md:inline">{user.name}님</span>
+                      <svg
+                        className={`w-3.5 h-3.5 transition-transform duration-200 ${
+                          userDropdownOpen ? "rotate-180" : ""
+                        }`}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 9l-7 7-7-7"
+                        />
+                      </svg>
+                    </button>
+
+                    {userDropdownOpen && (
+                      <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-xl border border-gray-200 dark:border-gray-700 z-50">
+                        <div className="py-2">
+                          <Link
+                            href="/mypage"
+                            className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200"
+                            onClick={() => setUserDropdownOpen(false)}
+                          >
+                            <svg
+                              className="w-5 h-5"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                              />
+                            </svg>
+                            MyPage
+                          </Link>
+                          <button
+                            onClick={handleLogout}
+                            className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200"
+                          >
+                            <svg
+                              className="w-5 h-5"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                              />
+                            </svg>
+                            로그아웃
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 ) : (
                   <Link
                     className="my-2 text-sm leading-5 text-gray-700 transition-colors duration-300 transform dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 hover:underline md:mx-4 md:my-0"
