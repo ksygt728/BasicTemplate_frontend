@@ -7,16 +7,21 @@ import { useNavBarMenu } from "@/hooks/common/menuHook";
 import type { MenuResDto } from "@/types/responseDto/MenuResDto";
 import MainLogo from "@/components/common/logo/MainLogo";
 import Breadcrumb from "@/components/common/breadcrumb/Breadcrumb";
+import { useAppSelector } from "@/store/hooks";
 
 export default function NavBar() {
   // Hook을 사용하여 메뉴 데이터 가져오기
   const { menuData, loading, error } = useNavBarMenu();
+
+  // Redux에서 인증 상태 가져오기
+  const { user, isAuthenticated } = useAppSelector((state) => state.auth);
 
   const [isOpen, setIsOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [activeSubMenus, setActiveSubMenus] = useState<{
     [key: string]: string;
   }>({});
+  const [clickedMenu, setClickedMenu] = useState<string | null>(null);
 
   // 메뉴 아이템을 재귀적으로 렌더링하는 함수
   const renderMenuItem = (
@@ -55,13 +60,26 @@ export default function NavBar() {
           href={menu.menuUrl || "#"}
           className={`${
             level === 1
-              ? "mx-4 text-sm leading-5 text-gray-700 transition-colors duration-300 transform dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 hover:underline md:my-0 cursor-pointer"
-              : "flex items-center justify-between px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200"
+              ? `mx-4 text-sm leading-5 transition-colors duration-300 transform hover:underline md:my-0 cursor-pointer ${
+                  clickedMenu === menu.menuCd
+                    ? "text-blue-600 dark:text-blue-400 font-semibold"
+                    : "text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400"
+                }`
+              : `flex items-center justify-between px-4 py-2 text-sm transition-colors duration-200 ${
+                  clickedMenu === menu.menuCd
+                    ? "bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 font-semibold"
+                    : "text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400"
+                }`
           }`}
           onClick={(e) => {
             // URL이 없거나 #인 경우 기본 동작 방지
             if (!menu.menuUrl || menu.menuUrl === "#") {
               e.preventDefault();
+            } else {
+              // 클릭된 메뉴 표시
+              setClickedMenu(menu.menuCd);
+              // 0.3초 후 클릭 효과 제거
+              setTimeout(() => setClickedMenu(null), 300);
             }
           }}
         >
@@ -241,12 +259,18 @@ export default function NavBar() {
                 >
                   캐시삭제
                 </Link>
-                <Link
-                  className="my-2 text-sm leading-5 text-gray-700 transition-colors duration-300 transform dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 hover:underline md:mx-4 md:my-0"
-                  href="/signIn"
-                >
-                  Sign In
-                </Link>
+                {isAuthenticated && user ? (
+                  <span className="my-2 text-sm leading-5 text-gray-700 dark:text-gray-200 md:mx-4 md:my-0 font-semibold">
+                    {user.name}님
+                  </span>
+                ) : (
+                  <Link
+                    className="my-2 text-sm leading-5 text-gray-700 transition-colors duration-300 transform dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 hover:underline md:mx-4 md:my-0"
+                    href="/signIn"
+                  >
+                    Sign In
+                  </Link>
+                )}
               </div>
 
               {/* Search input on mobile screen */}
