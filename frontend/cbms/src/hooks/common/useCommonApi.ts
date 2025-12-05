@@ -1,14 +1,42 @@
 import { useState } from "react";
 import { useAlert } from "@/contexts/AlertContext";
+import { authFetch } from "@/utils/authFetch";
 
 /**
  * @파일명 : useCommonApi.ts
- * @설명 : 공통 API 호출 처리를 위한 커스텀 훅
+ * @설명 : 공통 API 호출 처리를 위한 커스텀 훅 (JWT 인증 포함)
  * @작성자 : 김승연
  * @작성일 : 2025.12.01
  * @변경이력 :
  *       2025.12.01 김승연 최초 생성
+ *       2025.12.03 김승연 JWT 인증 로직 추가
+ *       2025.12.05 김승연 인증 에러 코드 Alert 제외 처리 추가
  */
+
+/**
+ * @constant SILENT_ERROR_CODES
+ * @description Alert를 표시하지 않을 에러 코드 목록
+ * @description authFetch에서 자동으로 처리하는 인증 관련 에러들은 사용자에게 Alert를 표시하지 않음
+ * @description 1001: 로그인 필요 (자동 리다이렉트)
+ * @description 1003: 접근 권한 없음 (페이지 유지)
+ * @description 1006: AccessToken 만료 (자동 갱신 후 재시도)
+ * @description 1007: RefreshToken 만료 (자동 로그아웃 처리)
+ * @description 1008: AccessToken 인증 불가 (자동 로그아웃 처리)
+ * @description 1009: RefreshToken 인증 불가 (자동 로그아웃 처리)
+ * @description 1010: 잘못된 요청 (예외적으로 Alert 표시 필요)
+ * @note 새로운 에러 코드를 추가하려면 이 배열에 에러 코드를 추가하면 됨 (확장성)
+ */
+const SILENT_ERROR_CODES = ["1001", "1006", "1007", "1008", "1009"];
+
+/**
+ * @function shouldShowAlert
+ * @description 에러 코드가 Alert를 표시해야 하는지 확인
+ * @param {string} errorCode - 확인할 에러 코드
+ * @returns {boolean} Alert를 표시해야 하면 true, 아니면 false
+ */
+const shouldShowAlert = (errorCode: string): boolean => {
+  return !SILENT_ERROR_CODES.includes(errorCode);
+};
 
 /**
  * @interface UseCommonApiReturn
@@ -80,13 +108,23 @@ export const useCommonApi = (): UseCommonApiReturn => {
 
         if (!apiResponse.success) {
           const errorMsg = apiResponse.message || "API 오류가 발생했습니다.";
+          const errorCode = apiResponse.errorCode || "Unknown";
+
           setError(errorMsg);
 
-          showAlert({
-            type: "error",
-            title: "[API] Error Code : " + (apiResponse.errorCode || "Unknown"),
-            message: errorMsg,
-          });
+          // 인증 에러 코드는 authFetch에서 자동 처리하므로 Alert 제외
+          if (shouldShowAlert(errorCode)) {
+            showAlert({
+              type: "error",
+              title: `[API] Error Code : ${errorCode}`,
+              message: errorMsg,
+            });
+          } else {
+            // 디버깅용 로그 (프론트엔드에서 처리하는 인증 에러)
+            console.log(
+              `[Auth Error ${errorCode}] ${errorMsg} - authFetch에서 자동 처리됨`
+            );
+          }
 
           return null;
         }
