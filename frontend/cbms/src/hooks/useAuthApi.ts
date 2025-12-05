@@ -3,6 +3,7 @@ import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
 import { AuthApi } from "@/api/common/authApi";
 import { AuthReqDto } from "@/types/requestDto/specialDto/AuthReqDto";
+import { UserReqDto } from "@/types/requestDto/UserReqDto";
 import { AuthResDto } from "@/types/responseDto/specialDto/AuthResDto";
 import { useCommonApi } from "@/hooks/common/useCommonApi";
 import { useAppDispatch } from "@/store/hooks";
@@ -149,9 +150,87 @@ export const useAuthApi = () => {
     [dispatch, router]
   );
 
+  /**
+   * @기능 회원가입 함수
+   * @REQ_ID REQ_CMN_003
+   * @param {UserReqDto} userReqDto - 회원가입 요청 정보
+   * @returns {Promise<{success: boolean, message?: string}>} 회원가입 결과 및 메시지
+   */
+  const handleSignUp = useCallback(
+    async (
+      userReqDto: UserReqDto
+    ): Promise<{ success: boolean; message?: string }> => {
+      try {
+        const result = await authApi.signUp(userReqDto);
+
+        if (!result.success) {
+          const errorMessage = result.message || "회원가입에 실패했습니다.";
+          return { success: false, message: errorMessage };
+        }
+
+        return {
+          success: true,
+          message: "회원가입이 완료되었습니다.",
+        };
+      } catch (err) {
+        console.error("회원가입 오류:", err);
+        const errorMessage =
+          err instanceof Error
+            ? err.message
+            : "알 수 없는 오류가 발생했습니다.";
+        return { success: false, message: errorMessage };
+      }
+    },
+    []
+  );
+
+  /**
+   * @기능 회원가입 제출 처리 (검증 + API 호출 + 리다이렉트)
+   * @param {any} formData - 폼 데이터
+   * @param {any} validations - 현재 검증 상태
+   * @param {Function} handleSignUpSubmit - Service의 검증 함수
+   * @returns {Promise<{success: boolean, validationResults?: any, message?: string}>}
+   */
+  const handleSignUpWithValidation = useCallback(
+    async (
+      formData: any,
+      validations: any,
+      handleSignUpSubmit: (formData: any, validations: any) => any
+    ): Promise<{
+      success: boolean;
+      validationResults?: any;
+      message?: string;
+    }> => {
+      // Service에서 검증 + DTO 변환
+      const submitResult = handleSignUpSubmit(formData, validations);
+
+      // 검증 실패
+      if (!submitResult.isValid) {
+        return {
+          success: false,
+          validationResults: submitResult.validationResults,
+          message: "입력 정보를 확인해주세요.",
+        };
+      }
+
+      // API 호출
+      const result = await handleSignUp(submitResult.userReqDto!);
+
+      if (result.success) {
+        // 성공 시 로그인 페이지로 리다이렉트
+        router.push("/signIn");
+      }
+
+      return result;
+    },
+    [handleSignUp, router]
+  );
+
   return {
     loading,
     error,
     handleSignIn,
+    handleSignUp,
+    handleSignUpWithValidation,
   };
 };

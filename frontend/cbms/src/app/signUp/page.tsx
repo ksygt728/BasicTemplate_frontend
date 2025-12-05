@@ -1,24 +1,90 @@
-import MainLogo from "@/components/common/logo/MainLogo";
-import Image from "next/image";
-import Link from "next/link";
+"use client";
 
-export default function Home() {
+import { useState, ChangeEvent, FormEvent } from "react";
+import MainLogo from "@/components/common/logo/MainLogo";
+import Link from "next/link";
+import { useAlert } from "@/contexts/AlertContext";
+import { useAuthService } from "@/service/AuthService";
+
+/**
+ * @파일명 : page.tsx
+ * @설명 : 회원가입 페이지
+ * @작성자 : 김승연
+ * @작성일 : 2025.12.05
+ * @변경이력 :
+ *       2025.12.05 김승연 최초 생성
+ */
+
+export default function SignUpPage() {
+  const { showAlert } = useAlert();
+  const { loading, formData, validations, handleChange, handleSubmit } =
+    useAuthService();
+
+  // 폼 제출 핸들러
+  const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    const result = await handleSubmit(e);
+
+    // 검증 실패
+    if (!result.success && result.validationResults) {
+      showAlert({
+        type: "warning",
+        title: "입력 오류",
+        message: result.message || "입력 정보를 확인해주세요.",
+      });
+      return;
+    }
+
+    // API 호출 결과 처리
+    if (result.success) {
+      showAlert({
+        type: "success",
+        title: "회원가입 성공",
+        message: result.message || "회원가입이 완료되었습니다.",
+      });
+    } else {
+      showAlert({
+        type: "error",
+        title: "회원가입 실패",
+        message: result.message || "회원가입에 실패했습니다.",
+      });
+    }
+  };
+
+  // Validation 규칙 렌더링 컴포넌트
+  const ValidationRules = ({ rules }: { rules: any[] }) => {
+    if (!rules || rules.length === 0) return null;
+
+    return (
+      <div className="mt-2 space-y-1">
+        {rules.map((rule, index) => (
+          <div key={index} className="flex items-center gap-2 text-xs">
+            <span className={rule.isValid ? "text-green-500" : "text-red-500"}>
+              {rule.isValid ? "✓" : "✗"}
+            </span>
+            <span
+              className={
+                rule.isValid
+                  ? "text-green-600 dark:text-green-400"
+                  : "text-red-600 dark:text-red-400"
+              }
+            >
+              {rule.text}
+            </span>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
   return (
     <section className="bg-white dark:bg-gray-900">
       <div className="container flex items-center justify-center min-h-screen px-6 mx-auto">
-        <form className="w-full max-w-md">
+        <form className="w-full max-w-md" onSubmit={onSubmit}>
           <div className="flex justify-center mx-auto">
             <MainLogo />
           </div>
 
           <div className="flex items-center justify-center mt-6">
-            {/* <a
-              href="#"
-              className="w-1/3 pb-4 font-medium text-center text-gray-500 capitalize border-b dark:border-gray-400 dark:text-gray-300"
-            >
-              sign in
-            </a> */}
-
             <a
               href="#"
               className="w-1/3 pb-4 font-medium text-center text-gray-800 capitalize border-b-2 border-blue-500 dark:border-blue-400 dark:text-white"
@@ -27,6 +93,7 @@ export default function Home() {
             </a>
           </div>
 
+          {/* 1. ID 입력 */}
           <div className="relative flex items-center mt-8">
             <span className="absolute">
               <svg
@@ -47,35 +114,17 @@ export default function Home() {
 
             <input
               type="text"
+              name="userId"
+              value={formData.userId}
+              onChange={handleChange}
+              required
               className="block w-full py-3 text-gray-700 bg-white border rounded-lg px-11 dark:bg-gray-900 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 dark:focus:border-blue-300 focus:ring-blue-300 focus:outline-none focus:ring focus:ring-opacity-40"
               placeholder="ID"
             />
           </div>
-          {/* 
-          <label
-            htmlFor="dropzone-file"
-            className="flex items-center px-3 py-3 mx-auto mt-6 text-center bg-white border-2 border-dashed rounded-lg cursor-pointer dark:border-gray-600 dark:bg-gray-900"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="w-6 h-6 text-gray-300 dark:text-gray-500"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"
-              />
-            </svg>
+          <ValidationRules rules={validations.userId.rules} />
 
-            <h2 className="mx-3 text-gray-400">Profile Photo</h2>
-
-            <input id="dropzone-file" type="file" className="hidden" />
-          </label> */}
-
+          {/* 2. Password 입력 */}
           <div className="relative flex items-center mt-4">
             <span className="absolute">
               <svg
@@ -96,11 +145,16 @@ export default function Home() {
 
             <input
               type="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              required
               className="block w-full px-10 py-3 text-gray-700 bg-white border rounded-lg dark:bg-gray-900 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 dark:focus:border-blue-300 focus:ring-blue-300 focus:outline-none focus:ring focus:ring-opacity-40"
               placeholder="Password"
             />
           </div>
 
+          {/* 2-1. Confirm Password 입력 */}
           <div className="relative flex items-center mt-4">
             <span className="absolute">
               <svg
@@ -121,11 +175,19 @@ export default function Home() {
 
             <input
               type="password"
+              name="confirmPassword"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              required
               className="block w-full px-10 py-3 text-gray-700 bg-white border rounded-lg dark:bg-gray-900 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 dark:focus:border-blue-300 focus:ring-blue-300 focus:outline-none focus:ring focus:ring-opacity-40"
               placeholder="Confirm Password"
             />
           </div>
+          <ValidationRules rules={validations.password.rules} />
 
+          <ValidationRules rules={validations.confirmPassword.rules} />
+
+          {/* 3. Name 입력 */}
           <div className="relative flex items-center mt-4">
             <span className="absolute">
               <svg
@@ -146,11 +208,17 @@ export default function Home() {
 
             <input
               type="text"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              required
               className="block w-full py-3 text-gray-700 bg-white border rounded-lg px-11 dark:bg-gray-900 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 dark:focus:border-blue-300 focus:ring-blue-300 focus:outline-none focus:ring focus:ring-opacity-40"
               placeholder="Name"
             />
           </div>
+          <ValidationRules rules={validations.name.rules} />
 
+          {/* 4. Phone Number 입력 */}
           <div className="relative flex items-center mt-4">
             <span className="absolute">
               <svg
@@ -167,11 +235,17 @@ export default function Home() {
             </span>
             <input
               type="tel"
+              name="phoneNumber"
+              value={formData.phoneNumber}
+              onChange={handleChange}
+              required
               className="block w-full py-3 text-gray-700 bg-white border rounded-lg px-11 dark:bg-gray-900 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 dark:focus:border-blue-300 focus:ring-blue-300 focus:outline-none focus:ring focus:ring-opacity-40"
               placeholder="Phone Number"
             />
           </div>
+          <ValidationRules rules={validations.phoneNumber.rules} />
 
+          {/* 5. Gender 선택 */}
           <div className="relative flex items-center mt-4">
             <span className="absolute">
               <svg
@@ -190,17 +264,20 @@ export default function Home() {
               </svg>
             </span>
             <select
+              name="gender"
+              value={formData.gender}
+              onChange={handleChange}
+              required
               className="block w-full py-3 text-gray-700 bg-white border rounded-lg px-11 dark:bg-gray-900 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 dark:focus:border-blue-300 focus:ring-blue-300 focus:outline-none focus:ring focus:ring-opacity-40"
-              defaultValue=""
             >
-              <option value="" disabled>
-                Select Gender
-              </option>
+              <option value="">Select Gender</option>
               <option value="male">Male</option>
               <option value="female">Female</option>
             </select>
           </div>
+          <ValidationRules rules={validations.gender.rules} />
 
+          {/* 6. Email 입력 */}
           <div className="relative flex items-center mt-4">
             <span className="absolute">
               <svg
@@ -221,23 +298,32 @@ export default function Home() {
 
             <input
               type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              required
               className="block w-full py-3 text-gray-700 bg-white border rounded-lg px-11 dark:bg-gray-900 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 dark:focus:border-blue-300 focus:ring-blue-300 focus:outline-none focus:ring focus:ring-opacity-40"
               placeholder="Email address"
             />
           </div>
+          <ValidationRules rules={validations.email.rules} />
 
+          {/* Submit Button */}
           <div className="mt-6">
-            <button className="w-full px-6 py-3 text-sm font-medium tracking-wide text-white capitalize transition-colors duration-300 transform bg-blue-500 rounded-lg hover:bg-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-50">
+            <button
+              type="submit"
+              className="w-full px-6 py-3 text-sm font-medium tracking-wide text-white capitalize transition-colors duration-300 transform bg-blue-500 rounded-lg hover:bg-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-50"
+            >
               Sign Up
             </button>
 
             <div className="mt-6 text-center ">
-              <a
-                href="#"
+              <Link
+                href="/signIn"
                 className="text-sm text-blue-500 hover:underline dark:text-blue-400"
               >
                 Already have an account?
-              </a>
+              </Link>
             </div>
           </div>
         </form>
