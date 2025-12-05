@@ -271,9 +271,9 @@ export const AlertProvider: React.FC<AlertProviderProps> = ({ children }) => {
               : "-translate-y-full opacity-0 scale-95"
           }`}
         >
-          <div className="px-4 w-screen max-w-screen-sm">
+          <div className="px-4">
             {/* Toast 스타일 Alert */}
-            <div className="flex w-fit min-w-80 max-w-full overflow-hidden bg-white rounded-lg shadow-md dark:bg-gray-800">
+            <div className="flex min-w-80 max-w-md overflow-hidden bg-white rounded-lg shadow-md dark:bg-gray-800">
               {/* 아이콘 영역 */}
               <div
                 className={`flex items-center justify-center w-12 ${
