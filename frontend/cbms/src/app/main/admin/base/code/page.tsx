@@ -3,7 +3,7 @@
 import BasicTableView from "@/components/common/table/BasicTableView";
 import SearchForm from "@/components/common/searchForm/SearchForm";
 import TripleSplitFrame from "@/components/layout/frame/TripleSplitFrame";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import {
   searchOptions,
   leftTableColumns,
@@ -64,10 +64,17 @@ export default function CodeManagementPage() {
     handleBulkDeleteDetailCode,
   } = useCodeService();
 
+  // 중복 호출 방지 플래그
+  const isFetched = useRef(false);
+
   // 초기 데이터 로드
   useEffect(() => {
+    if (isFetched.current) return;
+    isFetched.current = true;
+
     refetch();
-  }, [refetch]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // 동적 컬럼 생성 (우측 하단 테이블)
   const _rightBottomTableColumns = rightBottomTableColumns(
@@ -79,25 +86,25 @@ export default function CodeManagementPage() {
   // 로딩 & 에러 처리
   // ============================================================================
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-full">로딩 중...</div>
-    );
-  }
+  // if (loading) {
+  //   return (
+  //     <div className="flex items-center justify-center h-full">로딩 중...</div>
+  //   );
+  // }
 
-  if (error) {
-    return (
-      <div className="flex flex-col items-center justify-center h-full gap-4">
-        <div className="text-red-500">에러: {error}</div>
-        <button
-          onClick={() => refetch()}
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-        >
-          다시 시도
-        </button>
-      </div>
-    );
-  }
+  // if (error) {
+  //   return (
+  //     <div className="flex flex-col items-center justify-center h-full gap-4">
+  //       <div className="text-red-500">에러: {error}</div>
+  //       <button
+  //         onClick={() => refetch()}
+  //         className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+  //       >
+  //         다시 시도
+  //       </button>
+  //     </div>
+  //   );
+  // }
 
   // ============================================================================
   // UI 렌더링

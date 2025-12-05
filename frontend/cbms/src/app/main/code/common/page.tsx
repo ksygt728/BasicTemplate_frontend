@@ -993,33 +993,33 @@ export default function Home() {
   // 조건부 렌더링 처리
   // ============================================================================
 
-  /**
-   * @화면처리 로딩 상태 UI
-   * @설명 API 호출 중일 때 표시되는 로딩 화면
-   */
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-full">로딩 중...</div>
-    );
-  }
+  // /**
+  //  * @화면처리 로딩 상태 UI
+  //  * @설명 API 호출 중일 때 표시되는 로딩 화면
+  //  */
+  // if (loading) {
+  //   return (
+  //     <div className="flex items-center justify-center h-full">로딩 중...</div>
+  //   );
+  // }
 
-  /**
-   * @화면처리 에러 상태 UI
-   * @설명 API 호출 실패 시 표시되는 에러 화면 및 재시도 버튼
-   */
-  if (error) {
-    return (
-      <div className="flex flex-col items-center justify-center h-full gap-4">
-        <div className="text-red-500">에러: {error}</div>
-        <button
-          onClick={() => refetch()}
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-        >
-          다시 시도
-        </button>
-      </div>
-    );
-  }
+  // /**
+  //  * @화면처리 에러 상태 UI
+  //  * @설명 API 호출 실패 시 표시되는 에러 화면 및 재시도 버튼
+  //  */
+  // if (error) {
+  //   return (
+  //     <div className="flex flex-col items-center justify-center h-full gap-4">
+  //       <div className="text-red-500">에러: {error}</div>
+  //       <button
+  //         onClick={() => refetch()}
+  //         className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+  //       >
+  //         다시 시도
+  //       </button>
+  //     </div>
+  //   );
+  // }
 
   // ============================================================================
   // 메인 UI 렌더링
