@@ -1,12 +1,67 @@
-import MainLogo from "@/components/common/logo/MainLogo";
-import Image from "next/image";
-import Link from "next/link";
+"use client";
 
-export default function Home() {
+import { useState, FormEvent } from "react";
+import { useSearchParams } from "next/navigation";
+import MainLogo from "@/components/common/logo/MainLogo";
+import { useAuthApi } from "@/hooks/useAuthApi";
+import { useAlert } from "@/contexts/AlertContext";
+
+/**
+ * @파일명 : page.tsx
+ * @설명 : 로그인 페이지
+ * @작성자 : 김승연
+ * @작성일 : 2025.12.01
+ * @변경이력 :
+ *       2025.12.01 김승연 최초 생성
+ */
+export default function SignInPage() {
+  const [userId, setUserId] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const searchParams = useSearchParams();
+  const redirectUrl = searchParams.get("redirect") || "/main";
+  const { loading, handleSignIn } = useAuthApi();
+  const { showAlert } = useAlert();
+
+  /**
+   * 로그인 폼 제출 핸들러
+   * @param e - 폼 이벤트
+   */
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    // 입력값 검증
+    if (!userId || !password) {
+      showAlert({
+        type: "warning",
+        title: "입력 오류",
+        message: "아이디와 비밀번호를 입력해주세요.",
+      });
+      return;
+    }
+
+    // 로그인 처리 (redirect URL 전달)
+    const result = await handleSignIn({ userId, password }, redirectUrl);
+
+    if (result.success) {
+      showAlert({
+        type: "success",
+        title: "로그인 성공",
+        message: "환영합니다!",
+        autoClose: 1500,
+      });
+    } else {
+      showAlert({
+        type: "error",
+        title: "로그인 실패",
+        message: result.message || "아이디 또는 비밀번호를 확인해주세요.",
+      });
+    }
+  };
+
   return (
     <section className="bg-white dark:bg-gray-900">
       <div className="container flex items-center justify-center min-h-screen px-6 mx-auto">
-        <form className="w-full max-w-md">
+        <form className="w-full max-w-md" onSubmit={handleSubmit}>
           <MainLogo />
 
           <h1 className="mt-3 text-2xl font-semibold text-gray-800 capitalize sm:text-3xl dark:text-white">
@@ -33,7 +88,10 @@ export default function Home() {
 
             <input
               type="text"
-              className="block w-full py-3 text-gray-700 bg-white border rounded-lg px-11 dark:bg-gray-900 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 dark:focus:border-blue-300 focus:ring-blue-300 focus:outline-none focus:ring focus:ring-opacity-40"
+              value={userId}
+              onChange={(e) => setUserId(e.target.value)}
+              disabled={loading}
+              className="block w-full py-3 text-gray-700 bg-white border rounded-lg px-11 dark:bg-gray-900 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 dark:focus:border-blue-300 focus:ring-blue-300 focus:outline-none focus:ring focus:ring-opacity-40 disabled:opacity-50 disabled:cursor-not-allowed"
               placeholder="ID"
             />
           </div>
@@ -58,14 +116,21 @@ export default function Home() {
 
             <input
               type="password"
-              className="block w-full px-10 py-3 text-gray-700 bg-white border rounded-lg dark:bg-gray-900 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 dark:focus:border-blue-300 focus:ring-blue-300 focus:outline-none focus:ring focus:ring-opacity-40"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              disabled={loading}
+              className="block w-full px-10 py-3 text-gray-700 bg-white border rounded-lg dark:bg-gray-900 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 dark:focus:border-blue-300 focus:ring-blue-300 focus:outline-none focus:ring focus:ring-opacity-40 disabled:opacity-50 disabled:cursor-not-allowed"
               placeholder="Password"
             />
           </div>
 
           <div className="mt-6">
-            <button className="w-full px-6 py-3 text-sm font-medium tracking-wide text-white capitalize transition-colors duration-300 transform bg-blue-500 rounded-lg hover:bg-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-50">
-              Sign in
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full px-6 py-3 text-sm font-medium tracking-wide text-white capitalize transition-colors duration-300 transform bg-blue-500 rounded-lg hover:bg-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? "로그인 중..." : "Sign in"}
             </button>
             <p className="mt-4 text-center text-gray-600 dark:text-gray-400">
               or sign in with
@@ -87,7 +152,7 @@ export default function Home() {
               <span className="mx-2">Sign in with Naver</span>
             </a>
             <a
-              href="#"
+              href="https://kauth.kakao.com/oauth/authorize?response_type=code&client_id=305da1aa1489acfde40743eecdd25716&redirect_uri=http://localhost:8080/login/oauth2/code/kakao&prompt=login&state=CBMS"
               className="flex items-center justify-center px-6 py-3 mt-4 text-gray-600 transition-colors duration-300 transform border rounded-lg dark:border-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600"
             >
               {/* Kakao Icon */}

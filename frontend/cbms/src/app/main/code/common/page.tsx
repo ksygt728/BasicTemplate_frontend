@@ -532,6 +532,48 @@ export default function Home() {
   };
 
   // ============================================================================
+  // 그룹코드 Bulk 작업 함수들
+  // ============================================================================
+
+  /**
+   * @기능 그룹코드 일괄 복사 처리
+   * @설명 선택된 그룹코드들을 편집 가능한 새 행으로 복사 (저장하지 않음)
+   * @param {any[]} selectedRows - 복사할 행 데이터 배열
+   * @returns {Promise<Object>} 처리 결과
+   */
+  const handleBulkCopyGroupCode = async (selectedRows: any[]) => {
+    // BasicTableView 컴포넌트의 기본 복사 기능을 사용하여 편집 가능한 새 행 생성
+    // API 호출 없이 클라이언트에서만 복사본 생성
+    return { success: true };
+  };
+
+  /**
+   * @기능 그룹코드 일괄 삭제 처리
+   * @설명 선택된 그룹코드들을 일괄 삭제
+   * @param {any[]} selectedRows - 삭제할 행 데이터 배열
+   * @returns {Promise<Object>} API 호출 결과
+   */
+  const handleBulkDeleteGroupCode = async (selectedRows: any[]) => {
+    try {
+      for (const row of selectedRows) {
+        const result = await deleteGroupCode(row.grpCd);
+        if (!result?.success) {
+          throw new Error(`그룹코드 ${row.grpCd} 삭제 실패`);
+        }
+
+        // 삭제된 그룹이 현재 선택된 그룹이면 선택 해제
+        if (selectedGroupCd === row.grpCd) {
+          setSelectedGroupCd(null);
+        }
+      }
+      refetch(); // 성공 시 전체 데이터 새로고침
+      return { success: true };
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  // ============================================================================
   // 속성코드 CRUD API 래퍼 함수들
   // ============================================================================
 
@@ -619,6 +661,51 @@ export default function Home() {
       refetch(); // 성공 시 전체 데이터 새로고침
     }
     return result;
+  };
+
+  // ============================================================================
+  // 속성코드 Bulk 작업 함수들
+  // ============================================================================
+
+  /**
+   * @기능 속성코드 일괄 복사 처리
+   * @설명 선택된 속성코드들을 편집 가능한 새 행으로 복사 (저장하지 않음)
+   * @param {any[]} selectedRows - 복사할 행 데이터 배열
+   * @returns {Promise<Object>} 처리 결과
+   */
+  const handleBulkCopyAttributeCode = async (selectedRows: any[]) => {
+    if (!selectedGroupCd) {
+      throw new Error("그룹 코드가 선택되지 않았습니다.");
+    }
+
+    // BasicTableView 컴포넌트의 기본 복사 기능을 사용하여 편집 가능한 새 행 생성
+    // API 호출 없이 클라이언트에서만 복사본 생성
+    return { success: true };
+  };
+
+  /**
+   * @기능 속성코드 일괄 삭제 처리
+   * @설명 선택된 속성코드들을 일괄 삭제
+   * @param {any[]} selectedRows - 삭제할 행 데이터 배열
+   * @returns {Promise<Object>} API 호출 결과
+   */
+  const handleBulkDeleteAttributeCode = async (selectedRows: any[]) => {
+    if (!selectedGroupCd) {
+      throw new Error("그룹 코드가 선택되지 않았습니다.");
+    }
+
+    try {
+      for (const row of selectedRows) {
+        const result = await deleteAttrCode(selectedGroupCd, row.attrCd);
+        if (!result?.success) {
+          throw new Error(`속성코드 ${row.attrCd} 삭제 실패`);
+        }
+      }
+      refetch(); // 성공 시 전체 데이터 새로고침
+      return { success: true };
+    } catch (error) {
+      throw error;
+    }
   };
 
   // ============================================================================
@@ -835,36 +922,104 @@ export default function Home() {
   };
 
   // ============================================================================
-  // 조건부 렌더링 처리
+  // 상세코드 Bulk 작업 함수들
   // ============================================================================
 
   /**
-   * @화면처리 로딩 상태 UI
-   * @설명 API 호출 중일 때 표시되는 로딩 화면
+   * @기능 상세코드 일괄 복사 처리
+   * @설명 선택된 상세코드들을 편집 가능한 새 행으로 복사 (저장하지 않음)
+   * @param {any[]} selectedRows - 복사할 행 데이터 배열
+   * @returns {Promise<Object>} 처리 결과
    */
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-full">로딩 중...</div>
-    );
-  }
+  const handleBulkCopyDetailCode = async (selectedRows: any[]) => {
+    if (!selectedGroupCd) {
+      throw new Error("그룹 코드가 선택되지 않았습니다.");
+    }
+
+    // BasicTableView 컴포넌트의 기본 복사 기능을 사용하여 편집 가능한 새 행 생성
+    // API 호출 없이 클라이언트에서만 복사본 생성
+    return { success: true };
+  };
 
   /**
-   * @화면처리 에러 상태 UI
-   * @설명 API 호출 실패 시 표시되는 에러 화면 및 재시도 버튼
+   * @기능 상세코드 일괄 삭제 처리
+   * @설명 선택된 상세코드들을 일괄 삭제
+   * @param {any[]} selectedRows - 삭제할 행 데이터 배열
+   * @returns {Promise<Object>} API 호출 결과
    */
-  if (error) {
-    return (
-      <div className="flex flex-col items-center justify-center h-full gap-4">
-        <div className="text-red-500">에러: {error}</div>
-        <button
-          onClick={() => refetch()}
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-        >
-          다시 시도
-        </button>
-      </div>
-    );
-  }
+  const handleBulkDeleteDetailCode = async (selectedRows: any[]) => {
+    if (!selectedGroupCd) {
+      throw new Error("그룹 코드가 선택되지 않았습니다.");
+    }
+
+    try {
+      for (const row of selectedRows) {
+        // 원본 데이터에서 선택된 그룹 찾기
+        const selectedGroup = codeData?.content?.find(
+          (item: any) => item.grpCd === selectedGroupCd
+        );
+
+        if (selectedGroup?.comCodeInfo) {
+          const targetCodeInfo = selectedGroup.comCodeInfo.find(
+            (codeInfo: any) => codeInfo.dtlCd === row.dtlCd
+          );
+
+          if (targetCodeInfo?.codeAttributes?.length) {
+            // 첫 번째 속성의 attrCd 추출
+            const attrCd = targetCodeInfo.codeAttributes[0].attrCd;
+
+            if (attrCd) {
+              // null 체크 추가
+              const result = await deleteDetailCode(
+                selectedGroupCd,
+                attrCd,
+                row.dtlCd
+              );
+              if (!result?.success) {
+                throw new Error(`상세코드 ${row.dtlCd} 삭제 실패`);
+              }
+            }
+          }
+        }
+      }
+      refetch(); // 성공 시 전체 데이터 새로고침
+      return { success: true };
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  // ============================================================================
+  // 조건부 렌더링 처리
+  // ============================================================================
+
+  // /**
+  //  * @화면처리 로딩 상태 UI
+  //  * @설명 API 호출 중일 때 표시되는 로딩 화면
+  //  */
+  // if (loading) {
+  //   return (
+  //     <div className="flex items-center justify-center h-full">로딩 중...</div>
+  //   );
+  // }
+
+  // /**
+  //  * @화면처리 에러 상태 UI
+  //  * @설명 API 호출 실패 시 표시되는 에러 화면 및 재시도 버튼
+  //  */
+  // if (error) {
+  //   return (
+  //     <div className="flex flex-col items-center justify-center h-full gap-4">
+  //       <div className="text-red-500">에러: {error}</div>
+  //       <button
+  //         onClick={() => refetch()}
+  //         className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+  //       >
+  //         다시 시도
+  //       </button>
+  //     </div>
+  //   );
+  // }
 
   // ============================================================================
   // 메인 UI 렌더링
@@ -903,6 +1058,8 @@ export default function Home() {
         onInsert={handleInsertGroupCode}
         onUpdate={handleUpdateGroupCode}
         onDelete={handleDeleteGroupCode}
+        onBulkCopy={handleBulkCopyGroupCode}
+        onBulkDelete={handleBulkDeleteGroupCode}
       />
     </div>
   );
@@ -922,6 +1079,8 @@ export default function Home() {
       onInsert={selectedGroupCd ? handleInsertAttributeCode : undefined}
       onUpdate={selectedGroupCd ? handleUpdateAttributeCode : undefined}
       onDelete={selectedGroupCd ? handleDeleteAttributeCode : undefined}
+      onBulkCopy={selectedGroupCd ? handleBulkCopyAttributeCode : undefined}
+      onBulkDelete={selectedGroupCd ? handleBulkDeleteAttributeCode : undefined}
     />
   );
 
@@ -940,6 +1099,8 @@ export default function Home() {
       onInsert={selectedGroupCd ? handleInsertDetailCode : undefined}
       onUpdate={selectedGroupCd ? handleUpdateDetailCode : undefined}
       onDelete={selectedGroupCd ? handleDeleteDetailCode : undefined}
+      onBulkCopy={selectedGroupCd ? handleBulkCopyDetailCode : undefined}
+      onBulkDelete={selectedGroupCd ? handleBulkDeleteDetailCode : undefined}
     />
   );
 

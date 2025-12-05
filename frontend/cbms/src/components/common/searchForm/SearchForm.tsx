@@ -48,9 +48,6 @@ const SearchForm: React.FC<SearchFormProps> = ({
     ? onSearchDataChange
     : setInternalSearchData;
 
-  // 디버깅용 로그
-  console.log("SearchForm 렌더링, 현재 searchData:", searchData);
-
   // 입력값 변경 핸들러
   const handleInputChange = (key: string, value: any) => {
     console.log("Input 변경:", key, value);
@@ -63,16 +60,12 @@ const SearchForm: React.FC<SearchFormProps> = ({
 
   // 검색 버튼 클릭 핸들러
   const handleSearch = () => {
-    console.log("검색 버튼 클릭, searchData:", searchData);
     onSearch(searchData);
   };
 
   // 초기화 버튼 클릭 핸들러
   const handleReset = () => {
-    console.log("초기화 버튼 클릭");
     setSearchData({});
-    // React controlled component에서는 상태만 초기화하면 됨
-    // form.reset() 제거 - React 상태와 DOM 동기화 문제 방지
   };
 
   // 입력 필드 렌더링

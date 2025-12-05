@@ -3,7 +3,7 @@
 import React from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { useNavBarMenu } from "@/hooks/common/menuHook";
+import { useBreadcrumbMenu } from "@/hooks/common/menuHook";
 import type { MenuResDto } from "@/types/responseDto/MenuResDto";
 
 /**
@@ -11,6 +11,8 @@ import type { MenuResDto } from "@/types/responseDto/MenuResDto";
  * @설명 : 현재 경로를 표시하는 breadcrumb 컴포넌트
  * @작성자 : 김승연
  * @작성일 : 2025.11.02
+ * @변경이력 :
+ *       2025.12.04 김승연 useBreadcrumbMenu로 변경 (Redux에서만 읽음)
  */
 
 interface BreadcrumbItem {
@@ -20,7 +22,7 @@ interface BreadcrumbItem {
 
 export default function Breadcrumb() {
   const pathname = usePathname();
-  const { menuData } = useNavBarMenu();
+  const { menuData } = useBreadcrumbMenu(); // Redux에서만 읽음 (API 호출 없음)
 
   // 메뉴 트리에서 현재 경로에 해당하는 메뉴 찾기
   const findMenuPath = (

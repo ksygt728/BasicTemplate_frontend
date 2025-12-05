@@ -1,11 +1,11 @@
-import { DepartmentResDto } from "./DepartmentResDto";
+import { DepartmentResDto } from "../DepartmentResDto";
 
 /**
- * 사용자 정보 응답 데이터 전송 객체
+ * 인증 정보 응답 데이터 전송 객체
  * @작성자 김승연
- * @작성일 2025.10.07
+ * @작성일 2025.12.01
  */
-export interface UserResDto {
+export interface AuthResDto {
   /** 사용자 아이디 */
   userId: string;
 
