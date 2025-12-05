@@ -26,7 +26,7 @@ import { authFetch } from "@/utils/authFetch";
  * @description 1010: 잘못된 요청 (예외적으로 Alert 표시 필요)
  * @note 새로운 에러 코드를 추가하려면 이 배열에 에러 코드를 추가하면 됨 (확장성)
  */
-const SILENT_ERROR_CODES = ["1001", "1003", "1006", "1007", "1008", "1009"];
+const SILENT_ERROR_CODES = ["1001", "1006", "1007", "1008", "1009"];
 
 /**
  * @function shouldShowAlert
@@ -109,7 +109,7 @@ export const useCommonApi = (): UseCommonApiReturn => {
         if (!apiResponse.success) {
           const errorMsg = apiResponse.message || "API 오류가 발생했습니다.";
           const errorCode = apiResponse.errorCode || "Unknown";
-          
+
           setError(errorMsg);
 
           // 인증 에러 코드는 authFetch에서 자동 처리하므로 Alert 제외
@@ -121,7 +121,9 @@ export const useCommonApi = (): UseCommonApiReturn => {
             });
           } else {
             // 디버깅용 로그 (프론트엔드에서 처리하는 인증 에러)
-            console.log(`[Auth Error ${errorCode}] ${errorMsg} - authFetch에서 자동 처리됨`);
+            console.log(
+              `[Auth Error ${errorCode}] ${errorMsg} - authFetch에서 자동 처리됨`
+            );
           }
 
           return null;

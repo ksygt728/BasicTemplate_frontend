@@ -8,6 +8,7 @@ import { ComCodeDResDto } from "@/types/responseDto/ComCodeDResDto";
 import { ComCodeTResDto } from "@/types/responseDto/ComCodeTResDto";
 import { CodeSearchFormResDto } from "@/types/responseDto/specialDto/CodeSearchFormResDto";
 import { Pageable } from "@/types/requestDto/specialDto/Pageable";
+import { authGet, authPost, authPut, authDelete } from "@/utils/authFetch";
 
 /**
  * @파일명 : codeApi.ts
@@ -57,14 +58,7 @@ export class CodeApi {
     });
 
     const url = `${this.ADMIN_CODE_BASE_URL}/search?${params}`;
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    return response.json();
+    return authGet(url).then((res) => res.json());
   }
 
   /**
@@ -78,14 +72,7 @@ export class CodeApi {
     grpCd: string
   ): Promise<ResponseApi<Map<string, object>>> {
     const url = `${this.ADMIN_CODE_BASE_URL}/group/${grpCd}`;
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    return response.json();
+    return authGet(url).then((res) => res.json());
   }
 
   /**
@@ -99,16 +86,7 @@ export class CodeApi {
     comCodeM: ComCodeMReqDto
   ): Promise<ResponseApi<Map<string, object>>> {
     const url = `${this.ADMIN_CODE_BASE_URL}/group`;
-
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(comCodeM),
-    });
-
-    return response.json();
+    return authPost(url, comCodeM).then((res) => res.json());
   }
 
   /**
@@ -123,15 +101,7 @@ export class CodeApi {
   ): Promise<ResponseApi<Map<string, object>>> {
     const url = `${this.ADMIN_CODE_BASE_URL}/group`;
     console.log("comCodeM ", comCodeM);
-    const response = await fetch(url, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(comCodeM),
-    });
-
-    return response.json();
+    return authPut(url, comCodeM).then((res) => res.json());
   }
 
   /**
@@ -145,14 +115,7 @@ export class CodeApi {
     grpCd: string
   ): Promise<ResponseApi<Map<string, object>>> {
     const url = `${this.ADMIN_CODE_BASE_URL}/group/${grpCd}`;
-    const response = await fetch(url, {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    return response.json();
+    return authDelete(url).then((res) => res.json());
   }
 
   /**
@@ -172,14 +135,7 @@ export class CodeApi {
     }
   ): Promise<ResponseApi<CodeSearchFormResDto[]>> {
     const url = `${this.API_BASE_URL}/admin/code/form/detail?page=${pageable.page}&size=${pageable.size}&sort=${pageable.sort}&direction=${pageable.direction}`;
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    return response.json();
+    return authGet(url).then((res) => res.json());
   }
 
   /**
@@ -193,15 +149,7 @@ export class CodeApi {
     comCodeT: ComCodeTReqDto
   ): Promise<ResponseApi<Map<string, object>>> {
     const url = `${this.ADMIN_CODE_BASE_URL}/attribute`;
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(comCodeT),
-    });
-
-    return response.json();
+    return authPost(url, comCodeT).then((res) => res.json());
   }
 
   /**
@@ -215,15 +163,7 @@ export class CodeApi {
     comCodeT: ComCodeTReqDto
   ): Promise<ResponseApi<Map<string, object>>> {
     const url = `${this.ADMIN_CODE_BASE_URL}/attribute`;
-    const response = await fetch(url, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(comCodeT),
-    });
-
-    return response.json();
+    return authPut(url, comCodeT).then((res) => res.json());
   }
 
   /**
@@ -239,14 +179,7 @@ export class CodeApi {
     attrCd: string
   ): Promise<ResponseApi<Map<string, object>>> {
     const url = `${this.ADMIN_CODE_BASE_URL}/attribute/${grpCd}/${attrCd}`;
-    const response = await fetch(url, {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    return response.json();
+    return authDelete(url).then((res) => res.json());
   }
 
   /**
@@ -260,15 +193,7 @@ export class CodeApi {
     comCodeD: ComCodeDReqDto
   ): Promise<ResponseApi<Map<string, object>>> {
     const url = `${this.ADMIN_CODE_BASE_URL}/detail`;
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(comCodeD),
-    });
-
-    return response.json();
+    return authPost(url, comCodeD).then((res) => res.json());
   }
 
   /**
@@ -282,15 +207,7 @@ export class CodeApi {
     comCodeD: ComCodeDReqDto
   ): Promise<ResponseApi<Map<string, object>>> {
     const url = `${this.ADMIN_CODE_BASE_URL}/detail`;
-    const response = await fetch(url, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(comCodeD),
-    });
-
-    return response.json();
+    return authPut(url, comCodeD).then((res) => res.json());
   }
 
   /**
@@ -308,13 +225,6 @@ export class CodeApi {
     dtlCd: string
   ): Promise<ResponseApi<Map<string, object>>> {
     const url = `${this.ADMIN_CODE_BASE_URL}/detail/${grpCd}/${attrCd}/${dtlCd}`;
-    const response = await fetch(url, {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    return response.json();
+    return authDelete(url).then((res) => res.json());
   }
 }
