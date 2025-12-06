@@ -151,6 +151,61 @@ export const useAuthApi = () => {
   );
 
   /**
+   * @기능 카카오 소셜 로그인 함수
+   * @returns {void} 카카오 로그인 페이지로 리다이렉트
+   */
+  const handleKakaoSignIn = useCallback(() => {
+    const kakaoLoginUrl = process.env.NEXT_PUBLIC_KAKAO_LOGIN_URL;
+
+    // 리다이렉트 URL을 state에 저장
+    const stateParam = encodeURIComponent(
+      JSON.stringify({ redirectUrl: "/main" })
+    );
+    const separator = kakaoLoginUrl?.includes("?") ? "&" : "?";
+    const loginUrlWithState = `${kakaoLoginUrl}${separator}state=${stateParam}`;
+
+    // 카카오 OAuth 페이지로 이동 (window.location.href 사용)
+    // 백엔드에서 OAuth 처리 후 /auth/callback으로 리다이렉트됨
+    window.location.href = loginUrlWithState;
+  }, []);
+
+  /**
+   * @기능 구글 소셜 로그인 함수
+   * @returns {void} 구글 로그인 페이지로 리다이렉트
+   */
+  const handleGoogleSignIn = useCallback(() => {
+    const googleLoginUrl = process.env.NEXT_PUBLIC_GOOGLE_LOGIN_URL;
+
+    // 리다이렉트 URL을 state에 저장
+    const stateParam = encodeURIComponent(
+      JSON.stringify({ redirectUrl: "/main" })
+    );
+    const separator = googleLoginUrl?.includes("?") ? "&" : "?";
+    const loginUrlWithState = `${googleLoginUrl}${separator}state=${stateParam}`;
+
+    // 구글 OAuth 페이지로 이동
+    window.location.href = loginUrlWithState;
+  }, []);
+
+  /**
+   * @기능 네이버 소셜 로그인 함수
+   * @returns {void} 네이버 로그인 페이지로 리다이렉트
+   */
+  const handleNaverSignIn = useCallback(() => {
+    const naverLoginUrl = process.env.NEXT_PUBLIC_NAVER_LOGIN_URL;
+
+    // 리다이렉트 URL을 state에 저장
+    const stateParam = encodeURIComponent(
+      JSON.stringify({ redirectUrl: "/main" })
+    );
+    const separator = naverLoginUrl?.includes("?") ? "&" : "?";
+    const loginUrlWithState = `${naverLoginUrl}${separator}state=${stateParam}`;
+
+    // 네이버 OAuth 페이지로 이동
+    window.location.href = loginUrlWithState;
+  }, []);
+
+  /**
    * @기능 회원가입 함수
    * @REQ_ID REQ_CMN_003
    * @param {UserReqDto} userReqDto - 회원가입 요청 정보
@@ -230,6 +285,9 @@ export const useAuthApi = () => {
     loading,
     error,
     handleSignIn,
+    handleKakaoSignIn,
+    handleGoogleSignIn,
+    handleNaverSignIn,
     handleSignUp,
     handleSignUpWithValidation,
   };

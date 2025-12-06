@@ -19,7 +19,13 @@ export default function SignInPage() {
   const [password, setPassword] = useState<string>("");
   const searchParams = useSearchParams();
   const redirectUrl = searchParams.get("redirect") || "/main";
-  const { loading, handleSignIn } = useAuthApi();
+  const {
+    loading,
+    handleSignIn,
+    handleKakaoSignIn,
+    handleGoogleSignIn,
+    handleNaverSignIn,
+  } = useAuthApi();
   const { showAlert } = useAlert();
 
   /**
@@ -137,6 +143,10 @@ export default function SignInPage() {
             </p>
             <a
               href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                handleNaverSignIn();
+              }}
               className="flex items-center justify-center px-6 py-3 mt-4 text-gray-600 transition-colors duration-300 transform border rounded-lg dark:border-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600"
             >
               {/* Naver Icon */}
@@ -152,7 +162,11 @@ export default function SignInPage() {
               <span className="mx-2">Sign in with Naver</span>
             </a>
             <a
-              href="https://kauth.kakao.com/oauth/authorize?response_type=code&client_id=305da1aa1489acfde40743eecdd25716&redirect_uri=http://localhost:8080/login/oauth2/code/kakao&prompt=login&state=CBMS"
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                handleKakaoSignIn();
+              }}
               className="flex items-center justify-center px-6 py-3 mt-4 text-gray-600 transition-colors duration-300 transform border rounded-lg dark:border-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600"
             >
               {/* Kakao Icon */}
@@ -167,6 +181,10 @@ export default function SignInPage() {
             </a>
             <a
               href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                handleGoogleSignIn();
+              }}
               className="flex items-center justify-center px-6 py-3 mt-4 text-gray-600 transition-colors duration-300 transform border rounded-lg dark:border-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600"
             >
               <svg className="w-6 h-6 mx-2" viewBox="0 0 40 40">
