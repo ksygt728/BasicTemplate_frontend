@@ -265,93 +265,104 @@ export const AlertProvider: React.FC<AlertProviderProps> = ({ children }) => {
       {/* Alert Modal */}
       {isVisible && (
         <div
-          className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-50 transition-all duration-300 ease-out ${
-            isAnimating
-              ? "translate-y-0 opacity-100 scale-100"
-              : "-translate-y-full opacity-0 scale-95"
-          }`}
+          className="fixed inset-0 z-50 flex items-center justify-center"
+          onClick={handleBackdropClick}
         >
-          <div className="px-4">
-            {/* Toast 스타일 Alert */}
-            <div className="flex min-w-80 max-w-md overflow-hidden bg-white rounded-lg shadow-md dark:bg-gray-800">
-              {/* 아이콘 영역 */}
+          {/* Backdrop */}
+          <div
+            className={`absolute inset-0 bg-black transition-opacity duration-300 ${
+              isAnimating ? "opacity-50" : "opacity-0"
+            }`}
+          />
+
+          {/* Modal */}
+          <div
+            className={`relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-4 transition-all duration-300 ${
+              isAnimating
+                ? "opacity-100 scale-100 translate-y-0"
+                : "opacity-0 scale-95 -translate-y-4"
+            }`}
+          >
+            {/* Header with Icon and Title */}
+            <div className="flex items-start gap-3 p-6 pb-4">
+              {/* Icon */}
               <div
-                className={`flex items-center justify-center w-12 ${
+                className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
                   getTypeSettings().bgColor
                 }`}
               >
                 {getTypeSettings().icon}
               </div>
 
-              {/* 내용 영역 */}
-              <div className="flex-1 px-4 py-2">
-                <div className="mx-3">
-                  {/* 타입 라벨 */}
-                  <span
-                    className={`font-semibold ${getTypeSettings().textColor}`}
-                  >
-                    {alertOptions.title || getTypeSettings().label}
-                  </span>
-
-                  {/* 메시지 */}
-                  {alertOptions.message && (
-                    <p className="text-sm text-gray-600 dark:text-gray-200 mt-1 whitespace-pre-wrap">
-                      {alertOptions.message}
-                    </p>
-                  )}
-
-                  {/* 추가 데이터 */}
-                  {renderData()}
-
-                  {/* 버튼들 (필요한 경우에만 표시) */}
-                  {alertOptions.showCancel && (
-                    <div className="flex gap-2 mt-3">
-                      <button
-                        type="button"
-                        className="px-3 py-1 text-xs font-medium text-gray-600 bg-gray-100 rounded hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
-                        onClick={handleCancel}
-                      >
-                        {alertOptions.cancelText}
-                      </button>
-                      <button
-                        type="button"
-                        className={`px-3 py-1 text-xs font-medium text-white rounded hover:opacity-90 ${
-                          getTypeSettings().bgColor
-                        }`}
-                        onClick={handleOk}
-                      >
-                        {alertOptions.okText}
-                      </button>
-                    </div>
-                  )}
-                </div>
+              {/* Title and Close Button */}
+              <div className="flex-1">
+                <h3
+                  className={`text-lg font-semibold ${
+                    getTypeSettings().textColor
+                  }`}
+                >
+                  {alertOptions.title || getTypeSettings().label}
+                </h3>
               </div>
 
-              {/* 닫기 버튼 (Cancel 버튼이 없는 경우) */}
+              {/* Close Button (X) */}
               {!alertOptions.showCancel && (
-                <div className="flex items-center justify-center w-8 pr-2">
-                  <button
-                    type="button"
-                    className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-                    onClick={handleOk}
+                <button
+                  type="button"
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                  onClick={handleOk}
+                >
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
                   >
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M6 18L18 6M6 6l12 12"
-                      />
-                    </svg>
-                  </button>
-                </div>
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
               )}
             </div>
+
+            {/* Content */}
+            <div className="px-6 pb-6">
+              {/* Message */}
+              {alertOptions.message && (
+                <p className="text-sm text-gray-600 dark:text-gray-300 whitespace-pre-wrap leading-relaxed">
+                  {alertOptions.message}
+                </p>
+              )}
+
+              {/* Additional Data */}
+              {renderData()}
+            </div>
+
+            {/* Footer with Buttons */}
+            {alertOptions.showCancel && (
+              <div className="flex justify-end gap-3 px-6 pb-6 pt-2 border-t border-gray-200 dark:border-gray-700">
+                <button
+                  type="button"
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600 transition-colors"
+                  onClick={handleCancel}
+                >
+                  {alertOptions.cancelText}
+                </button>
+                <button
+                  type="button"
+                  className={`px-4 py-2 text-sm font-medium text-white rounded-md hover:opacity-90 transition-opacity ${
+                    getTypeSettings().bgColor
+                  }`}
+                  onClick={handleOk}
+                >
+                  {alertOptions.okText}
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
