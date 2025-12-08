@@ -174,12 +174,13 @@ export const AlertProvider: React.FC<AlertProviderProps> = ({ children }) => {
     switch (alertOptions.type) {
       case "success":
         return {
-          bgColor: "bg-emerald-500",
-          textColor: "text-emerald-500 dark:text-emerald-400",
+          bgColor: "#27C986",
+          textColor: "#27C986",
           label: "Success",
           icon: (
             <svg
-              className="w-6 h-6 text-white fill-current"
+              className="w-6 h-6"
+              style={{ width: "24px", height: "24px", fill: "white" }}
               viewBox="0 0 40 40"
               xmlns="http://www.w3.org/2000/svg"
             >
@@ -189,12 +190,13 @@ export const AlertProvider: React.FC<AlertProviderProps> = ({ children }) => {
         };
       case "warning":
         return {
-          bgColor: "bg-yellow-400",
-          textColor: "text-yellow-400 dark:text-yellow-300",
+          bgColor: "#F2C94C",
+          textColor: "#F2C94C",
           label: "Warning",
           icon: (
             <svg
-              className="w-6 h-6 text-white fill-current"
+              className="w-6 h-6"
+              style={{ width: "24px", height: "24px", fill: "white" }}
               viewBox="0 0 40 40"
               xmlns="http://www.w3.org/2000/svg"
             >
@@ -204,31 +206,34 @@ export const AlertProvider: React.FC<AlertProviderProps> = ({ children }) => {
         };
       case "error":
         return {
-          bgColor: "bg-red-500",
-          textColor: "text-red-500 dark:text-red-400",
+          bgColor: "#FF5C5C",
+          textColor: "#FF5C5C",
           label: "Error",
           icon: (
             <svg
-              className="w-6 h-6 text-white fill-current"
-              viewBox="0 0 40 40"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path d="M20 3.36667C10.8167 3.36667 3.3667 10.8167 3.3667 20C3.3667 29.1833 10.8167 36.6333 20 36.6333C29.1834 36.6333 36.6334 29.1833 36.6334 20C36.6334 10.8167 29.1834 3.36667 20 3.36667ZM19.1334 33.3333V22.9H13.3334L21.6667 6.66667V17.1H27.25L19.1334 33.3333Z" />
-            </svg>
-          ),
-        };
-      default: // info
-        return {
-          bgColor: "bg-blue-500",
-          textColor: "text-blue-500 dark:text-blue-400",
-          label: "Info",
-          icon: (
-            <svg
-              className="w-6 h-6 text-white fill-current"
+              className="w-6 h-6"
+              style={{ width: "24px", height: "24px", fill: "white" }}
               viewBox="0 0 40 40"
               xmlns="http://www.w3.org/2000/svg"
             >
               <path d="M20 3.33331C10.8 3.33331 3.33337 10.8 3.33337 20C3.33337 29.2 10.8 36.6666 20 36.6666C29.2 36.6666 36.6667 29.2 36.6667 20C36.6667 10.8 29.2 3.33331 20 3.33331ZM21.6667 28.3333H18.3334V25H21.6667V28.3333ZM21.6667 21.6666H18.3334V11.6666H21.6667V21.6666Z" />
+            </svg>
+          ),
+        };
+      case "info":
+      default:
+        return {
+          bgColor: "#5E6AD2",
+          textColor: "#5E6AD2",
+          label: "Info",
+          icon: (
+            <svg
+              className="w-6 h-6"
+              style={{ width: "24px", height: "24px", fill: "white" }}
+              viewBox="0 0 40 40"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path d="M20 3.33331C10.8 3.33331 3.33337 10.8 3.33337 20C3.33337 29.2 10.8 36.6666 20 36.6666C29.2 36.6666 36.6667 29.2 36.6667 20C36.6667 10.8 29.2 3.33331 20 3.33331ZM21.6667 28.3333H18.3334V18.3333H21.6667V28.3333ZM21.6667 15H18.3334V11.6666H21.6667V15Z" />
             </svg>
           ),
         };
@@ -240,8 +245,22 @@ export const AlertProvider: React.FC<AlertProviderProps> = ({ children }) => {
     if (!alertOptions.data) return null;
 
     return (
-      <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-md">
-        <pre className="text-sm text-gray-600 dark:text-gray-300 whitespace-pre-wrap overflow-x-auto">
+      <div
+        style={{
+          marginTop: "16px",
+          padding: "12px",
+          backgroundColor: "var(--background-overlay)",
+          borderRadius: "6px",
+        }}
+      >
+        <pre
+          style={{
+            fontSize: "14px",
+            color: "var(--text-secondary)",
+            whiteSpace: "pre-wrap",
+            overflowX: "auto",
+          }}
+        >
           {typeof alertOptions.data === "string"
             ? alertOptions.data
             : JSON.stringify(alertOptions.data, null, 2)}
@@ -265,41 +284,78 @@ export const AlertProvider: React.FC<AlertProviderProps> = ({ children }) => {
       {/* Alert Modal */}
       {isVisible && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center"
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 50,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
           onClick={handleBackdropClick}
         >
           {/* Backdrop */}
           <div
-            className={`absolute inset-0 bg-black transition-opacity duration-300 ${
-              isAnimating ? "opacity-50" : "opacity-0"
-            }`}
+            style={{
+              position: "absolute",
+              inset: 0,
+              backgroundColor: "rgba(0, 0, 0, 0.5)",
+              transition: "opacity 300ms",
+              opacity: isAnimating ? 0.5 : 0,
+            }}
           />
 
           {/* Modal */}
           <div
-            className={`relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-4 transition-all duration-300 ${
-              isAnimating
-                ? "opacity-100 scale-100 translate-y-0"
-                : "opacity-0 scale-95 -translate-y-4"
-            }`}
+            style={{
+              position: "relative",
+              backgroundColor: "var(--background-surface)",
+              borderRadius: "12px",
+              boxShadow:
+                "0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2)",
+              maxWidth: "448px",
+              width: "100%",
+              margin: "0 16px",
+              transition: "all 300ms",
+              opacity: isAnimating ? 1 : 0,
+              transform: isAnimating
+                ? "scale(1) translateY(0)"
+                : "scale(0.95) translateY(-16px)",
+            }}
           >
             {/* Header with Icon and Title */}
-            <div className="flex items-start gap-3 p-6 pb-4">
+            <div
+              style={{
+                display: "flex",
+                alignItems: "flex-start",
+                gap: "12px",
+                padding: "24px 24px 16px",
+              }}
+            >
               {/* Icon */}
               <div
-                className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
-                  getTypeSettings().bgColor
-                }`}
+                style={{
+                  flexShrink: 0,
+                  width: "40px",
+                  height: "40px",
+                  borderRadius: "50%",
+                  backgroundColor: getTypeSettings().bgColor,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
               >
                 {getTypeSettings().icon}
               </div>
 
               {/* Title and Close Button */}
-              <div className="flex-1">
+              <div style={{ flex: 1 }}>
                 <h3
-                  className={`text-lg font-semibold ${
-                    getTypeSettings().textColor
-                  }`}
+                  style={{
+                    fontSize: "18px",
+                    fontWeight: "600",
+                    color: getTypeSettings().textColor,
+                  }}
                 >
                   {alertOptions.title || getTypeSettings().label}
                 </h3>
@@ -309,11 +365,24 @@ export const AlertProvider: React.FC<AlertProviderProps> = ({ children }) => {
               {!alertOptions.showCancel && (
                 <button
                   type="button"
-                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                  style={{
+                    color: "var(--text-tertiary)",
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    padding: 0,
+                    transition: "color 200ms",
+                  }}
+                  onMouseEnter={(e) =>
+                    (e.currentTarget.style.color = "var(--text-secondary)")
+                  }
+                  onMouseLeave={(e) =>
+                    (e.currentTarget.style.color = "var(--text-tertiary)")
+                  }
                   onClick={handleOk}
                 >
                   <svg
-                    className="w-5 h-5"
+                    style={{ width: "20px", height: "20px" }}
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -330,10 +399,17 @@ export const AlertProvider: React.FC<AlertProviderProps> = ({ children }) => {
             </div>
 
             {/* Content */}
-            <div className="px-6 pb-6">
+            <div style={{ padding: "0 24px 24px" }}>
               {/* Message */}
               {alertOptions.message && (
-                <p className="text-sm text-gray-600 dark:text-gray-300 whitespace-pre-wrap leading-relaxed">
+                <p
+                  style={{
+                    fontSize: "14px",
+                    color: "var(--text-secondary)",
+                    whiteSpace: "pre-wrap",
+                    lineHeight: "1.75",
+                  }}
+                >
                   {alertOptions.message}
                 </p>
               )}
@@ -344,19 +420,56 @@ export const AlertProvider: React.FC<AlertProviderProps> = ({ children }) => {
 
             {/* Footer with Buttons */}
             {alertOptions.showCancel && (
-              <div className="flex justify-end gap-3 px-6 pb-6 pt-2 border-t border-gray-200 dark:border-gray-700">
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "flex-end",
+                  gap: "12px",
+                  padding: "0 24px 24px",
+                  paddingTop: "8px",
+                  borderTop: "1px solid var(--border-default)",
+                }}
+              >
                 <button
                   type="button"
-                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600 transition-colors"
+                  style={{
+                    padding: "8px 16px",
+                    fontSize: "14px",
+                    fontWeight: "500",
+                    color: "var(--text-primary)",
+                    backgroundColor: "var(--background-overlay)",
+                    border: "1px solid var(--border-default)",
+                    borderRadius: "6px",
+                    cursor: "pointer",
+                    transition: "background-color 200ms",
+                  }}
+                  onMouseEnter={(e) =>
+                    (e.currentTarget.style.backgroundColor =
+                      "var(--background-subtle)")
+                  }
+                  onMouseLeave={(e) =>
+                    (e.currentTarget.style.backgroundColor =
+                      "var(--background-overlay)")
+                  }
                   onClick={handleCancel}
                 >
                   {alertOptions.cancelText}
                 </button>
                 <button
                   type="button"
-                  className={`px-4 py-2 text-sm font-medium text-white rounded-md hover:opacity-90 transition-opacity ${
-                    getTypeSettings().bgColor
-                  }`}
+                  style={{
+                    padding: "8px 16px",
+                    fontSize: "14px",
+                    fontWeight: "500",
+                    color: "white",
+                    backgroundColor: getTypeSettings().bgColor,
+                    border: "none",
+                    borderRadius: "6px",
+                    cursor: "pointer",
+                    transition: "opacity 200ms",
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.9")}
+                  onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
                   onClick={handleOk}
                 >
                   {alertOptions.okText}

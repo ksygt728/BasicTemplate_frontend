@@ -180,7 +180,20 @@ export const AdvancedTable = <T extends Record<string, any>>({
     if (typeof rowKey === "function") {
       return rowKey(record);
     }
-    return record[rowKey] || index;
+
+    // 새로운 행인 경우 임시 ID 사용
+    if ((record as any)._tempId) {
+      return (record as any)._tempId;
+    }
+
+    // 기존 행인 경우 rowKey 필드 사용
+    const key = record[rowKey];
+    if (key !== undefined && key !== null && key !== "") {
+      return key;
+    }
+
+    // fallback으로 index 사용
+    return index;
   };
 
   // 필수 값 검증 함수
@@ -188,7 +201,7 @@ export const AdvancedTable = <T extends Record<string, any>>({
     const missingFields: string[] = [];
 
     columns.forEach((column) => {
-      if (column.required && column.key !== rowKey) {
+      if (column.required) {
         const dataIndex = column.dataIndex || column.key;
         const value = rowData[dataIndex];
         if (!value || (typeof value === "string" && value.trim() === "")) {
@@ -371,6 +384,16 @@ export const AdvancedTable = <T extends Record<string, any>>({
     ? Math.ceil(filteredData.length / itemsPerPage)
     : 1;
 
+  // 현재 테이블에 실제로 표시되는 행들 중 선택된 것만 필터링
+  const currentTableSelectedKeys = useMemo(() => {
+    const allCurrentKeys = filteredData.map((record, index) =>
+      getRowKey(record, index)
+    );
+    return selectedRowKeys.filter((key) => allCurrentKeys.includes(key));
+  }, [filteredData, selectedRowKeys]);
+
+  const currentTableSelectedCount = currentTableSelectedKeys.length;
+
   // Selection logic
   const handleSelectAll = () => {
     if (selectAll) {
@@ -413,6 +436,11 @@ export const AdvancedTable = <T extends Record<string, any>>({
       ...(editData[keyStr] || {}),
     };
 
+    // _tempId 제거 (내부용 필드이므로 서버로 전송하지 않음)
+    if ((dataToSave as any)._tempId) {
+      delete (dataToSave as any)._tempId;
+    }
+
     // 필수 필드 검증
     const missingFields = validateRequiredFields(dataToSave);
     if (missingFields.length > 0) {
@@ -426,25 +454,59 @@ export const AdvancedTable = <T extends Record<string, any>>({
       return;
     }
 
+    // rowKey 필드 검증 (새로운 행인 경우)
+    if ((record as any).isNew) {
+      const keyField = typeof rowKey === "string" ? rowKey : "id";
+      const keyValue = dataToSave[keyField];
+      if (
+        !keyValue ||
+        (typeof keyValue === "string" && keyValue.trim() === "")
+      ) {
+        await showAlert({
+          type: "warning",
+          title: "필수 값 누락",
+          message: `${keyField} 값을 입력해주세요.`,
+        });
+        return;
+      }
+    }
+
     try {
       if ((record as any).isNew) {
         if (onAdd) {
           await onAdd(dataToSave as T);
         }
+        // 저장 성공 시에만 newRows에서 제거
         setNewRows((prev) => prev.filter((r) => getRowKey(r as T, 0) !== key));
+        setEditingRow((prev) => prev.filter((k) => k !== key));
+        setEditData((prev) => {
+          const newData = { ...prev };
+          delete newData[keyStr];
+          return newData;
+        });
       } else {
         if (onUpdate) {
           await onUpdate(key, dataToSave as T);
         }
+        setEditingRow((prev) => prev.filter((k) => k !== key));
+        setEditData((prev) => {
+          const newData = { ...prev };
+          delete newData[keyStr];
+          return newData;
+        });
       }
-      setEditingRow((prev) => prev.filter((k) => k !== key));
-      setEditData((prev) => {
-        const newData = { ...prev };
-        delete newData[keyStr];
-        return newData;
-      });
     } catch (error) {
       console.error("Save failed:", error);
+      // 저장 실패 시 편집 모드 유지 (행을 삭제하지 않음)
+      // 사용자가 데이터를 수정할 수 있도록 함
+      await showAlert({
+        type: "error",
+        title: "저장 실패",
+        message:
+          error instanceof Error
+            ? error.message
+            : "데이터 저장 중 오류가 발생했습니다. 입력 값을 확인해주세요.",
+      });
     }
   };
 
@@ -479,24 +541,31 @@ export const AdvancedTable = <T extends Record<string, any>>({
   };
 
   const handleAddRecord = () => {
+    const keyField = typeof rowKey === "string" ? rowKey : "id";
+    const tempId = `new_${Date.now()}_${Math.random()
+      .toString(36)
+      .substr(2, 9)}`;
+
     const newRow: any = {
-      id: `new_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      _tempId: tempId, // 임시 ID를 별도 필드에 저장
       isNew: true,
     };
 
+    // 모든 컬럼을 빈 값으로 초기화 (rowKey 필드 포함)
+    const initialEditData: any = {};
     columns.forEach((column) => {
-      if (column.key !== "id") {
-        newRow[column.key] = "";
-      }
+      const dataIndex = column.dataIndex || column.key;
+      newRow[dataIndex] = "";
+      initialEditData[dataIndex] = ""; // editData에도 빈 값 설정
     });
 
     setNewRows((prev) => [...prev, newRow]);
-    setEditingRow((prev) => [...prev, newRow.id]);
-    setEditData((prev) => ({ ...prev, [newRow.id]: {} }));
+    setEditingRow((prev) => [...prev, tempId]);
+    setEditData((prev) => ({ ...prev, [tempId]: initialEditData }));
 
     // 새 행을 선택에서 제외
-    if (selectedRowKeys.includes(newRow.id)) {
-      setSelectedRowKeys((prev) => prev.filter((id) => id !== newRow.id));
+    if (selectedRowKeys.includes(tempId)) {
+      setSelectedRowKeys((prev) => prev.filter((id) => id !== tempId));
     }
   };
 
@@ -537,9 +606,10 @@ export const AdvancedTable = <T extends Record<string, any>>({
 
   // Bulk delete
   const handleBulkDelete = async () => {
-    if (onBulkDelete && selectedRowKeys.length > 0) {
+    if (onBulkDelete && currentTableSelectedCount > 0) {
       try {
-        await onBulkDelete(selectedRowKeys);
+        // 현재 테이블의 선택된 행만 삭제
+        await onBulkDelete(currentTableSelectedKeys);
         setSelectedRowKeys([]);
         setSelectAll(false);
         setIsMoreActionsOpen(false);
@@ -551,12 +621,14 @@ export const AdvancedTable = <T extends Record<string, any>>({
 
   // Bulk copy
   const handleBulkCopy = () => {
-    if (selectedRowKeys.length === 0) return;
+    if (currentTableSelectedCount === 0) return;
 
-    // 선택된 행들의 데이터 가져오기 (편집 중인 행 제외)
+    // 현재 테이블의 선택된 행들의 데이터 가져오기 (편집 중인 행 제외)
     const selectedData = filteredData.filter((record, index) => {
       const key = getRowKey(record, index);
-      return selectedRowKeys.includes(key) && !editingRow.includes(key);
+      return (
+        currentTableSelectedKeys.includes(key) && !editingRow.includes(key)
+      );
     });
 
     if (selectedData.length === 0) {
@@ -567,14 +639,23 @@ export const AdvancedTable = <T extends Record<string, any>>({
     }
 
     // 선택된 행들을 복사하여 새로운 행으로 추가
-    const copiedRows = selectedData.map((row: any) => {
+    const copiedRows = selectedData.map((row: any, idx: number) => {
       const copiedRow = { ...row };
-      // ID를 새로 생성하여 중복 방지 - BasicTableView와 동일한 방식
-      const dataIndex = rowKey as string;
-      copiedRow[dataIndex] = `copy_${Date.now()}_${Math.random()
+      const tempId = `copy_${Date.now()}_${idx}_${Math.random()
         .toString(36)
         .substr(2, 9)}`;
+
+      // 임시 ID 설정
+      copiedRow._tempId = tempId;
       copiedRow.isNew = true;
+
+      // rowKey 필드를 빈 값으로 초기화 (사용자가 직접 입력해야 함)
+      const keyField = typeof rowKey === "string" ? rowKey : "id";
+      copiedRow[keyField] = "";
+
+      // isNew, _tempId는 제외하고 나머지 필드는 원본 데이터 유지
+      delete copiedRow.id; // 기존 id 제거
+
       return copiedRow;
     });
 
@@ -582,11 +663,11 @@ export const AdvancedTable = <T extends Record<string, any>>({
 
     // 모든 복사된 행을 편집 모드로 설정
     if (copiedRows.length > 0) {
-      const copiedRowKeys = copiedRows.map((row) => row[rowKey as string]);
+      const copiedRowKeys = copiedRows.map((row) => row._tempId);
       setEditingRow((prev) => [...prev, ...copiedRowKeys]);
       const newEditData: { [key: string]: any } = {};
       copiedRows.forEach((row) => {
-        newEditData[row[rowKey as string]] = {};
+        newEditData[row._tempId] = {};
       });
       setEditData((prev) => ({ ...prev, ...newEditData }));
     }
@@ -949,7 +1030,7 @@ export const AdvancedTable = <T extends Record<string, any>>({
   };
 
   const thStyle: React.CSSProperties = {
-    padding: compact ? theme.spacing.sm : theme.spacing.md,
+    padding: compact ? theme.spacing.xs : theme.spacing.sm,
     textAlign: "left",
     fontSize: "14px",
     fontWeight: theme.typography.weights.semibold,
@@ -960,7 +1041,7 @@ export const AdvancedTable = <T extends Record<string, any>>({
   const getTdStyle = (
     align?: "left" | "center" | "right"
   ): React.CSSProperties => ({
-    padding: compact ? theme.spacing.sm : theme.spacing.md,
+    padding: compact ? theme.spacing.xs : theme.spacing.sm,
     fontSize: "14px",
     color: theme.colors.text.primary,
     borderRight: bordered ? `1px solid ${theme.colors.border.default}` : "none",
@@ -1016,14 +1097,14 @@ export const AdvancedTable = <T extends Record<string, any>>({
               Add Record
             </Button>
           )}
-          {selection && selectedRowKeys.length > 0 && onBulkDelete && (
+          {selection && currentTableSelectedCount > 0 && onBulkDelete && (
             <Button
               size="sm"
               variant="error"
               leftIcon="🗑"
               onClick={handleBulkDelete}
             >
-              Delete ({selectedRowKeys.length})
+              Delete ({currentTableSelectedCount})
             </Button>
           )}
         </div>
@@ -1112,7 +1193,7 @@ export const AdvancedTable = <T extends Record<string, any>>({
 
                     <button
                       onClick={handleBulkCopy}
-                      disabled={selectedRowKeys.length === 0}
+                      disabled={currentTableSelectedCount === 0}
                       style={{
                         width: "100%",
                         display: "flex",
@@ -1120,21 +1201,21 @@ export const AdvancedTable = <T extends Record<string, any>>({
                         padding: `${theme.spacing.sm} ${theme.spacing.md}`,
                         fontSize: "14px",
                         color:
-                          selectedRowKeys.length === 0
+                          currentTableSelectedCount === 0
                             ? theme.colors.text.disabled
                             : theme.colors.text.primary,
                         backgroundColor: "transparent",
                         border: "none",
                         borderRadius: theme.borderRadius.sm,
                         cursor:
-                          selectedRowKeys.length === 0
+                          currentTableSelectedCount === 0
                             ? "not-allowed"
                             : "pointer",
                         textAlign: "left",
                         transition: "background-color 0.15s",
                       }}
                       onMouseEnter={(e) => {
-                        if (selectedRowKeys.length > 0) {
+                        if (currentTableSelectedCount > 0) {
                           e.currentTarget.style.backgroundColor =
                             theme.colors.background.overlay;
                         }
@@ -1144,12 +1225,14 @@ export const AdvancedTable = <T extends Record<string, any>>({
                       }}
                     >
                       <span style={{ marginRight: theme.spacing.sm }}>📋</span>
-                      Bulk Copy ({selectedRowKeys.length})
+                      Bulk Copy ({currentTableSelectedCount})
                     </button>
 
                     <button
                       onClick={handleBulkDelete}
-                      disabled={selectedRowKeys.length === 0 || !onBulkDelete}
+                      disabled={
+                        currentTableSelectedCount === 0 || !onBulkDelete
+                      }
                       style={{
                         width: "100%",
                         display: "flex",
@@ -1157,21 +1240,21 @@ export const AdvancedTable = <T extends Record<string, any>>({
                         padding: `${theme.spacing.sm} ${theme.spacing.md}`,
                         fontSize: "14px",
                         color:
-                          selectedRowKeys.length === 0 || !onBulkDelete
+                          currentTableSelectedCount === 0 || !onBulkDelete
                             ? theme.colors.text.disabled
                             : theme.colors.text.primary,
                         backgroundColor: "transparent",
                         border: "none",
                         borderRadius: theme.borderRadius.sm,
                         cursor:
-                          selectedRowKeys.length === 0 || !onBulkDelete
+                          currentTableSelectedCount === 0 || !onBulkDelete
                             ? "not-allowed"
                             : "pointer",
                         textAlign: "left",
                         transition: "background-color 0.15s",
                       }}
                       onMouseEnter={(e) => {
-                        if (selectedRowKeys.length > 0 && onBulkDelete) {
+                        if (currentTableSelectedCount > 0 && onBulkDelete) {
                           e.currentTarget.style.backgroundColor =
                             theme.colors.background.overlay;
                         }
@@ -1181,7 +1264,7 @@ export const AdvancedTable = <T extends Record<string, any>>({
                       }}
                     >
                       <span style={{ marginRight: theme.spacing.sm }}>🗑</span>
-                      Bulk Delete ({selectedRowKeys.length})
+                      Bulk Delete ({currentTableSelectedCount})
                     </button>
 
                     <div
@@ -1267,11 +1350,11 @@ export const AdvancedTable = <T extends Record<string, any>>({
                   onClick={() =>
                     column.sortable && !preventSort && handleSort(column.key)
                   }
-                  onContextMenu={(e) =>
-                    filtering &&
-                    column.filterable !== false &&
-                    handleFilterMenu(e, column.key)
-                  }
+                  onContextMenu={(e) => {
+                    if (filtering && column.filterable !== false) {
+                      handleFilterMenu(e, column.key);
+                    }
+                  }}
                   data-filter-trigger="true"
                 >
                   <div
@@ -1547,15 +1630,6 @@ export const AdvancedTable = <T extends Record<string, any>>({
                               >
                                 ✏️
                               </Button>
-                              {onDelete && (
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  onClick={() => handleDelete(record, index)}
-                                >
-                                  🗑
-                                </Button>
-                              )}
                             </>
                           )}
                         </div>

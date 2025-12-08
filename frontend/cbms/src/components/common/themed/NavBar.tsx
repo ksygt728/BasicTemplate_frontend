@@ -84,12 +84,14 @@ export const NavBar: React.FC<NavBarProps> = ({
     const hasChildren = menu.children && menu.children.length > 0;
 
     const level1Style: React.CSSProperties = {
-      margin: `0 ${theme.spacing.md}`,
       fontSize: "14px",
       color: theme.colors.text.primary,
       transition: "color 0.3s",
       cursor: "pointer",
-      padding: `${theme.spacing.sm} 0`,
+      padding: `${theme.spacing.sm} ${theme.spacing.md}`,
+      borderRadius: theme.borderRadius.md,
+      textDecoration: "none",
+      whiteSpace: "nowrap",
     };
 
     const subMenuItemStyle: React.CSSProperties = {
@@ -144,15 +146,11 @@ export const NavBar: React.FC<NavBarProps> = ({
           href={menu.url || "#"}
           style={level === 1 ? level1Style : subMenuItemStyle}
           onMouseEnter={(e) => {
-            if (level > 1) {
-              e.currentTarget.style.backgroundColor =
-                theme.colors.background.overlay;
-            }
+            e.currentTarget.style.backgroundColor =
+              theme.colors.background.overlay;
           }}
           onMouseLeave={(e) => {
-            if (level > 1) {
-              e.currentTarget.style.backgroundColor = "transparent";
-            }
+            e.currentTarget.style.backgroundColor = "transparent";
           }}
           onClick={(e) => {
             if (!menu.url || menu.url === "#") {
@@ -227,7 +225,7 @@ export const NavBar: React.FC<NavBarProps> = ({
   const containerStyle: React.CSSProperties = {
     maxWidth: "1280px",
     margin: "0 auto",
-    padding: `${theme.spacing.md} ${theme.spacing.lg}`,
+    padding: `${theme.spacing.sm} ${theme.spacing.lg}`,
   };
 
   const searchInputStyle: React.CSSProperties = {
@@ -576,7 +574,15 @@ export const NavBar: React.FC<NavBarProps> = ({
 
           {/* Desktop Menu */}
           {menuItems.length > 0 && (
-            <div style={{ paddingTop: theme.spacing.md, position: "relative" }}>
+            <div
+              style={{
+                paddingTop: theme.spacing.md,
+                position: "relative",
+                display: "flex",
+                alignItems: "center",
+                gap: theme.spacing.lg,
+              }}
+            >
               {menuItems.map((menu) => renderMenuItem(menu))}
             </div>
           )}

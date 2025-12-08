@@ -51,25 +51,46 @@ export const FilterDropdown: React.FC<FilterDropdownProps> = ({
 
   return createPortal(
     <div
-      className="filter-dropdown filter-menu-content fixed rounded-md shadow-xl border"
+      className="filter-dropdown filter-menu-content"
       style={{
-        width: "256px",
+        position: "fixed",
+        width: "280px",
         zIndex: 999999,
         left: `${position.x}px`,
         top: `${position.y}px`,
         backgroundColor: theme.colors.background.surface,
-        borderColor: theme.colors.border.default,
+        border: `1px solid ${theme.colors.border.default}`,
+        borderRadius: "8px",
         boxShadow:
           "0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2)",
       }}
       onClick={(e) => e.stopPropagation()}
     >
-      <div className="filter-menu-content p-3">
-        <div className="flex items-center gap-2 mb-3">
-          <div className="relative flex-1">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+      <div className="filter-menu-content" style={{ padding: "16px" }}>
+        {/* 검색창과 버튼 영역 */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "flex-start",
+            gap: "12px",
+            marginBottom: "16px",
+          }}
+        >
+          {/* 검색 입력창 */}
+          <div style={{ position: "relative", flex: 1 }}>
+            <div
+              style={{
+                position: "absolute",
+                top: "50%",
+                left: "12px",
+                transform: "translateY(-50%)",
+                pointerEvents: "none",
+                display: "flex",
+                alignItems: "center",
+              }}
+            >
               <svg
-                className="h-4 w-4"
+                style={{ width: "16px", height: "16px" }}
                 fill="none"
                 stroke={theme.colors.text.tertiary}
                 viewBox="0 0 24 24"
@@ -88,24 +109,60 @@ export const FilterDropdown: React.FC<FilterDropdownProps> = ({
               value={searchTerm}
               onChange={(e) => onSearchChange(e.target.value)}
               onClick={(e) => e.stopPropagation()}
-              className="filter-search-input block w-full pl-10 pr-3 py-2 border rounded-md text-xs focus:outline-none focus:ring-2"
+              className="filter-search-input"
               style={{
+                display: "block",
+                width: "100%",
+                paddingLeft: "40px",
+                paddingRight: "12px",
+                paddingTop: "8px",
+                paddingBottom: "8px",
+                border: `1px solid ${theme.colors.border.default}`,
+                borderRadius: "6px",
+                fontSize: "13px",
                 backgroundColor: theme.colors.background.default,
-                borderColor: theme.colors.border.default,
                 color: theme.colors.text.primary,
                 fontFamily: theme.typography.fontFamily,
+                outline: "none",
+              }}
+              onFocus={(e) => {
+                e.currentTarget.style.borderColor =
+                  theme.colors.primary.default;
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.borderColor = theme.colors.border.default;
               }}
             />
           </div>
-          <div className="flex flex-col gap-1">
+
+          {/* 버튼 그룹 */}
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "6px",
+              flexShrink: 0,
+            }}
+          >
             <button
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 onSelectAll();
               }}
-              className="text-xs whitespace-nowrap hover:opacity-80 transition-opacity"
-              style={{ color: theme.colors.status.success }}
+              style={{
+                fontSize: "12px",
+                whiteSpace: "nowrap",
+                color: theme.colors.status.success,
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                padding: "4px 8px",
+                transition: "opacity 0.2s",
+                textAlign: "left",
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.8")}
+              onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
             >
               {isAllSelected ? "Unselect All" : "Select All"}
             </button>
@@ -115,8 +172,19 @@ export const FilterDropdown: React.FC<FilterDropdownProps> = ({
                 e.stopPropagation();
                 onClearAll();
               }}
-              className="text-xs whitespace-nowrap hover:opacity-80 transition-opacity"
-              style={{ color: theme.colors.primary.default }}
+              style={{
+                fontSize: "12px",
+                whiteSpace: "nowrap",
+                color: theme.colors.primary.default,
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                padding: "4px 8px",
+                transition: "opacity 0.2s",
+                textAlign: "left",
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.8")}
+              onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
             >
               Clear All
             </button>

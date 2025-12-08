@@ -190,10 +190,10 @@ export const SearchForm: React.FC<SearchFormProps> = ({
   };
 
   const containerStyle: React.CSSProperties = {
-    backgroundColor: theme.colors.background.surface,
+    backgroundColor: "transparent",
     borderRadius: theme.borderRadius.lg,
-    padding: theme.spacing.lg,
-    border: `1px solid ${theme.colors.border.default}`,
+    padding: 0,
+    border: "none",
   };
 
   const formStyle: React.CSSProperties = {
