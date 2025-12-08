@@ -199,7 +199,11 @@ export default function TripleSplitFrame({
   return (
     <div
       ref={containerRef}
-      className={`w-full h-screen flex ${className} px-6 py-6`}
+      className={`w-full h-screen flex ${className}`}
+      style={{
+        padding: "24px",
+        backgroundColor: "var(--background-default)",
+      }}
     >
       {/* 좌측 영역 */}
       <div
@@ -211,27 +215,51 @@ export default function TripleSplitFrame({
           maxWidth: "calc(100% - 200px)",
         }}
       >
-        <div className="w-full h-full bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 overflow-auto relative">
+        <div
+          className="w-full h-full overflow-auto relative"
+          style={{
+            backgroundColor: "var(--background-default)",
+          }}
+        >
           {leftContent}
         </div>
       </div>
 
       {/* 수직 리사이저 (좌우) */}
       <div
-        className="w-1.5 bg-gray-400 dark:bg-gray-500 hover:bg-blue-500 cursor-col-resize transition-colors duration-200 flex-shrink-0 mx-2 rounded-sm border border-gray-300 dark:border-gray-600 shadow-sm"
+        className="w-1.5 cursor-col-resize transition-colors duration-200 flex-shrink-0 mx-3 rounded-sm"
         style={{
           height: "100%",
           zIndex: 10,
+          backgroundColor: "var(--border-default)",
+          boxShadow: "0 0 0 1px var(--border-default)",
         }}
         onMouseDown={handleVerticalMouseDown}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.backgroundColor = "var(--primary-default)";
+          e.currentTarget.style.boxShadow = "0 0 0 1px var(--primary-default)";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.backgroundColor = "var(--border-default)";
+          e.currentTarget.style.boxShadow = "0 0 0 1px var(--border-default)";
+        }}
         draggable={false}
       >
         {/* 가운데 grip 표시 */}
         <div className="w-full h-full flex items-center justify-center pointer-events-none">
           <div className="flex flex-col space-y-1">
-            <div className="w-0.5 h-4 bg-gray-600 dark:bg-gray-300 rounded-full"></div>
-            <div className="w-0.5 h-4 bg-gray-600 dark:bg-gray-300 rounded-full"></div>
-            <div className="w-0.5 h-4 bg-gray-600 dark:bg-gray-300 rounded-full"></div>
+            <div
+              className="w-0.5 h-4 rounded-full"
+              style={{ backgroundColor: "var(--text-tertiary)" }}
+            ></div>
+            <div
+              className="w-0.5 h-4 rounded-full"
+              style={{ backgroundColor: "var(--text-tertiary)" }}
+            ></div>
+            <div
+              className="w-0.5 h-4 rounded-full"
+              style={{ backgroundColor: "var(--text-tertiary)" }}
+            ></div>
           </div>
         </div>
       </div>
@@ -251,24 +279,51 @@ export default function TripleSplitFrame({
             maxHeight: "calc(100% - 150px)",
           }}
         >
-          <div className="w-full h-full bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 overflow-auto relative">
+          <div
+            className="w-full h-full overflow-auto relative"
+            style={{
+              backgroundColor: "var(--background-default)",
+            }}
+          >
             {rightTopContent}
           </div>
         </div>
 
         {/* 수평 리사이저 (상하) */}
         <div
-          className="h-1.5 my-2 bg-gray-400 dark:bg-gray-500 hover:bg-blue-500 cursor-row-resize transition-colors duration-200 flex-shrink-0 w-full rounded-sm border border-gray-300 dark:border-gray-600 shadow-sm"
-          style={{ zIndex: 10 }}
+          className="h-1.5 my-3 cursor-row-resize transition-colors duration-200 flex-shrink-0 w-full rounded-sm"
+          style={{
+            zIndex: 10,
+            backgroundColor: "var(--border-default)",
+            boxShadow: "0 0 0 1px var(--border-default)",
+          }}
           onMouseDown={handleHorizontalMouseDown}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = "var(--primary-default)";
+            e.currentTarget.style.boxShadow =
+              "0 0 0 1px var(--primary-default)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = "var(--border-default)";
+            e.currentTarget.style.boxShadow = "0 0 0 1px var(--border-default)";
+          }}
           draggable={false}
         >
           {/* 가운데 grip 표시 */}
           <div className="w-full h-full flex items-center justify-center pointer-events-none">
             <div className="flex space-x-1">
-              <div className="h-0.5 w-4 bg-gray-600 dark:bg-gray-300 rounded-full"></div>
-              <div className="h-0.5 w-4 bg-gray-600 dark:bg-gray-300 rounded-full"></div>
-              <div className="h-0.5 w-4 bg-gray-600 dark:bg-gray-300 rounded-full"></div>
+              <div
+                className="h-0.5 w-4 rounded-full"
+                style={{ backgroundColor: "var(--text-tertiary)" }}
+              ></div>
+              <div
+                className="h-0.5 w-4 rounded-full"
+                style={{ backgroundColor: "var(--text-tertiary)" }}
+              ></div>
+              <div
+                className="h-0.5 w-4 rounded-full"
+                style={{ backgroundColor: "var(--text-tertiary)" }}
+              ></div>
             </div>
           </div>
         </div>
@@ -278,7 +333,12 @@ export default function TripleSplitFrame({
           className={`${rightBottomClassName} flex-1 w-full`}
           style={{ minHeight: "100px" }}
         >
-          <div className="w-full h-full bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 overflow-auto relative">
+          <div
+            className="w-full h-full overflow-auto relative"
+            style={{
+              backgroundColor: "var(--background-default)",
+            }}
+          >
             {rightBottomContent}
           </div>
         </div>

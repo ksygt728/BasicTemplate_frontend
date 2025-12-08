@@ -1,105 +1,348 @@
-import Image from "next/image";
+"use client";
+
+import { Button } from "@/components/common/themed/Button";
+import { Card } from "@/components/common/themed/Card";
+import { ImageCard } from "@/components/common/themed/ImageCard";
+import { Carousel } from "@/components/common/themed/Carousel";
+import type { CarouselItem } from "@/components/common/themed/Carousel";
+import Link from "next/link";
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+  const heroImages: CarouselItem[] = [
+    {
+      id: 1,
+      content: (
+        <div style={{ position: "relative", width: "100%", height: "500px" }}>
+          <img
+            src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1920"
+            alt="Digital Innovation"
+            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+          />
+          <div
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background:
+                "linear-gradient(to right, rgba(0,0,0,0.7), transparent)",
+              display: "flex",
+              alignItems: "center",
+              padding: "0 80px",
+            }}
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+            <div>
+              <h1
+                style={{
+                  fontSize: "48px",
+                  fontWeight: 600,
+                  marginBottom: "16px",
+                  color: "#fff",
+                }}
+              >
+                비즈니스 관리의 새로운 기준
+              </h1>
+              <p
+                style={{
+                  fontSize: "20px",
+                  marginBottom: "32px",
+                  color: "#ddd",
+                }}
+              >
+                CBMS로 효율적인 업무 환경을 경험하세요
+              </p>
+              <div style={{ display: "flex", gap: "16px" }}>
+                <Link href="/main">
+                  <Button size="lg" variant="primary">
+                    시작하기
+                  </Button>
+                </Link>
+                <Link href="/demo-component">
+                  <Button size="lg" variant="secondary">
+                    데모 보기
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
+      ),
+    },
+    {
+      id: 2,
+      content: (
+        <div style={{ position: "relative", width: "100%", height: "500px" }}>
+          <img
+            src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1920"
+            alt="Business Analytics"
+            style={{ width: "100%", height: "100%", objectFit: "cover" }}
           />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
+          <div
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background:
+                "linear-gradient(to right, rgba(0,0,0,0.7), transparent)",
+              display: "flex",
+              alignItems: "center",
+              padding: "0 80px",
+            }}
+          >
+            <div>
+              <h1
+                style={{
+                  fontSize: "48px",
+                  fontWeight: 600,
+                  marginBottom: "16px",
+                  color: "#fff",
+                }}
+              >
+                실시간 데이터 분석
+              </h1>
+              <p
+                style={{
+                  fontSize: "20px",
+                  marginBottom: "32px",
+                  color: "#ddd",
+                }}
+              >
+                강력한 분석 도구로 비즈니스 인사이트를 얻으세요
+              </p>
+              <Link href="/main/admin/base/code">
+                <Button size="lg" variant="primary">
+                  더 알아보기
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      ),
+    },
+  ];
 
-        <p className="text-gray-100 mb-1">📧</p>
-      </footer>
+  return (
+    <div style={{ background: "var(--background-default)" }}>
+      {/* Hero Carousel */}
+      <Carousel
+        items={heroImages}
+        autoPlay
+        interval={5000}
+        showDots
+        showArrows
+        loop
+      />
+
+      {/* Features Section */}
+      <section
+        style={{ padding: "80px 40px", maxWidth: "1200px", margin: "0 auto" }}
+      >
+        <div style={{ textAlign: "center", marginBottom: "64px" }}>
+          <h2
+            style={{
+              fontSize: "36px",
+              fontWeight: 600,
+              marginBottom: "16px",
+              color: "var(--text-primary)",
+            }}
+          >
+            핵심 기능
+          </h2>
+          <p style={{ fontSize: "18px", color: "var(--text-secondary)" }}>
+            비즈니스 성장을 위한 강력한 도구들
+          </p>
+        </div>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+            gap: "32px",
+          }}
+        >
+          <Card hoverable>
+            <div style={{ textAlign: "center", padding: "24px" }}>
+              <div style={{ fontSize: "48px", marginBottom: "16px" }}>📊</div>
+              <h3
+                style={{
+                  fontSize: "24px",
+                  fontWeight: 600,
+                  marginBottom: "12px",
+                  color: "var(--text-primary)",
+                }}
+              >
+                데이터 관리
+              </h3>
+              <p
+                style={{
+                  fontSize: "14px",
+                  color: "var(--text-secondary)",
+                  lineHeight: 1.6,
+                }}
+              >
+                강력한 데이터 관리 기능으로 비즈니스 데이터를 체계적으로
+                관리하세요
+              </p>
+            </div>
+          </Card>
+
+          <Card hoverable>
+            <div style={{ textAlign: "center", padding: "24px" }}>
+              <div style={{ fontSize: "48px", marginBottom: "16px" }}>🔐</div>
+              <h3
+                style={{
+                  fontSize: "24px",
+                  fontWeight: 600,
+                  marginBottom: "12px",
+                  color: "var(--text-primary)",
+                }}
+              >
+                보안
+              </h3>
+              <p
+                style={{
+                  fontSize: "14px",
+                  color: "var(--text-secondary)",
+                  lineHeight: 1.6,
+                }}
+              >
+                JWT 기반 인증과 권한 관리로 안전한 시스템을 구축하세요
+              </p>
+            </div>
+          </Card>
+
+          <Card hoverable>
+            <div style={{ textAlign: "center", padding: "24px" }}>
+              <div style={{ fontSize: "48px", marginBottom: "16px" }}>⚡</div>
+              <h3
+                style={{
+                  fontSize: "24px",
+                  fontWeight: 600,
+                  marginBottom: "12px",
+                  color: "var(--text-primary)",
+                }}
+              >
+                빠른 성능
+              </h3>
+              <p
+                style={{
+                  fontSize: "14px",
+                  color: "var(--text-secondary)",
+                  lineHeight: 1.6,
+                }}
+              >
+                최신 기술 스택으로 구현된 빠르고 반응성 좋은 사용자 경험
+              </p>
+            </div>
+          </Card>
+        </div>
+      </section>
+
+      {/* Showcase Section */}
+      <section
+        style={{
+          padding: "80px 40px",
+          background: "var(--background-subtle)",
+        }}
+      >
+        <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: "64px" }}>
+            <h2
+              style={{
+                fontSize: "36px",
+                fontWeight: 600,
+                marginBottom: "16px",
+                color: "var(--text-primary)",
+              }}
+            >
+              다양한 산업 분야에서 활용
+            </h2>
+            <p style={{ fontSize: "18px", color: "var(--text-secondary)" }}>
+              여러 비즈니스 환경에 최적화된 솔루션
+            </p>
+          </div>
+
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+              gap: "24px",
+            }}
+          >
+            <ImageCard
+              src="https://images.unsplash.com/photo-1556761175-b413da4baf72?w=800"
+              alt="Office"
+              title="기업 관리"
+              description="효율적인 기업 자원 관리"
+              aspectRatio="16:9"
+              overlay
+            />
+            <ImageCard
+              src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=800"
+              alt="Analytics"
+              title="데이터 분석"
+              description="실시간 비즈니스 인텔리전스"
+              aspectRatio="16:9"
+              overlay
+            />
+            <ImageCard
+              src="https://images.unsplash.com/photo-1553877522-43269d4ea984?w=800"
+              alt="Team"
+              title="팀 협업"
+              description="원활한 팀 커뮤니케이션"
+              aspectRatio="16:9"
+              overlay
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section style={{ padding: "80px 40px", textAlign: "center" }}>
+        <div style={{ maxWidth: "800px", margin: "0 auto" }}>
+          <h2
+            style={{
+              fontSize: "36px",
+              fontWeight: 600,
+              marginBottom: "16px",
+              color: "var(--text-primary)",
+            }}
+          >
+            지금 바로 시작하세요
+          </h2>
+          <p
+            style={{
+              fontSize: "18px",
+              marginBottom: "32px",
+              color: "var(--text-secondary)",
+            }}
+          >
+            CBMS와 함께 비즈니스를 한 단계 성장시키세요
+          </p>
+          <div
+            style={{
+              display: "flex",
+              gap: "16px",
+              justifyContent: "center",
+              flexWrap: "wrap",
+            }}
+          >
+            <Link href="/signUp">
+              <Button size="lg" variant="primary">
+                무료로 시작하기
+              </Button>
+            </Link>
+            <Link href="/demo-component">
+              <Button size="lg" variant="secondary">
+                데모 체험하기
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

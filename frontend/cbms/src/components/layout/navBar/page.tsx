@@ -12,6 +12,7 @@ import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import { logout } from "@/store/slices/authSlice";
 import { useAlert } from "@/contexts/AlertContext";
 import Cookies from "js-cookie";
+import { Button } from "@/components/common/themed";
 
 export default function NavBar() {
   // Hook을 사용하여 메뉴 데이터 가져오기
@@ -299,22 +300,22 @@ export default function NavBar() {
               <div className="flex flex-col md:flex-row md:mx-1 md:items-center">
                 <Link
                   className="my-2 text-sm leading-5 text-gray-700 transition-colors duration-300 transform dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 hover:underline md:mx-4 md:my-0"
-                  href="#"
+                  href="/main"
                 >
                   예비버튼1
                 </Link>
                 <Link
                   className="my-2 text-sm leading-5 text-gray-700 transition-colors duration-300 transform dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 hover:underline md:mx-4 md:my-0"
-                  href="#"
+                  href="/main"
                 >
                   예비버튼2
                 </Link>
-                <button
+                <Button
                   onClick={handleClearCache}
                   className="my-2 text-sm leading-5 text-gray-700 transition-colors duration-300 transform dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 hover:underline md:mx-4 md:my-0 text-left"
                 >
                   캐시삭제
-                </button>
+                </Button>
                 {isAuthenticated && user ? (
                   <div
                     className="relative md:mx-4 flex items-center"
