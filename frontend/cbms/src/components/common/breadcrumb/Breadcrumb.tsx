@@ -46,10 +46,18 @@ export default function Breadcrumb() {
 
   // 현재 경로에 해당하는 메뉴 경로 생성
   const generateBreadcrumb = (): BreadcrumbItem[] => {
+    // Main 페이지는 기본 breadcrumb만 표시
+    if (pathname === "/main") {
+      return [{ label: "Main" }];
+    }
+
     if (!menuData || menuData.length === 0) return [];
 
     const menuPath = findMenuPath(menuData, pathname);
-    if (!menuPath) return [];
+    if (!menuPath) {
+      // 메뉴를 못 찾으면 Main만 표시
+      return [{ label: "Main" }];
+    }
 
     const breadcrumbItems: BreadcrumbItem[] = [
       { label: "Main", href: "/main" },
@@ -68,20 +76,31 @@ export default function Breadcrumb() {
 
   const breadcrumbItems = generateBreadcrumb();
 
-  if (breadcrumbItems.length <= 1) {
+  // 빈 배열이면 렌더링하지 않음
+  if (breadcrumbItems.length === 0) {
     return null;
   }
 
   return (
     <nav
       aria-label="Breadcrumb"
-      className="flex items-center space-x-1 text-sm text-gray-600 dark:text-gray-400"
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: "4px",
+        fontSize: "14px",
+        color: "var(--text-secondary)",
+      }}
     >
       {breadcrumbItems.map((item, index) => (
         <React.Fragment key={index}>
           {index > 0 && (
             <svg
-              className="w-4 h-4 text-gray-400"
+              style={{
+                width: "16px",
+                height: "16px",
+                color: "var(--text-tertiary)",
+              }}
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -97,12 +116,27 @@ export default function Breadcrumb() {
           {item.href ? (
             <Link
               href={item.href}
-              className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200"
+              style={{
+                color: "var(--text-secondary)",
+                textDecoration: "none",
+                transition: "color 0.2s",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = "var(--primary-default)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = "var(--text-secondary)";
+              }}
             >
               {item.label}
             </Link>
           ) : (
-            <span className="text-gray-900 dark:text-gray-200 font-medium">
+            <span
+              style={{
+                color: "var(--text-primary)",
+                fontWeight: 500,
+              }}
+            >
               {item.label}
             </span>
           )}

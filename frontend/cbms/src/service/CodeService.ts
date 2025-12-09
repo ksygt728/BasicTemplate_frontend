@@ -87,6 +87,9 @@ interface UseCodeServiceReturn {
   selectedGroupCd: string | null;
   searchFormData: SearchFormData;
 
+  // 원본 데이터
+  codeData: any;
+
   // 테이블 데이터
   leftTableData: CodeGroupRow[];
   rightTopTableData: CodeAttributeRow[];
@@ -487,6 +490,9 @@ export const useCodeService = (): UseCodeServiceReturn => {
     // 상태 변경 함수
     setSelectedGroupCd,
     setSearchFormData,
+
+    // 원본 데이터
+    codeData,
 
     // 비즈니스 로직
     handleSearch,

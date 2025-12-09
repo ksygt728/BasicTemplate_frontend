@@ -1,4 +1,4 @@
-import { SearchOption } from "@/components/common/searchForm/SearchForm";
+import type { SearchOption } from "@/components/common/themed/SearchForm";
 
 /**
  * @파일명 : info.tsx

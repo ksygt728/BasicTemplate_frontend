@@ -26,7 +26,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const dispatch = useAppDispatch();
   const { showAlert } = useAlert();
   const router = useRouter();
-  const [isRestoring, setIsRestoring] = useState(true);
   const isInitialized = useRef(false);
 
   useEffect(() => {
@@ -82,24 +81,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         console.error("세션 복원 오류:", error);
         Cookies.remove("accessToken");
         Cookies.remove("refreshToken");
-      } finally {
-        setIsRestoring(false);
       }
     };
 
     restoreSession();
   }, []);
-
-  if (isRestoring) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-900 dark">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mb-4"></div>
-          <p className="text-gray-300">Loading...</p>
-        </div>
-      </div>
-    );
-  }
 
   return <>{children}</>;
 };
