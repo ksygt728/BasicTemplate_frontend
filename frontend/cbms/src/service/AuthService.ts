@@ -8,7 +8,7 @@
  */
 
 import { useState } from "react";
-import { useAuthApi } from "@/hooks/useAuthApi";
+import { useAuthApi } from "@/hooks/common/useAuthApi";
 import {
   validateUserId,
   validatePassword,

@@ -101,7 +101,7 @@ export default function NotFound() {
           >
             <Button
               variant="primary"
-              onClick={() => router.push("/")}
+              onClick={() => router.push("/main")}
               leftIcon="🏠"
             >
               홈으로 가기
