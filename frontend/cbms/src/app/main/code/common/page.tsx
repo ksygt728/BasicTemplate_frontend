@@ -1,10 +1,9 @@
 "use client";
 
-import BasicTableView from "@/components/common/table/BasicTableView";
-import SearchForm, {
-  SearchOption,
-} from "@/components/common/searchForm/SearchForm";
-import BasicFrame from "@/components/layout/frame/BasicFrame";
+import { AdvancedTable } from "@/components/common/themed/AdvancedTable";
+import type { AdvancedTableColumn } from "@/components/common/themed/AdvancedTable";
+import { SearchForm } from "@/components/common/themed/SearchForm";
+import type { SearchField } from "@/components/common/themed/SearchForm";
 import TripleSplitFrame from "@/components/layout/frame/TripleSplitFrame";
 import { useCodeApi } from "@/hooks/useCodeApi";
 import { useState, useMemo, useEffect } from "react";
@@ -66,26 +65,26 @@ export default function Home() {
   const [searchFormData, setSearchFormData] = useState<Record<string, any>>({});
 
   /**
-   * @설정 검색 폼 옵션들
-   * @설명 SearchForm 컴포넌트에서 사용할 검색 조건 옵션 정의
+   * @설정 검색 폼 필드들
+   * @설명 SearchForm 컴포넌트에서 사용할 검색 조건 필드 정의
    */
-  const searchOptions: SearchOption[] = useMemo(
+  const searchFields: SearchField[] = useMemo(
     () => [
       {
+        name: "grpCdType",
         label: "그룹코드타입",
-        value: "grpCdType",
         type: "text",
         placeholder: "그룹코드타입을 입력하세요",
       },
       {
+        name: "grpCd",
         label: "그룹코드",
-        value: "grpCd",
         type: "text",
         placeholder: "그룹코드를 입력하세요",
       },
       {
+        name: "grpNm",
         label: "그룹명",
-        value: "grpNm",
         type: "text",
         placeholder: "그룹명을 입력하세요",
       },
@@ -273,32 +272,32 @@ export default function Home() {
    * - grpCd: 그룹코드 (편집 불가 - Primary Key, 필수)
    * - grpNm: 그룹명 (편집 가능, 선택)
    */
-  const leftTableColumns = [
+  const leftTableColumns: AdvancedTableColumn[] = [
     {
       key: "grpCdType",
-      label: "그룹코드타입",
+      title: "그룹코드타입",
       width: 100,
       sortable: true,
       editable: true, // 편집 가능
-      type: "text",
+      type: "text" as const,
       required: true, // 필수 입력 필드
     },
     {
       key: "grpCd",
-      label: "그룹코드",
+      title: "그룹코드",
       width: 120,
       sortable: true,
       editable: false, // 편집 불가 (Primary Key)
-      type: "text",
+      type: "text" as const,
       required: true, // 필수 입력 필드
     },
     {
       key: "grpNm",
-      label: "그룹명",
+      title: "그룹명",
       width: 150,
       sortable: true,
       editable: true, // 편집 가능
-      type: "text",
+      type: "text" as const,
       required: true, // 선택적 필드
     },
   ];
@@ -310,32 +309,32 @@ export default function Home() {
    * - attrNm: 속성명 (편집 가능, 선택)
    * - orderNum: 정렬순서 (편집 가능, 필수)
    */
-  const rightTopTableColumns = [
+  const rightTopTableColumns: AdvancedTableColumn[] = [
     {
       key: "attrCd",
-      label: "속성코드",
+      title: "속성코드",
       width: 120,
       sortable: true,
       editable: false, // 편집 불가 (Primary Key)
-      type: "text",
+      type: "text" as const,
       required: true, // 필수 입력 필드
     },
     {
       key: "attrNm",
-      label: "속성명",
+      title: "속성명",
       width: 200,
       sortable: true,
       editable: true, // 편집 가능
-      type: "text",
+      type: "text" as const,
       required: true, // 선택적 필드
     },
     {
       key: "orderNum",
-      label: "정렬순서",
+      title: "정렬순서",
       width: 100,
       sortable: true,
       editable: true, // 편집 가능
-      type: "number",
+      type: "number" as const,
       required: true, // 필수 입력 필드
     },
   ];
@@ -348,30 +347,21 @@ export default function Home() {
    * - 동적 속성: 선택된 그룹의 속성들을 컬럼으로 추가
    * - 고정 끝: useYn(사용여부), dtlOrderNum(정렬순서)
    */
-  const rightBottomTableColumns = useMemo(() => {
+  const rightBottomTableColumns = useMemo((): AdvancedTableColumn[] => {
     /**
      * @컬럼구조 1단계: 고정 시작 컬럼들 정의
      * @설명 테이블 좌측에 고정되는 기본 컬럼들
      */
-    const fixedStartColumns = [
+    const fixedStartColumns: AdvancedTableColumn[] = [
       {
         key: "dtlCd",
-        label: "상세코드",
+        title: "상세코드",
         width: 100,
         sortable: true,
         editable: false, // 편집 불가 (Primary Key)
-        type: "text",
+        type: "text" as const,
         required: true, // 필수 입력 필드
       },
-      // {
-      //   key: "dtlNm",
-      //   label: "상세명",
-      //   width: 150,
-      //   sortable: true,
-      //   editable: true, // 편집 가능
-      //   type: "text",
-      //   required: false, // 선택적 필드
-      // },
     ];
 
     /**
@@ -382,7 +372,7 @@ export default function Home() {
      *   2. 중복 제거를 위해 Map 사용
      *   3. 각 속성을 편집 가능한 텍스트 컬럼으로 생성
      */
-    let dynamicColumns: any[] = [];
+    let dynamicColumns: AdvancedTableColumn[] = [];
     if (selectedGroupCd && codeData?.content) {
       const selectedGroup = codeData.content.find(
         (item: any) => item.grpCd === selectedGroupCd
@@ -396,11 +386,11 @@ export default function Home() {
               if (attr.attrCd && !attributesMap.has(attr.attrCd)) {
                 attributesMap.set(attr.attrCd, {
                   key: attr.attrCd,
-                  label: attr.attrNm || attr.attrCd, // 속성명 또는 속성코드
+                  title: attr.attrNm || attr.attrCd, // 속성명 또는 속성코드
                   width: 120,
                   sortable: true,
                   editable: true, // 편집 가능
-                  type: "text",
+                  type: "text" as const,
                   required: false, // 선택적 필드
                   attrOrderNum: attr.attrOrderNum || 999, // 정렬순서 저장 (기본값 999)
                 });
@@ -411,7 +401,7 @@ export default function Home() {
 
         // attrOrderNum으로 정렬하여 동적 컬럼 배열 생성
         dynamicColumns = Array.from(attributesMap.values()).sort(
-          (a, b) => a.attrOrderNum - b.attrOrderNum
+          (a: any, b: any) => a.attrOrderNum - b.attrOrderNum
         );
       }
     }
@@ -420,24 +410,24 @@ export default function Home() {
      * @컬럼구조 3단계: 고정 끝 컬럼들 정의
      * @설명 테이블 우측에 고정되는 공통 관리 컬럼들
      */
-    const fixedEndColumns = [
+    const fixedEndColumns: AdvancedTableColumn[] = [
       {
         key: "useYn",
-        label: "사용여부",
+        title: "사용여부",
         width: 80,
         sortable: true,
         editable: true, // 편집 가능
-        type: "select",
+        type: "select" as const,
         options: ["Y", "N"], // 드롭다운 옵션
         required: true, // 필수 입력 필드
       },
       {
         key: "dtlOrderNum",
-        label: "정렬순서",
+        title: "정렬순서",
         width: 80,
         sortable: true,
         editable: true, // 편집 가능
-        type: "number",
+        type: "number" as const,
         required: true, // 필수 입력 필드
       },
     ];
@@ -491,15 +481,15 @@ export default function Home() {
   /**
    * @기능 그룹코드 수정 처리
    * @설명 수정된 데이터를 ComCodeMReqDto 형태로 변환하여 API 호출
-   * @param {string|number} id - 수정할 행의 식별자
+   * @param {React.Key} id - 수정할 행의 식별자
    * @param {Object} rowData - 수정된 행 데이터
    * @returns {Promise<Object>} API 호출 결과
    */
-  const handleUpdateGroupCode = async (id: string | number, rowData: any) => {
+  const handleUpdateGroupCode = async (id: React.Key, rowData: any) => {
     // 테이블 수정 데이터를 API 요청 DTO 형태로 변환
     const comCodeM = {
       grpCdType: rowData.grpCdType,
-      grpCd: typeof id === "string" ? id : rowData.grpCd, // ID 또는 데이터에서 grpCd 사용
+      grpCd: String(id), // Key 타입을 문자열로 변환
       grpNm: rowData.grpNm,
     };
 
@@ -513,11 +503,11 @@ export default function Home() {
   /**
    * @기능 그룹코드 삭제 처리
    * @설명 선택된 그룹코드를 삭제하고 연관 상태 초기화
-   * @param {string|number} id - 삭제할 그룹코드
+   * @param {React.Key} id - 삭제할 그룹코드
    * @returns {Promise<Object>} API 호출 결과
    */
-  const handleDeleteGroupCode = async (id: string | number) => {
-    const grpCd = typeof id === "string" ? id : String(id);
+  const handleDeleteGroupCode = async (id: React.Key) => {
+    const grpCd = String(id);
 
     const result = await deleteGroupCode(grpCd);
     if (result?.success) {
@@ -608,15 +598,12 @@ export default function Home() {
   /**
    * @기능 속성코드 수정 처리
    * @설명 수정된 데이터를 ComCodeTReqDto 형태로 변환하여 API 호출
-   * @param {string|number} id - 수정할 행의 식별자
+   * @param {React.Key} id - 수정할 행의 식별자
    * @param {Object} rowData - 수정된 행 데이터
    * @returns {Promise<Object>} API 호출 결과
    * @전제조건 selectedGroupCd가 null이 아니어야 함
    */
-  const handleUpdateAttributeCode = async (
-    id: string | number,
-    rowData: any
-  ) => {
+  const handleUpdateAttributeCode = async (id: React.Key, rowData: any) => {
     // 그룹코드 선택 여부 확인
     if (!selectedGroupCd) {
       throw new Error("그룹 코드가 선택되지 않았습니다.");
@@ -640,18 +627,18 @@ export default function Home() {
   /**
    * @기능 속성코드 삭제 처리
    * @설명 선택된 속성코드를 삭제
-   * @param {string|number} id - 삭제할 행의 식별자
+   * @param {React.Key} id - 삭제할 행의 식별자
    * @returns {Promise<Object>} API 호출 결과
    * @전제조건 selectedGroupCd가 null이 아니어야 함
    */
-  const handleDeleteAttributeCode = async (id: string | number) => {
+  const handleDeleteAttributeCode = async (id: React.Key) => {
     // 그룹코드 선택 여부 확인
     if (!selectedGroupCd) {
       throw new Error("그룹 코드가 선택되지 않았습니다.");
     }
 
     // 테이블 데이터에서 해당 ID의 속성코드 찾기
-    const targetRow = rightTopTableData.find((row) => row.id === id);
+    const targetRow = rightTopTableData.find((row) => row.id === String(id));
     if (!targetRow?.attrCd) {
       throw new Error("삭제할 속성 코드를 찾을 수 없습니다.");
     }
@@ -793,7 +780,7 @@ export default function Home() {
    * @전제조건 selectedGroupCd가 null이 아니어야 함
    * @알고리즘 값이 있는 모든 동적 속성 컬럼에 대해 각각 API 호출
    */
-  const handleUpdateDetailCode = async (id: string | number, rowData: any) => {
+  const handleUpdateDetailCode = async (id: React.Key, rowData: any) => {
     // 그룹코드 선택 여부 확인
     if (!selectedGroupCd) {
       await showAlert({
@@ -866,7 +853,7 @@ export default function Home() {
   /**
    * @기능 상세코드 삭제 처리
    * @설명 선택된 상세코드를 삭제하기 위해 원본 데이터에서 속성코드를 찾아 API 호출
-   * @param {string|number} id - 삭제할 행의 식별자
+   * @param {React.Key} id - 삭제할 행의 식별자
    * @returns {Promise<Object>} API 호출 결과
    * @전제조건 selectedGroupCd가 null이 아니어야 함
    * @알고리즘
@@ -875,14 +862,14 @@ export default function Home() {
    *   3. 첫 번째 속성의 attrCd 추출
    *   4. API 호출 (grpCd, attrCd, dtlCd)
    */
-  const handleDeleteDetailCode = async (id: string | number) => {
+  const handleDeleteDetailCode = async (id: React.Key) => {
     // 그룹코드 선택 여부 확인
     if (!selectedGroupCd) {
       throw new Error("그룹 코드가 선택되지 않았습니다.");
     }
 
     // 1. 테이블 데이터에서 삭제할 상세코드 찾기
-    const targetRow = rightBottomTableData.find((row) => row.id === id);
+    const targetRow = rightBottomTableData.find((row) => row.id === String(id));
     if (!targetRow?.dtlCd) {
       throw new Error("삭제할 상세 코드를 찾을 수 없습니다.");
     }
@@ -1039,36 +1026,40 @@ export default function Home() {
       {/* 검색 폼 */}
       <SearchForm
         key="code-search-form"
-        searchOptions={searchOptions}
+        fields={searchFields}
         onSearch={handleSearch}
         loading={loading}
+        initialValues={searchFormData}
         className="mb-4"
-        searchData={searchFormData}
-        onSearchDataChange={setSearchFormData}
       />
 
       {/* 그룹코드 관리 테이블 */}
-      <BasicTableView
+      <AdvancedTable
         columns={leftTableColumns}
         data={leftTableData}
+        rowKey="grpCd"
         title="코드 그룹 관리"
         subTitle="그룹코드"
         description="시스템에서 사용하는 공통 코드 그룹 목록입니다."
         onRowClick={handleLeftTableRowClick}
-        onInsert={handleInsertGroupCode}
+        onAdd={handleInsertGroupCode}
         onUpdate={handleUpdateGroupCode}
         onDelete={handleDeleteGroupCode}
-        onBulkCopy={handleBulkCopyGroupCode}
         onBulkDelete={handleBulkDeleteGroupCode}
+        editable
+        exportable
+        pagination
+        selection
       />
     </div>
   );
 
   // 우측 상단 패널: 속성코드 관리 테이블 컴포넌트
   const rightTopPanelContent = (
-    <BasicTableView
+    <AdvancedTable
       columns={rightTopTableColumns}
       data={rightTopTableData}
+      rowKey="attrCd"
       title={selectedGroupCd ? `${selectedGroupCd} - 속성 정보` : "속성 정보"}
       subTitle="속성 코드"
       description={
@@ -1076,19 +1067,23 @@ export default function Home() {
           ? `${selectedGroupCd} 그룹의 속성 정보입니다.`
           : "좌측에서 그룹을 선택하면 속성 정보가 표시됩니다."
       }
-      onInsert={selectedGroupCd ? handleInsertAttributeCode : undefined}
+      onAdd={selectedGroupCd ? handleInsertAttributeCode : undefined}
       onUpdate={selectedGroupCd ? handleUpdateAttributeCode : undefined}
       onDelete={selectedGroupCd ? handleDeleteAttributeCode : undefined}
-      onBulkCopy={selectedGroupCd ? handleBulkCopyAttributeCode : undefined}
       onBulkDelete={selectedGroupCd ? handleBulkDeleteAttributeCode : undefined}
+      editable={!!selectedGroupCd}
+      exportable
+      pagination
+      selection
     />
   );
 
   // 우측 하단 패널: 상세코드 관리 테이블 컴포넌트
   const rightBottomPanelContent = (
-    <BasicTableView
+    <AdvancedTable
       columns={rightBottomTableColumns}
       data={rightBottomTableData}
+      rowKey="dtlCd"
       title={selectedGroupCd ? `${selectedGroupCd} - 상세 코드` : "상세 코드"}
       subTitle="상세 코드"
       description={
@@ -1096,11 +1091,14 @@ export default function Home() {
           ? `${selectedGroupCd} 그룹의 상세 코드 목록입니다.`
           : "좌측에서 그룹을 선택하면 상세 코드가 표시됩니다."
       }
-      onInsert={selectedGroupCd ? handleInsertDetailCode : undefined}
+      onAdd={selectedGroupCd ? handleInsertDetailCode : undefined}
       onUpdate={selectedGroupCd ? handleUpdateDetailCode : undefined}
       onDelete={selectedGroupCd ? handleDeleteDetailCode : undefined}
-      onBulkCopy={selectedGroupCd ? handleBulkCopyDetailCode : undefined}
       onBulkDelete={selectedGroupCd ? handleBulkDeleteDetailCode : undefined}
+      editable={!!selectedGroupCd}
+      exportable
+      pagination
+      selection
     />
   );
 

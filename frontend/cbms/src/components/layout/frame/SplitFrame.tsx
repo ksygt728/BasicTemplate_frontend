@@ -128,23 +128,48 @@ export default function SplitFrame({
           maxWidth: "calc(100% - 200px)",
         }}
       >
-        <div className="w-full h-full bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 overflow-auto">
+        <div
+          className="w-full h-full rounded-lg p-6 overflow-auto"
+          style={{
+            backgroundColor: "var(--background-elevated)",
+            border: "1px solid var(--border-subtle)",
+          }}
+        >
           {leftContent}
         </div>
       </div>
 
       {/* 리사이저 */}
       <div
-        className="w-1.5 bg-gray-400 dark:bg-gray-500 hover:bg-blue-500 cursor-col-resize transition-colors duration-200 flex-shrink-0 mx-2 rounded-sm border border-gray-300 dark:border-gray-600 shadow-sm"
-        style={{ height: "100%" }}
+        className="w-1.5 cursor-col-resize transition-colors duration-200 flex-shrink-0 mx-2 rounded-sm shadow-sm"
+        style={{
+          height: "100%",
+          backgroundColor: "var(--border-default)",
+          border: "1px solid var(--border-subtle)",
+        }}
         onMouseDown={handleMouseDown}
+        onMouseEnter={(e) =>
+          (e.currentTarget.style.backgroundColor = "var(--primary-default)")
+        }
+        onMouseLeave={(e) =>
+          (e.currentTarget.style.backgroundColor = "var(--border-default)")
+        }
       >
         {/* 가운데 grip 표시 */}
         <div className="w-full h-full flex items-center justify-center">
           <div className="flex flex-col space-y-1">
-            <div className="w-0.5 h-4 bg-gray-600 dark:bg-gray-300 rounded-full"></div>
-            <div className="w-0.5 h-4 bg-gray-600 dark:bg-gray-300 rounded-full"></div>
-            <div className="w-0.5 h-4 bg-gray-600 dark:bg-gray-300 rounded-full"></div>
+            <div
+              className="w-0.5 h-4 rounded-full"
+              style={{ backgroundColor: "var(--text-tertiary)" }}
+            ></div>
+            <div
+              className="w-0.5 h-4 rounded-full"
+              style={{ backgroundColor: "var(--text-tertiary)" }}
+            ></div>
+            <div
+              className="w-0.5 h-4 rounded-full"
+              style={{ backgroundColor: "var(--text-tertiary)" }}
+            ></div>
           </div>
         </div>
       </div>
@@ -154,7 +179,13 @@ export default function SplitFrame({
         className={`${rightClassName} flex-1 min-w-0`}
         style={{ height: "100%", minWidth: "100px" }}
       >
-        <div className="w-full h-full bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 overflow-auto">
+        <div
+          className="w-full h-full rounded-lg p-6 overflow-auto"
+          style={{
+            backgroundColor: "var(--background-elevated)",
+            border: "1px solid var(--border-subtle)",
+          }}
+        >
           {rightContent}
         </div>
       </div>
