@@ -40,7 +40,11 @@ export const Select: React.FC<SelectProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedValue, setSelectedValue] = useState(value || "");
+  const [dropdownPosition, setDropdownPosition] = useState<"bottom" | "top">(
+    "bottom"
+  );
   const containerRef = useRef<HTMLDivElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (value !== undefined) {
@@ -61,6 +65,23 @@ export const Select: React.FC<SelectProps> = ({
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  // 드롭다운 위치 계산
+  useEffect(() => {
+    if (isOpen && containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect();
+      const dropdownHeight = 240; // maxHeight와 동일
+      const spaceBelow = window.innerHeight - rect.bottom;
+      const spaceAbove = rect.top;
+
+      // 아래쪽 공간이 부족하고 위쪽 공간이 더 많으면 위로 열기
+      if (spaceBelow < dropdownHeight && spaceAbove > spaceBelow) {
+        setDropdownPosition("top");
+      } else {
+        setDropdownPosition("bottom");
+      }
+    }
+  }, [isOpen]);
 
   const handleSelect = (optionValue: string) => {
     setSelectedValue(optionValue);
@@ -109,10 +130,11 @@ export const Select: React.FC<SelectProps> = ({
 
   const dropdownStyle: React.CSSProperties = {
     position: "absolute",
-    top: "100%",
+    ...(dropdownPosition === "bottom"
+      ? { top: "100%", marginTop: theme.spacing.xs }
+      : { bottom: "100%", marginBottom: theme.spacing.xs }),
     left: 0,
     right: 0,
-    marginTop: theme.spacing.xs,
     backgroundColor: theme.colors.background.overlay,
     border: `1px solid ${theme.colors.border.default}`,
     borderRadius: theme.borderRadius.md,
@@ -176,7 +198,7 @@ export const Select: React.FC<SelectProps> = ({
         <span style={arrowStyle}>▼</span>
       </button>
 
-      <div style={dropdownStyle}>
+      <div ref={dropdownRef} style={dropdownStyle}>
         {options.map((option) => {
           const isSelected = option.value === selectedValue;
           return (

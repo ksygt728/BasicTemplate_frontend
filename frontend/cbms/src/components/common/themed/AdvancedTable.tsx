@@ -895,7 +895,11 @@ export const AdvancedTable = <T extends Record<string, any>>({
         ? ""
         : String(rawValue);
 
-    if (!isEditing || !column.editable) {
+    // 새로운 레코드(Add Mode)인 경우 모든 컬럼을 편집 가능하게 함
+    const isNewRecord = (record as any).isNew === true;
+    const isFieldEditable = column.editable || isNewRecord;
+
+    if (!isEditing || !isFieldEditable) {
       if (column.render) {
         return column.render(rawValue, record, 0);
       }
