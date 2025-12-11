@@ -6,7 +6,7 @@
 
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import {
   Button,
   Input,
@@ -23,6 +23,7 @@ import {
   NavBar,
   Footer,
   Frame,
+  TreeView,
 } from "@/components/common/themed";
 import type {
   TableColumn,
@@ -32,8 +33,10 @@ import type {
   NavMenuItem,
   FooterSection,
   FooterLink,
+  TreeNode,
 } from "@/components/common/themed";
 import { theme } from "@/styles/theme";
+import { DepartmentResDto } from "@/types/responseDto/DepartmentResDto";
 
 export default function DemoComponentPage() {
   const [inputValue, setInputValue] = useState("");
@@ -46,6 +49,153 @@ export default function DemoComponentPage() {
   const [showWarningAlert, setShowWarningAlert] = useState(true);
   const [showErrorAlert, setShowErrorAlert] = useState(true);
   const [showInfoAlert, setShowInfoAlert] = useState(true);
+
+  // 샘플 부서 트리 데이터 (메모이제이션)
+  const sampleDepartmentTree = useMemo<TreeNode[]>(
+    () => [
+      {
+        id: "DEPT001",
+        label: "대표이사실",
+        data: {
+          deptCode: "DEPT001",
+          deptNm: "대표이사실",
+          upperDeptCode: "",
+          deptLv: 1,
+          useYn: "Y",
+        } as Partial<DepartmentResDto>,
+        children: [
+          {
+            id: "DEPT002",
+            label: "경영지원본부",
+            data: {
+              deptCode: "DEPT002",
+              deptNm: "경영지원본부",
+              upperDeptCode: "DEPT001",
+              deptLv: 2,
+              useYn: "Y",
+            } as Partial<DepartmentResDto>,
+            children: [
+              {
+                id: "DEPT003",
+                label: "인사팀",
+                data: {
+                  deptCode: "DEPT003",
+                  deptNm: "인사팀",
+                  upperDeptCode: "DEPT002",
+                  deptLv: 3,
+                  useYn: "Y",
+                } as Partial<DepartmentResDto>,
+              },
+              {
+                id: "DEPT004",
+                label: "총무팀",
+                data: {
+                  deptCode: "DEPT004",
+                  deptNm: "총무팀",
+                  upperDeptCode: "DEPT002",
+                  deptLv: 3,
+                  useYn: "Y",
+                } as Partial<DepartmentResDto>,
+              },
+              {
+                id: "DEPT005",
+                label: "재무팀",
+                data: {
+                  deptCode: "DEPT005",
+                  deptNm: "재무팀",
+                  upperDeptCode: "DEPT002",
+                  deptLv: 3,
+                  useYn: "Y",
+                } as Partial<DepartmentResDto>,
+              },
+            ],
+          },
+          {
+            id: "DEPT006",
+            label: "개발본부",
+            data: {
+              deptCode: "DEPT006",
+              deptNm: "개발본부",
+              upperDeptCode: "DEPT001",
+              deptLv: 2,
+              useYn: "Y",
+            } as Partial<DepartmentResDto>,
+            children: [
+              {
+                id: "DEPT007",
+                label: "프론트엔드팀",
+                data: {
+                  deptCode: "DEPT007",
+                  deptNm: "프론트엔드팀",
+                  upperDeptCode: "DEPT006",
+                  deptLv: 3,
+                  useYn: "Y",
+                } as Partial<DepartmentResDto>,
+              },
+              {
+                id: "DEPT008",
+                label: "백엔드팀",
+                data: {
+                  deptCode: "DEPT008",
+                  deptNm: "백엔드팀",
+                  upperDeptCode: "DEPT006",
+                  deptLv: 3,
+                  useYn: "Y",
+                } as Partial<DepartmentResDto>,
+              },
+              {
+                id: "DEPT009",
+                label: "QA팀",
+                data: {
+                  deptCode: "DEPT009",
+                  deptNm: "QA팀",
+                  upperDeptCode: "DEPT006",
+                  deptLv: 3,
+                  useYn: "Y",
+                } as Partial<DepartmentResDto>,
+              },
+            ],
+          },
+          {
+            id: "DEPT010",
+            label: "영업본부",
+            data: {
+              deptCode: "DEPT010",
+              deptNm: "영업본부",
+              upperDeptCode: "DEPT001",
+              deptLv: 2,
+              useYn: "Y",
+            } as Partial<DepartmentResDto>,
+            children: [
+              {
+                id: "DEPT011",
+                label: "국내영업팀",
+                data: {
+                  deptCode: "DEPT011",
+                  deptNm: "국내영업팀",
+                  upperDeptCode: "DEPT010",
+                  deptLv: 3,
+                  useYn: "Y",
+                } as Partial<DepartmentResDto>,
+              },
+              {
+                id: "DEPT012",
+                label: "해외영업팀",
+                data: {
+                  deptCode: "DEPT012",
+                  deptNm: "해외영업팀",
+                  upperDeptCode: "DEPT010",
+                  deptLv: 3,
+                  useYn: "Y",
+                } as Partial<DepartmentResDto>,
+              },
+            ],
+          },
+        ],
+      },
+    ],
+    []
+  );
 
   const countryOptions = [
     { value: "kr", label: "대한민국" },
@@ -1558,125 +1708,168 @@ export default function DemoComponentPage() {
         <section style={sectionStyle}>
           <h2 style={sectionTitleStyle}>Frame Layouts</h2>
 
-          <Card title="Basic Frame">
-            <div style={{ height: "300px" }}>
-              <Frame
-                mode="basic"
-                title="Basic Frame"
-                description="A simple frame with title and description"
-              >
-                <div
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: theme.spacing.xl,
+            }}
+          >
+            <Card title="Basic Frame">
+              <div style={{ height: "300px" }}>
+                <Frame
+                  mode="basic"
+                  title="Basic Frame"
+                  description="A simple frame with title and description"
+                >
+                  <div
+                    style={{
+                      padding: theme.spacing.md,
+                      color: theme.colors.text.primary,
+                    }}
+                  >
+                    <p>This is the content area of the basic frame.</p>
+                    <p>It can contain any React elements.</p>
+                  </div>
+                </Frame>
+              </div>
+            </Card>
+
+            <Card title="Split Frame (Resizable)">
+              <div style={{ height: "400px" }}>
+                <Frame
+                  mode="split"
+                  leftContent={
+                    <div>
+                      <h3
+                        style={{
+                          color: theme.colors.text.primary,
+                          marginBottom: theme.spacing.md,
+                        }}
+                      >
+                        Left Panel
+                      </h3>
+                      <p style={{ color: theme.colors.text.secondary }}>
+                        This is the left panel content. Drag the divider to
+                        resize.
+                      </p>
+                    </div>
+                  }
+                  rightContent={
+                    <div>
+                      <h3
+                        style={{
+                          color: theme.colors.text.primary,
+                          marginBottom: theme.spacing.md,
+                        }}
+                      >
+                        Right Panel
+                      </h3>
+                      <p style={{ color: theme.colors.text.secondary }}>
+                        This is the right panel content. Try resizing the
+                        panels!
+                      </p>
+                    </div>
+                  }
+                  leftWidth="40%"
+                  resizable
+                />
+              </div>
+            </Card>
+
+            <Card title="Triple Split Frame (Resizable)">
+              <div style={{ height: "600px" }}>
+                <Frame
+                  mode="triple"
+                  leftContent={
+                    <div>
+                      <h3
+                        style={{
+                          color: theme.colors.text.primary,
+                          marginBottom: theme.spacing.md,
+                        }}
+                      >
+                        Left Panel
+                      </h3>
+                      <p style={{ color: theme.colors.text.secondary }}>
+                        This is the left panel. You can resize both horizontally
+                        and vertically.
+                      </p>
+                    </div>
+                  }
+                  rightTopContent={
+                    <div>
+                      <h3
+                        style={{
+                          color: theme.colors.text.primary,
+                          marginBottom: theme.spacing.md,
+                        }}
+                      >
+                        Right Top Panel
+                      </h3>
+                      <p style={{ color: theme.colors.text.secondary }}>
+                        This is the top-right panel. Drag the horizontal divider
+                        below to adjust height.
+                      </p>
+                    </div>
+                  }
+                  rightBottomContent={
+                    <div>
+                      <h3
+                        style={{
+                          color: theme.colors.text.primary,
+                          marginBottom: theme.spacing.md,
+                        }}
+                      >
+                        Right Bottom Panel
+                      </h3>
+                      <p style={{ color: theme.colors.text.secondary }}>
+                        This is the bottom-right panel. Drag the vertical
+                        divider on the left to adjust the left panel width.
+                      </p>
+                    </div>
+                  }
+                  leftWidth="35%"
+                  rightTopHeight="60%"
+                  resizable
+                />
+              </div>
+            </Card>
+
+            <Card title="TreeView - 부서 조직도">
+              <div style={{ marginBottom: theme.spacing.md }}>
+                <p
                   style={{
-                    padding: theme.spacing.md,
-                    color: theme.colors.text.primary,
+                    color: theme.colors.text.secondary,
+                    fontSize: "14px",
                   }}
                 >
-                  <p>This is the content area of the basic frame.</p>
-                  <p>It can contain any React elements.</p>
-                </div>
-              </Frame>
-            </div>
-          </Card>
-
-          <Card title="Split Frame (Resizable)">
-            <div style={{ height: "400px" }}>
-              <Frame
-                mode="split"
-                leftContent={
-                  <div>
-                    <h3
-                      style={{
-                        color: theme.colors.text.primary,
-                        marginBottom: theme.spacing.md,
-                      }}
-                    >
-                      Left Panel
-                    </h3>
-                    <p style={{ color: theme.colors.text.secondary }}>
-                      This is the left panel content. Drag the divider to
-                      resize.
-                    </p>
-                  </div>
-                }
-                rightContent={
-                  <div>
-                    <h3
-                      style={{
-                        color: theme.colors.text.primary,
-                        marginBottom: theme.spacing.md,
-                      }}
-                    >
-                      Right Panel
-                    </h3>
-                    <p style={{ color: theme.colors.text.secondary }}>
-                      This is the right panel content. Try resizing the panels!
-                    </p>
-                  </div>
-                }
-                leftWidth="40%"
-                resizable
-              />
-            </div>
-          </Card>
-
-          <Card title="Triple Split Frame (Resizable)">
-            <div style={{ height: "600px" }}>
-              <Frame
-                mode="triple"
-                leftContent={
-                  <div>
-                    <h3
-                      style={{
-                        color: theme.colors.text.primary,
-                        marginBottom: theme.spacing.md,
-                      }}
-                    >
-                      Left Panel
-                    </h3>
-                    <p style={{ color: theme.colors.text.secondary }}>
-                      This is the left panel. You can resize both horizontally
-                      and vertically.
-                    </p>
-                  </div>
-                }
-                rightTopContent={
-                  <div>
-                    <h3
-                      style={{
-                        color: theme.colors.text.primary,
-                        marginBottom: theme.spacing.md,
-                      }}
-                    >
-                      Right Top Panel
-                    </h3>
-                    <p style={{ color: theme.colors.text.secondary }}>
-                      This is the top-right panel. Drag the horizontal divider
-                      below to adjust height.
-                    </p>
-                  </div>
-                }
-                rightBottomContent={
-                  <div>
-                    <h3
-                      style={{
-                        color: theme.colors.text.primary,
-                        marginBottom: theme.spacing.md,
-                      }}
-                    >
-                      Right Bottom Panel
-                    </h3>
-                    <p style={{ color: theme.colors.text.secondary }}>
-                      This is the bottom-right panel. Drag the vertical divider
-                      on the left to adjust the left panel width.
-                    </p>
-                  </div>
-                }
-                leftWidth="35%"
-                rightTopHeight="60%"
-                resizable
-              />
-            </div>
-          </Card>
+                  계층 구조를 가진 트리뷰 컴포넌트입니다. 부서 조직도 등에
+                  활용할 수 있습니다.
+                </p>
+                <ul
+                  style={{
+                    color: theme.colors.text.tertiary,
+                    fontSize: "13px",
+                    marginTop: theme.spacing.sm,
+                    paddingLeft: theme.spacing.lg,
+                  }}
+                >
+                  <li>화살표(▶/▼)를 클릭하여 하위 부서 펼치기/접기</li>
+                  <li>전체 펼치기/접기 버튼 제공</li>
+                  <li>노드 클릭 시 알림창으로 선택된 부서 정보 확인</li>
+                </ul>
+              </div>
+              <div style={{ marginTop: "20px" }}>
+                <TreeView
+                  data={sampleDepartmentTree}
+                  onNodeClick={(node) => {
+                    console.log("부서 선택:", node);
+                  }}
+                />
+              </div>
+            </Card>
+          </div>
         </section>
 
         {/* Color Palette Section */}
