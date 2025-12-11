@@ -2,6 +2,7 @@ import { ResponseApi } from "@/types/commonDto/ResponseApi";
 import { DepartmentReqDto } from "@/types/requestDto/DepartmentReqDto";
 import { DepartmentResDto } from "@/types/responseDto/DepartmentResDto";
 import { Pageable } from "@/types/requestDto/specialDto/Pageable";
+import { authGet, authPost, authPut, authDelete } from "@/utils/authFetch";
 
 /**
  * @파일명 : departmentApi.ts
@@ -56,14 +57,7 @@ export class DepartmentApi {
     });
 
     const url = `${this.ADMIN_DEPARTMENT_BASE_URL}/search?${params}`;
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    return response.json();
+    return authGet(url).then((res) => res.json());
   }
 
   /**
@@ -77,14 +71,7 @@ export class DepartmentApi {
     deptCode: string
   ): Promise<ResponseApi<Map<string, object>>> {
     const url = `${this.ADMIN_DEPARTMENT_BASE_URL}/${deptCode}`;
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    return response.json();
+    return authGet(url).then((res) => res.json());
   }
 
   /**
@@ -98,15 +85,7 @@ export class DepartmentApi {
     department: DepartmentReqDto
   ): Promise<ResponseApi<Map<string, object>>> {
     const url = `${this.ADMIN_DEPARTMENT_BASE_URL}`;
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(department),
-    });
-
-    return response.json();
+    return authPost(url, department).then((res) => res.json());
   }
 
   /**
@@ -120,15 +99,7 @@ export class DepartmentApi {
     department: DepartmentReqDto
   ): Promise<ResponseApi<Map<string, object>>> {
     const url = `${this.ADMIN_DEPARTMENT_BASE_URL}`;
-    const response = await fetch(url, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(department),
-    });
-
-    return response.json();
+    return authPut(url, department).then((res) => res.json());
   }
 
   /**
@@ -142,13 +113,6 @@ export class DepartmentApi {
     deptCode: string
   ): Promise<ResponseApi<Map<string, object>>> {
     const url = `${this.ADMIN_DEPARTMENT_BASE_URL}/${deptCode}`;
-    const response = await fetch(url, {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    return response.json();
+    return authDelete(url).then((res) => res.json());
   }
 }

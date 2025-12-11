@@ -3,6 +3,7 @@ import { MailMReqDto } from "@/types/requestDto/MailMReqDto";
 import { MailMResDto } from "@/types/responseDto/MailMResDto";
 import { MailHResDto } from "@/types/responseDto/MailHResDto";
 import { Pageable } from "@/types/requestDto/specialDto/Pageable";
+import { authGet, authPost, authPut, authDelete } from "@/utils/authFetch";
 
 /**
  * @파일명 : mailApi.ts
@@ -57,15 +58,7 @@ export class MailApi {
     });
 
     const url = `${this.ADMIN_MAIL_BASE_URL}/search?${params}`;
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-
-    return response.json();
+    return authGet(url).then((res) => res.json());
   }
 
   /**
@@ -79,15 +72,7 @@ export class MailApi {
     mailId: string
   ): Promise<ResponseApi<Map<string, object>>> {
     const url = `${this.ADMIN_MAIL_BASE_URL}/${mailId}`;
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-
-    return response.json();
+    return authGet(url).then((res) => res.json());
   }
 
   /**
@@ -115,15 +100,7 @@ export class MailApi {
     });
 
     const url = `${this.ADMIN_MAIL_BASE_URL}/history/${mailId}?${params}`;
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-
-    return response.json();
+    return authGet(url).then((res) => res.json());
   }
   /**
    * @REQ_ID : REQ_ADM_059
@@ -136,16 +113,7 @@ export class MailApi {
     mailMReqDto: MailMReqDto
   ): Promise<ResponseApi<Map<string, object>>> {
     const url = `${this.ADMIN_MAIL_BASE_URL}`;
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(mailMReqDto),
-    });
-
-
-    return response.json();
+    return authPost(url, mailMReqDto).then((res) => res.json());
   }
   /**
    * @REQ_ID : REQ_ADM_062
@@ -158,16 +126,7 @@ export class MailApi {
     mailM: MailMReqDto
   ): Promise<ResponseApi<Map<string, object>>> {
     const url = `${this.ADMIN_MAIL_BASE_URL}`;
-    const response = await fetch(url, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(mailM),
-    });
-
-
-    return response.json();
+    return authPut(url, mailM).then((res) => res.json());
   }
 
   /**
@@ -181,15 +140,7 @@ export class MailApi {
     mailId: string
   ): Promise<ResponseApi<Map<string, object>>> {
     const url = `${this.ADMIN_MAIL_BASE_URL}/${mailId}`;
-    const response = await fetch(url, {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-
-    return response.json();
+    return authDelete(url).then((res) => res.json());
   }
 
   /**
@@ -203,15 +154,6 @@ export class MailApi {
     recipients: string[]
   ): Promise<ResponseApi<Map<string, object>>> {
     const url = `${this.ADMIN_MAIL_BASE_URL}/send/${mailId}`;
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ recipients }),
-    });
-
-
-    return response.json();
+    return authPost(url, { recipients }).then((res) => res.json());
   }
 }

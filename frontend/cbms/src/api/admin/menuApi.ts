@@ -2,6 +2,7 @@ import { ResponseApi } from "@/types/commonDto/ResponseApi";
 import { MenuReqDto } from "@/types/requestDto/MenuReqDto";
 import { MenuResDto } from "@/types/responseDto/MenuResDto";
 import { Pageable } from "@/types/requestDto/specialDto/Pageable";
+import { authGet, authPost, authPut, authDelete } from "@/utils/authFetch";
 
 /**
  * @파일명 : menuApi.ts
@@ -56,15 +57,7 @@ export class MenuApi {
     });
 
     const url = `${this.ADMIN_MENU_BASE_URL}/search?${params}`;
-
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    return response.json();
+    return authGet(url).then((res) => res.json());
   }
 
   /**
@@ -78,14 +71,7 @@ export class MenuApi {
     menuCd: string
   ): Promise<ResponseApi<Map<string, object>>> {
     const url = `${this.ADMIN_MENU_BASE_URL}/${menuCd}`;
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    return response.json();
+    return authGet(url).then((res) => res.json());
   }
 
   /**
@@ -99,15 +85,7 @@ export class MenuApi {
     menuReqDto: MenuReqDto
   ): Promise<ResponseApi<Map<string, object>>> {
     const url = `${this.ADMIN_MENU_BASE_URL}`;
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(menuReqDto),
-    });
-
-    return response.json();
+    return authPost(url, menuReqDto).then((res) => res.json());
   }
 
   /**
@@ -121,15 +99,7 @@ export class MenuApi {
     menuReqDto: MenuReqDto
   ): Promise<ResponseApi<Map<string, object>>> {
     const url = `${this.ADMIN_MENU_BASE_URL}`;
-    const response = await fetch(url, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(menuReqDto),
-    });
-
-    return response.json();
+    return authPut(url, menuReqDto).then((res) => res.json());
   }
 
   /**
@@ -143,14 +113,7 @@ export class MenuApi {
     menuCd: string
   ): Promise<ResponseApi<Map<string, object>>> {
     const url = `${this.ADMIN_MENU_BASE_URL}/${menuCd}`;
-    const response = await fetch(url, {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    return response.json();
+    return authDelete(url).then((res) => res.json());
   }
 
   /**
@@ -161,14 +124,7 @@ export class MenuApi {
     ResponseApi<Map<string, object>>
   > {
     const url = `${this.ADMIN_MENU_BASE_URL}/tree`;
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    return response.json();
+    return authGet(url).then((res) => res.json());
   }
 
   /**
@@ -180,13 +136,6 @@ export class MenuApi {
     userId: string
   ): Promise<ResponseApi<Map<string, object>>> {
     const url = `${this.ADMIN_MENU_BASE_URL}/user/${userId}`;
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    return response.json();
+    return authGet(url).then((res) => res.json());
   }
 }

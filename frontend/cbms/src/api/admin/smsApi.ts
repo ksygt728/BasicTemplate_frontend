@@ -3,6 +3,7 @@ import { SmsMReqDto } from "@/types/requestDto/SmsMReqDto";
 import { SmsMResDto } from "@/types/responseDto/SmsMResDto";
 import { SmsHResDto } from "@/types/responseDto/SmsHResDto";
 import { Pageable } from "@/types/requestDto/specialDto/Pageable";
+import { authGet, authPost, authPut, authDelete } from "@/utils/authFetch";
 
 /**
  * @파일명 : smsApi.ts
@@ -52,14 +53,7 @@ export class SmsApi {
       url += `?${params.toString()}`;
     }
 
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    return await response.json();
+    return authGet(url).then((res) => res.json());
   }
 
   /**
@@ -73,15 +67,7 @@ export class SmsApi {
     smsId: string
   ): Promise<ResponseApi<Map<string, object>>> {
     const url = `${this.ADMIN_SMS_BASE_URL}/${smsId}`;
-
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    return await response.json();
+    return authGet(url).then((res) => res.json());
   }
 
   /**
@@ -95,16 +81,7 @@ export class SmsApi {
     smsM: SmsMReqDto
   ): Promise<ResponseApi<Map<string, object>>> {
     const url = `${this.ADMIN_SMS_BASE_URL}`;
-
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(smsM),
-    });
-
-    return await response.json();
+    return authPost(url, smsM).then((res) => res.json());
   }
 
   /**
@@ -118,16 +95,7 @@ export class SmsApi {
     smsM: SmsMReqDto
   ): Promise<ResponseApi<Map<string, object>>> {
     const url = `${this.ADMIN_SMS_BASE_URL}`;
-
-    const response = await fetch(url, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(smsM),
-    });
-
-    return await response.json();
+    return authPut(url, smsM).then((res) => res.json());
   }
 
   /**
@@ -141,15 +109,7 @@ export class SmsApi {
     smsId: string
   ): Promise<ResponseApi<Map<string, object>>> {
     const url = `${this.ADMIN_SMS_BASE_URL}/${smsId}`;
-
-    const response = await fetch(url, {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    return await response.json();
+    return authDelete(url).then((res) => res.json());
   }
 
   /**
@@ -180,13 +140,6 @@ export class SmsApi {
       url.searchParams.append("direction", pageable.direction);
     }
 
-    const response = await fetch(url.toString(), {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    return await response.json();
+    return authGet(url.toString()).then((res) => res.json());
   }
 }

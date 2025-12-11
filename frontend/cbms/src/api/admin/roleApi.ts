@@ -6,6 +6,7 @@ import { RoleMenuResDto } from "@/types/responseDto/RoleMenuResDto";
 import { RoleUserReqDto } from "@/types/requestDto/RoleUserReqDto";
 import { RoleUserResDto } from "@/types/responseDto/RoleUserResDto";
 import { Pageable } from "@/types/requestDto/specialDto/Pageable";
+import { authGet, authPost, authPut, authDelete } from "@/utils/authFetch";
 
 /**
  * @파일명 : roleApi.ts
@@ -68,14 +69,7 @@ export class RoleApi {
       url.searchParams.append("direction", pageable.direction);
     }
 
-    const response = await fetch(url.toString(), {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    return await response.json();
+    return authGet(url.toString()).then((res) => res.json());
   }
 
   /**
@@ -89,15 +83,7 @@ export class RoleApi {
     roleCd: string
   ): Promise<ResponseApi<Map<string, object>>> {
     const url = `${this.ADMIN_ROLE_BASE_URL}/${roleCd}`;
-
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    return await response.json();
+    return authGet(url).then((res) => res.json());
   }
 
   /**
@@ -111,16 +97,7 @@ export class RoleApi {
     roleReqDto: RoleReqDto
   ): Promise<ResponseApi<Map<string, object>>> {
     const url = `${this.ADMIN_ROLE_BASE_URL}`;
-
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(roleReqDto),
-    });
-
-    return await response.json();
+    return authPost(url, roleReqDto).then((res) => res.json());
   }
 
   /**
@@ -134,16 +111,7 @@ export class RoleApi {
     roleReqDto: RoleReqDto
   ): Promise<ResponseApi<Map<string, object>>> {
     const url = `${this.ADMIN_ROLE_BASE_URL}`;
-
-    const response = await fetch(url, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(roleReqDto),
-    });
-
-    return await response.json();
+    return authPut(url, roleReqDto).then((res) => res.json());
   }
 
   /**
@@ -157,15 +125,7 @@ export class RoleApi {
     roleCd: string
   ): Promise<ResponseApi<Map<string, object>>> {
     const url = `${this.ADMIN_ROLE_BASE_URL}/${roleCd}`;
-
-    const response = await fetch(url, {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    return await response.json();
+    return authDelete(url).then((res) => res.json());
   }
 
   /**
@@ -179,15 +139,7 @@ export class RoleApi {
     roleCd: string
   ): Promise<ResponseApi<Map<string, object>>> {
     const url = `${this.ADMIN_ROLE_BASE_URL}/role-menu/${roleCd}`;
-
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    return await response.json();
+    return authGet(url).then((res) => res.json());
   }
 
   /**
@@ -201,16 +153,7 @@ export class RoleApi {
     roleMenus: RoleMenuReqDto[]
   ): Promise<ResponseApi<Map<string, object>>> {
     const url = `${this.ADMIN_ROLE_BASE_URL}/role-menu`;
-
-    const response = await fetch(url, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ roleMenus }),
-    });
-
-    return await response.json();
+    return authPut(url, { roleMenus }).then((res) => res.json());
   }
 
   /**
@@ -224,15 +167,7 @@ export class RoleApi {
     roleCd: string
   ): Promise<ResponseApi<Map<string, object>>> {
     const url = `${this.ADMIN_ROLE_BASE_URL}/role-user/${roleCd}`;
-
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    return await response.json();
+    return authGet(url).then((res) => res.json());
   }
 
   /**
@@ -246,15 +181,6 @@ export class RoleApi {
     roleUsers: RoleUserReqDto[]
   ): Promise<ResponseApi<Map<string, object>>> {
     const url = `${this.ADMIN_ROLE_BASE_URL}/role-user`;
-
-    const response = await fetch(url, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ roleUsers }),
-    });
-
-    return await response.json();
+    return authPut(url, { roleUsers }).then((res) => res.json());
   }
 }
