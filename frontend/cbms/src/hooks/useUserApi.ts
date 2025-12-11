@@ -3,7 +3,7 @@ import { UserApi } from "@/api/admin/userApi";
 import { UserReqDto } from "@/types/requestDto/UserReqDto";
 import { UserResDto } from "@/types/responseDto/UserResDto";
 import { Pageable } from "@/types/requestDto/specialDto/Pageable";
-import { useCommonApi } from "@/hooks/common/useCommonApi";
+import { useCommonApi } from "@/hooks/common/useCommonApiFormat";
 
 /**
  * @파일명 : useUserApi.ts

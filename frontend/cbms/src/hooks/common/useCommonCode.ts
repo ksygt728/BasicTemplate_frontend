@@ -22,31 +22,28 @@ import { useQuery } from "@tanstack/react-query";
 import { useDispatch, useSelector } from "react-redux";
 import type { RootState } from "@/store/store";
 import { setCommonCodes, setError } from "@/store/slices/commonCodeSlice";
-import { CodeApi } from "@/api/admin/codeApi";
+import { SharedApi } from "@/api/common/sharedApi";
 import { transformCodeApiResponse } from "@/utils/codeUtils";
 import type { CodeOption, CodeDetailWithAttributes } from "@/types/code.types";
 
-const codeApi = CodeApi.getInstance();
+const sharedApi = SharedApi.getInstance();
 
 /**
  * 공통코드 조회 함수 (React Query에서 사용)
  */
 const fetchCommonCodes = async () => {
   try {
-    const response = await codeApi.findAllCodeMWithConditions(
+    const response = await sharedApi.findAllCodeForShared(
       {
         grpCdType: "",
         grpCd: "",
         grpNm: "",
       },
-      0,
-      2000
+      {
+        page: 0,
+        size: 2000,
+      }
     );
-
-    console.log("=== API 응답 전체 ===", response);
-    console.log("response.success:", response.success);
-    console.log("response.data:", response.data);
-    console.log("response.data 타입:", typeof response.data);
 
     if (response.success && response.data) {
       return transformCodeApiResponse(response.data);

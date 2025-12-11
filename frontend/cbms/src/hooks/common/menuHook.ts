@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { setMenuData, setLoading, setError } from "@/store/slices/menuSlice";
-import { MenuApi } from "@/api/admin/menuApi";
+import { SharedApi } from "@/api/common/sharedApi";
 import type { MenuReqDto } from "@/types/requestDto/MenuReqDto";
 import type { MenuResDto } from "@/types/responseDto/MenuResDto";
 import type { ResponseApi } from "@/types/commonDto/ResponseApi";
@@ -44,7 +44,7 @@ export const useMenu = (): UseMenuReturn => {
       dispatch(setLoading(true));
       dispatch(setError(null));
 
-      const menuApi = MenuApi.getInstance();
+      const sharedApi = SharedApi.getInstance();
       const menuReqDto: MenuReqDto = {
         menuNm: "",
         upperMenu: "",
@@ -61,7 +61,7 @@ export const useMenu = (): UseMenuReturn => {
       };
 
       const response: ResponseApi<Map<string, object>> =
-        await menuApi.findAllMenuForAdmin(menuReqDto, pageable);
+        await sharedApi.findAllMenuForShared(menuReqDto, pageable);
 
       if (response.success && response.data) {
         const responseData = response.data as any;
