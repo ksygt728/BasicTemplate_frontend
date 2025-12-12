@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback } from "react";
-import { useMulLangApi } from "@/hooks/useMulLangApi";
+import { useMulLangApi } from "@/hooks/admin/useMulLangApi";
 import {
   toMulLangSearchReqDto,
   toMulLangReqDto,

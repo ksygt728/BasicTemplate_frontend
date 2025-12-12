@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback } from "react";
-import { useUserApi } from "@/hooks/useUserApi";
+import { useUserApi } from "@/hooks/admin/useUserApi";
 import {
   toUserSearchReqDto,
   toUserReqDto,

@@ -117,17 +117,6 @@ export class MenuApi {
   }
 
   /**
-   * @기능 : 메뉴 트리 조회 (계층 구조)
-   * @return 메뉴 트리 조회 결과
-   */
-  public async findMenuTreeForAdmin(): Promise<
-    ResponseApi<Map<string, object>>
-  > {
-    const url = `${this.ADMIN_MENU_BASE_URL}/tree`;
-    return authGet(url).then((res) => res.json());
-  }
-
-  /**
    * @기능 : 사용자별 권한 메뉴 조회
    * @param userId 사용자 아이디
    * @return 사용자별 권한 메뉴 조회 결과

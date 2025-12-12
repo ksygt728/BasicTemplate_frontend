@@ -88,15 +88,6 @@ export const tableColumns = [
     required: true,
   },
   {
-    key: "langNm",
-    label: "언어명",
-    width: 200,
-    sortable: true,
-    editable: true,
-    type: "text" as const,
-    required: true,
-  },
-  {
     key: "langGubun",
     label: "언어구분",
     width: 120,
@@ -105,6 +96,16 @@ export const tableColumns = [
     type: "text" as const,
     required: true,
   },
+  {
+    key: "langNm",
+    label: "언어명",
+    width: 200,
+    sortable: true,
+    editable: true,
+    type: "text" as const,
+    required: true,
+  },
+
   {
     key: "useYn",
     label: "사용여부",

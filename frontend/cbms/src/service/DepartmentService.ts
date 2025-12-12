@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback } from "react";
-import { useDepartmentApi } from "@/hooks/useDepartmentApi";
+import { useDepartmentApi } from "@/hooks/admin/useDepartmentApi";
 import {
   toDepartmentSearchReqDto,
   toDepartmentReqDto,
