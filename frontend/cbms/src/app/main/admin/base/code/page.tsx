@@ -158,7 +158,7 @@ export default function CodeManagementPage() {
         </h2>
         <SearchForm
           fields={searchOptions.map((opt) => ({
-            name: opt.value,
+            name: opt.name,
             label: opt.label,
             type: opt.type as any,
             placeholder: opt.placeholder,

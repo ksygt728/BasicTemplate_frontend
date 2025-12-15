@@ -5,7 +5,7 @@ import { AuthApi } from "@/api/common/authApi";
 import { AuthReqDto } from "@/types/requestDto/specialDto/AuthReqDto";
 import { UserReqDto } from "@/types/requestDto/UserReqDto";
 import { AuthResDto } from "@/types/responseDto/specialDto/AuthResDto";
-import { useCommonApi } from "@/hooks/common/useCommonApi";
+import { useCommonApi } from "@/hooks/common/useCommonApiFormat";
 import { useAppDispatch } from "@/store/hooks";
 import { login } from "@/store/slices/authSlice";
 

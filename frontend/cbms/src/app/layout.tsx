@@ -3,6 +3,7 @@ import "./globals.css";
 import { AlertProvider } from "@/contexts/AlertContext";
 import ReduxProvider from "@/store/providers/ReduxProvider";
 import { AuthProvider } from "@/store/providers/AuthProvider";
+import { QueryProvider } from "@/store/providers/QueryProvider";
 
 export const metadata: Metadata = {
   title: "CBMS - Comprehensive Business Management System",
@@ -18,9 +19,11 @@ export default function RootLayout({
     <html lang="ko" className="h-full">
       <body className="h-full m-0 p-0">
         <ReduxProvider>
-          <AlertProvider>
-            <AuthProvider>{children}</AuthProvider>
-          </AlertProvider>
+          <QueryProvider>
+            <AlertProvider>
+              <AuthProvider>{children}</AuthProvider>
+            </AlertProvider>
+          </QueryProvider>
         </ReduxProvider>
       </body>
     </html>

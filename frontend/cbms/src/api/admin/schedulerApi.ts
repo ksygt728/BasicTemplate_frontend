@@ -3,6 +3,7 @@ import { ScheMReqDto } from "@/types/requestDto/ScheMReqDto";
 import { ScheMResDto } from "@/types/responseDto/ScheMResDto";
 import { ScheHResDto } from "@/types/responseDto/ScheHResDto";
 import { Pageable } from "@/types/requestDto/specialDto/Pageable";
+import { authGet, authPost, authPut, authDelete } from "@/utils/authFetch";
 
 /**
  * @파일명 : schedulerApi.ts
@@ -65,14 +66,7 @@ export class SchedulerApi {
       url.searchParams.append("direction", pageable.direction);
     }
 
-    const response = await fetch(url.toString(), {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    return await response.json();
+    return authGet(url.toString()).then((res) => res.json());
   }
 
   /**
@@ -86,15 +80,7 @@ export class SchedulerApi {
     scheId: string
   ): Promise<ResponseApi<Map<string, object>>> {
     const url = `${this.ADMIN_SCHEDULER_BASE_URL}/${scheId}`;
-
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    return await response.json();
+    return authGet(url).then((res) => res.json());
   }
 
   /**
@@ -125,14 +111,7 @@ export class SchedulerApi {
       url.searchParams.append("direction", pageable.direction);
     }
 
-    const response = await fetch(url.toString(), {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    return await response.json();
+    return authGet(url.toString()).then((res) => res.json());
   }
 
   /**
@@ -146,15 +125,7 @@ export class SchedulerApi {
     scheId: string
   ): Promise<ResponseApi<Map<string, object>>> {
     const url = `${this.ADMIN_SCHEDULER_BASE_URL}/execute/${scheId}`;
-
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    return await response.json();
+    return authPost(url, {}).then((res) => res.json());
   }
 
   /**
@@ -168,16 +139,7 @@ export class SchedulerApi {
     scheM: ScheMReqDto
   ): Promise<ResponseApi<Map<string, object>>> {
     const url = `${this.ADMIN_SCHEDULER_BASE_URL}`;
-
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(scheM),
-    });
-
-    return await response.json();
+    return authPost(url, scheM).then((res) => res.json());
   }
 
   /**
@@ -191,16 +153,7 @@ export class SchedulerApi {
     scheM: ScheMReqDto
   ): Promise<ResponseApi<Map<string, object>>> {
     const url = `${this.ADMIN_SCHEDULER_BASE_URL}`;
-
-    const response = await fetch(url, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(scheM),
-    });
-
-    return await response.json();
+    return authPut(url, scheM).then((res) => res.json());
   }
 
   /**
@@ -214,14 +167,6 @@ export class SchedulerApi {
     scheId: string
   ): Promise<ResponseApi<Map<string, object>>> {
     const url = `${this.ADMIN_SCHEDULER_BASE_URL}/${scheId}`;
-
-    const response = await fetch(url, {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    return await response.json();
+    return authDelete(url).then((res) => res.json());
   }
 }

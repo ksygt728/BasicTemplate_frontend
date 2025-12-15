@@ -4,6 +4,7 @@ import { BbsResDto } from "@/types/responseDto/BbsResDto";
 import { BbsCommentReqDto } from "@/types/requestDto/BbsCommentReqDto";
 import { BbsCommentResDto } from "@/types/responseDto/BbsCommentResDto";
 import { Pageable } from "@/types/requestDto/specialDto/Pageable";
+import { authGet, authPost, authPut, authDelete } from "@/utils/authFetch";
 
 /**
  * @파일명 : bbsApi.ts
@@ -59,14 +60,7 @@ export class BbsApi {
     });
 
     const url = `${this.ADMIN_BBS_BASE_URL}/search?${params}`;
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    return response.json();
+    return authGet(url).then((res) => res.json());
   }
 
   /**
@@ -80,14 +74,7 @@ export class BbsApi {
     bbsId: string
   ): Promise<ResponseApi<Map<string, object>>> {
     const url = `${this.ADMIN_BBS_BASE_URL}/${bbsId}`;
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    return response.json();
+    return authGet(url).then((res) => res.json());
   }
 
   /**
@@ -101,15 +88,7 @@ export class BbsApi {
     bbs: BbsReqDto
   ): Promise<ResponseApi<Map<string, object>>> {
     const url = `${this.ADMIN_BBS_BASE_URL}`;
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(bbs),
-    });
-
-    return response.json();
+    return authPost(url, bbs).then((res) => res.json());
   }
 
   /**
@@ -123,15 +102,7 @@ export class BbsApi {
     bbs: BbsReqDto
   ): Promise<ResponseApi<Map<string, object>>> {
     const url = `${this.ADMIN_BBS_BASE_URL}`;
-    const response = await fetch(url, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(bbs),
-    });
-
-    return response.json();
+    return authPut(url, bbs).then((res) => res.json());
   }
 
   /**
@@ -145,14 +116,7 @@ export class BbsApi {
     bbsId: string
   ): Promise<ResponseApi<Map<string, object>>> {
     const url = `${this.ADMIN_BBS_BASE_URL}/${bbsId}`;
-    const response = await fetch(url, {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    return response.json();
+    return authDelete(url).then((res) => res.json());
   }
 
   /**
@@ -177,13 +141,6 @@ export class BbsApi {
     });
 
     const url = `${this.ADMIN_BBS_BASE_URL}/comment/search?${params}`;
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    return response.json();
+    return authGet(url).then((res) => res.json());
   }
 }

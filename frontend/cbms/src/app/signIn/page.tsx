@@ -4,7 +4,7 @@ import { useState, FormEvent } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button, Input, Card } from "@/components/common/themed";
-import { useAuthApi } from "@/hooks/useAuthApi";
+import { useAuthApi } from "@/hooks/common/useAuthApi";
 import { useAlert } from "@/contexts/AlertContext";
 
 /**

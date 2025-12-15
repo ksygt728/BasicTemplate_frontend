@@ -2,6 +2,7 @@ import { ResponseApi } from "@/types/commonDto/ResponseApi";
 import { ChaebunReqDto } from "@/types/requestDto/ChaebunReqDto";
 import { ChaebunResDto } from "@/types/responseDto/ChaebunResDto";
 import { Pageable } from "@/types/requestDto/specialDto/Pageable";
+import { authGet, authPost, authPut, authDelete } from "@/utils/authFetch";
 
 /**
  * @파일명 : chaebunApi.ts
@@ -57,14 +58,7 @@ export class ChaebunApi {
     });
 
     const url = `${this.ADMIN_CHAEBUN_BASE_URL}/search?${params}`;
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    return response.json();
+    return authGet(url).then((res) => res.json());
   }
 
   /**
@@ -78,14 +72,7 @@ export class ChaebunApi {
     seqId: string
   ): Promise<ResponseApi<Map<string, object>>> {
     const url = `${this.ADMIN_CHAEBUN_BASE_URL}/${seqId}`;
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    return response.json();
+    return authGet(url).then((res) => res.json());
   }
 
   /**
@@ -99,15 +86,7 @@ export class ChaebunApi {
     chaebunReqDto: ChaebunReqDto
   ): Promise<ResponseApi<Map<string, object>>> {
     const url = `${this.ADMIN_CHAEBUN_BASE_URL}`;
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(chaebunReqDto),
-    });
-
-    return response.json();
+    return authPost(url, chaebunReqDto).then((res) => res.json());
   }
 
   /**
@@ -121,15 +100,7 @@ export class ChaebunApi {
     chaebunReqDto: ChaebunReqDto
   ): Promise<ResponseApi<Map<string, object>>> {
     const url = `${this.ADMIN_CHAEBUN_BASE_URL}`;
-    const response = await fetch(url, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(chaebunReqDto),
-    });
-
-    return response.json();
+    return authPut(url, chaebunReqDto).then((res) => res.json());
   }
 
   /**
@@ -143,14 +114,7 @@ export class ChaebunApi {
     seqId: string
   ): Promise<ResponseApi<Map<string, object>>> {
     const url = `${this.ADMIN_CHAEBUN_BASE_URL}/${seqId}`;
-    const response = await fetch(url, {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    return response.json();
+    return authDelete(url).then((res) => res.json());
   }
 
   /**
@@ -165,13 +129,6 @@ export class ChaebunApi {
   ): Promise<ResponseApi<Map<string, object>>> {
     const params = new URLSearchParams({ seqId });
     const url = `${this.ADMIN_CHAEBUN_BASE_URL}/generateSeq?${params}`;
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    return response.json();
+    return authGet(url).then((res) => res.json());
   }
 }

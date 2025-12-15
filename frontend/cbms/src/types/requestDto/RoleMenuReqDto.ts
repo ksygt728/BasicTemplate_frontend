@@ -10,7 +10,7 @@ export interface RoleMenuReqDto {
   /** 메뉴코드 */
   menuCd: string;
 
-  /** 메뉴 접근 수준 (R,W) */
+  /** 메뉴 접근 수준 (C,R,U,D) */
   menuRw: string;
 
   /** 사용여부 (Y,N) */

@@ -109,7 +109,7 @@ export const Select: React.FC<SelectProps> = ({
   const selectButtonStyle: React.CSSProperties = {
     width: "100%",
     padding: `${theme.spacing.sm} ${theme.spacing.md}`,
-    backgroundColor: theme.colors.background.surface,
+    backgroundColor: theme.colors.background.overlay,
     color: selectedOption
       ? theme.colors.text.primary
       : theme.colors.text.tertiary,

@@ -4,6 +4,7 @@ import { LogErrorReqDto } from "@/types/requestDto/LogErrorReqDto";
 import { LogApiResDto } from "@/types/responseDto/LogApiResDto";
 import { LogErrorResDto } from "@/types/responseDto/LogErrorResDto";
 import { Pageable } from "@/types/requestDto/specialDto/Pageable";
+import { authGet, authPost, authPut, authDelete } from "@/utils/authFetch";
 
 /**
  * @파일명 : logApi.ts
@@ -58,14 +59,7 @@ export class LogApi {
     });
 
     const url = `${this.ADMIN_LOG_BASE_URL}/api-log/search?${params}`;
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    return response.json();
+    return authGet(url).then((res) => res.json());
   }
 
   /**
@@ -79,14 +73,7 @@ export class LogApi {
     logId: string
   ): Promise<ResponseApi<Map<string, object>>> {
     const url = `${this.ADMIN_LOG_BASE_URL}/api-log/${logId}`;
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    return response.json();
+    return authGet(url).then((res) => res.json());
   }
 
   /**
@@ -119,14 +106,7 @@ export class LogApi {
     });
 
     const url = `${this.ADMIN_LOG_BASE_URL}/error-log/search?${params}`;
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    return response.json();
+    return authGet(url).then((res) => res.json());
   }
 
   /**
@@ -140,13 +120,6 @@ export class LogApi {
     errId: string
   ): Promise<ResponseApi<Map<string, object>>> {
     const url = `${this.ADMIN_LOG_BASE_URL}/error-log/${errId}`;
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    return response.json();
+    return authGet(url).then((res) => res.json());
   }
 }

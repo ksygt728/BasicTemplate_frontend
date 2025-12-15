@@ -5,7 +5,7 @@ import { ComCodeMReqDto } from "@/types/requestDto/ComCodeMReqDto";
 import { ComCodeDReqDto } from "@/types/requestDto/ComCodeDReqDto";
 import { ComCodeTReqDto } from "@/types/requestDto/ComCodeTReqDto";
 import { CodeSearchFormResDto } from "@/types/responseDto/specialDto/CodeSearchFormResDto";
-import { useCommonApi } from "@/hooks/common/useCommonApi";
+import { useCommonApi } from "@/hooks/common/useCommonApiFormat";
 
 /**
  * @파일명 : useCodeApi.ts

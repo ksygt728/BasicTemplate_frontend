@@ -20,6 +20,7 @@ import { Input } from "./Input";
 import { Select } from "./Select";
 import { Badge } from "./Badge";
 import { FilterDropdown } from "./FilterDropdown";
+import { Tooltip } from "./Tooltip";
 import { useAlert } from "@/contexts/AlertContext";
 
 // 중첩된 객체 경로를 안전하게 접근하는 헬퍼 함수
@@ -128,7 +129,9 @@ export const AdvancedTable = <T extends Record<string, any>>({
   // Pagination state
   const paginationConfig = typeof pagination === "object" ? pagination : {};
   const pageSize = paginationConfig.pageSize || 10;
-  const pageSizeOptions = paginationConfig.pageSizeOptions || [10, 20, 50, 100];
+  const pageSizeOptions = paginationConfig.pageSizeOptions || [
+    10, 20, 50, 100, 200, 300, 500, 1000,
+  ];
 
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(pageSize);
@@ -313,9 +316,9 @@ export const AdvancedTable = <T extends Record<string, any>>({
 
   // Sorted data를 useMemo로 메모이제이션
   const sortedData = useMemo(() => {
-    if (sortConfig.length === 0) return [...data, ...newRows];
+    if (sortConfig.length === 0) return [...newRows, ...data];
 
-    const sorted = [...data, ...newRows].sort((a, b) => {
+    const sorted = [...newRows, ...data].sort((a, b) => {
       // 다중 정렬: sortConfig 배열을 순차적으로 적용
       for (let i = 0; i < sortConfig.length; i++) {
         const sort = sortConfig[i];
@@ -454,22 +457,8 @@ export const AdvancedTable = <T extends Record<string, any>>({
       return;
     }
 
-    // rowKey 필드 검증 (새로운 행인 경우)
-    if ((record as any).isNew) {
-      const keyField = typeof rowKey === "string" ? rowKey : "id";
-      const keyValue = dataToSave[keyField];
-      if (
-        !keyValue ||
-        (typeof keyValue === "string" && keyValue.trim() === "")
-      ) {
-        await showAlert({
-          type: "warning",
-          title: "필수 값 누락",
-          message: `${keyField} 값을 입력해주세요.`,
-        });
-        return;
-      }
-    }
+    // rowKey 필드 검증 제거 - 복합키를 사용하는 경우 의미없음
+    // 필수 필드 검증은 이미 위에서 처리됨
 
     try {
       if ((record as any).isNew) {
@@ -559,7 +548,7 @@ export const AdvancedTable = <T extends Record<string, any>>({
       initialEditData[dataIndex] = ""; // editData에도 빈 값 설정
     });
 
-    setNewRows((prev) => [...prev, newRow]);
+    setNewRows((prev) => [newRow, ...prev]);
     setEditingRow((prev) => [...prev, tempId]);
     setEditData((prev) => ({ ...prev, [tempId]: initialEditData }));
 
@@ -659,7 +648,7 @@ export const AdvancedTable = <T extends Record<string, any>>({
       return copiedRow;
     });
 
-    setNewRows((prev) => [...prev, ...copiedRows]);
+    setNewRows((prev) => [...copiedRows, ...prev]);
 
     // 모든 복사된 행을 편집 모드로 설정
     if (copiedRows.length > 0) {
@@ -988,7 +977,7 @@ export const AdvancedTable = <T extends Record<string, any>>({
 
   // Styles
   const containerStyle: React.CSSProperties = {
-    backgroundColor: theme.colors.background.default,
+    backgroundColor: "transparent",
     borderRadius: theme.borderRadius.lg,
     padding: theme.spacing.lg,
   };
@@ -1024,7 +1013,7 @@ export const AdvancedTable = <T extends Record<string, any>>({
     fontFamily: theme.typography.fontFamily,
     backgroundColor: theme.colors.background.surface,
     borderRadius: theme.borderRadius.lg,
-    overflow: "hidden",
+    overflow: "visible",
     border: bordered ? `1px solid ${theme.colors.border.default}` : "none",
   };
 
@@ -1082,13 +1071,24 @@ export const AdvancedTable = <T extends Record<string, any>>({
     <div style={containerStyle} className={className}>
       {(title || subTitle || description) && (
         <div style={headerStyle}>
-          {title && <h2 style={titleStyle}>{title}</h2>}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: theme.spacing.sm,
+            }}
+          >
+            {title && <h2 style={titleStyle}>{title}</h2>}
+            {description && (
+              <Tooltip
+                content={description}
+                position="bottom"
+                minWidth={1200}
+                maxWidth={2000}
+              />
+            )}
+          </div>
           {subTitle && <p style={subTitleStyle}>{subTitle}</p>}
-          {description && (
-            <p style={{ ...subTitleStyle, marginTop: theme.spacing.xs }}>
-              {description}
-            </p>
-          )}
         </div>
       )}
 
@@ -1324,7 +1324,7 @@ export const AdvancedTable = <T extends Record<string, any>>({
         </div>
       </div>
 
-      <div style={{ overflowX: "auto" }}>
+      <div style={{ overflowX: "auto", overflowY: "visible" }}>
         <table style={tableStyle}>
           <thead style={theadStyle}>
             <tr>
@@ -1338,9 +1338,9 @@ export const AdvancedTable = <T extends Record<string, any>>({
                   />
                 </th>
               )}
-              {columns.map((column) => (
+              {columns.map((column, colIndex) => (
                 <th
-                  key={column.key}
+                  key={`${column.key}-${colIndex}`}
                   style={{
                     ...thStyle,
                     width: `${columnWidths[column.key] || 150}px`,
@@ -1576,8 +1576,11 @@ export const AdvancedTable = <T extends Record<string, any>>({
                         />
                       </td>
                     )}
-                    {columns.map((column) => (
-                      <td key={column.key} style={getTdStyle(column.align)}>
+                    {columns.map((column, colIndex) => (
+                      <td
+                        key={`${column.key}-${colIndex}`}
+                        style={getTdStyle(column.align)}
+                      >
                         {renderEditableCell(record, column, isEditing, key)}
                       </td>
                     ))}

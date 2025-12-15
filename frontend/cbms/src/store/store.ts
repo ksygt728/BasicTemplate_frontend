@@ -1,6 +1,7 @@
 import { configureStore } from "@reduxjs/toolkit";
 import authReducer from "./slices/authSlice";
 import menuReducer from "./slices/menuSlice";
+import commonCodeReducer from "./slices/commonCodeSlice";
 
 /**
  * @파일명 : store.ts
@@ -10,14 +11,14 @@ import menuReducer from "./slices/menuSlice";
  * @변경이력 :
  *       2025.12.01 김승연 최초 생성
  *       2025.12.04 김승연 menuReducer 추가
+ *       2025.12.09 김승연 commonCodeReducer 추가
  */
 
 export const store = configureStore({
   reducer: {
     auth: authReducer,
     menu: menuReducer,
-    // 향후 추가할 reducer들
-    // code: codeReducer,
+    commonCode: commonCodeReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

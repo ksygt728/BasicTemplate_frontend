@@ -54,6 +54,9 @@ export type { LoadingProps } from "./Loading";
 export { MenuList } from "./MenuList";
 export type { MenuListProps, MenuItem } from "./MenuList";
 
+export { TreeView } from "./TreeView";
+export type { TreeViewProps, TreeNode } from "./TreeView";
+
 export { Frame } from "./Frame";
 export type {
   FrameProps,

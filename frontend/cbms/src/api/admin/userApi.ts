@@ -2,6 +2,7 @@ import { ResponseApi } from "@/types/commonDto/ResponseApi";
 import { UserReqDto } from "@/types/requestDto/UserReqDto";
 import { UserResDto } from "@/types/responseDto/UserResDto";
 import { Pageable } from "@/types/requestDto/specialDto/Pageable";
+import { authGet, authPost, authPut, authDelete } from "@/utils/authFetch";
 
 /**
  * @파일명 : userApi.ts
@@ -10,6 +11,7 @@ import { Pageable } from "@/types/requestDto/specialDto/Pageable";
  * @작성일 : 2025.07.23
  * @변경이력 :
  *       2025.07.23 김승연 최초 생성
+ *       2025.12.10 김승연 authFetch 적용
  */
 export class UserApi {
   private static instance: UserApi;
@@ -32,9 +34,7 @@ export class UserApi {
    * @화면 : 조직 관리 > 사용자 관리
    * @기능 : 사용자 정보 조회
    * @param userReqDto 사용자 검색 조건 DTO
-   * @param page 페이지 번호 (기본값: 0)
-   * @param size 페이지 크기 (기본값: 2000)
-   * @param sort 정렬 기준 (기본값: userId)
+   * @param pageable 페이지 정보
    * @returns 사용자 정보 목록
    */
   public async findAllUserForAdmin(
@@ -46,32 +46,26 @@ export class UserApi {
       direction: "ASC",
     }
   ): Promise<ResponseApi<Map<string, object>>> {
-    const url = new URL(`${this.ADMIN_USER_BASE_URL}/search`);
+    const params = new URLSearchParams({
+      page: pageable.page.toString(),
+      size: pageable.size.toString(),
+      sort: pageable.sort || "userId",
+    });
+
+    if (pageable.direction) {
+      params.append("direction", pageable.direction);
+    }
 
     if (userReqDto) {
-      Object.keys(userReqDto).forEach((key) => {
-        const value = (userReqDto as any)[key];
+      Object.entries(userReqDto).forEach(([key, value]) => {
         if (value !== undefined && value !== null && value !== "") {
-          url.searchParams.append(key, value.toString());
+          params.append(key, value.toString());
         }
       });
     }
 
-    url.searchParams.append("page", pageable.page.toString());
-    url.searchParams.append("size", pageable.size.toString());
-    url.searchParams.append("sort", pageable.sort || "userId");
-    if (pageable.direction) {
-      url.searchParams.append("direction", pageable.direction);
-    }
-
-    const response = await fetch(url.toString(), {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    return await response.json();
+    const url = `${this.ADMIN_USER_BASE_URL}/search?${params}`;
+    return authGet(url).then((res) => res.json());
   }
 
   /**
@@ -85,15 +79,7 @@ export class UserApi {
     userId: string
   ): Promise<ResponseApi<Map<string, object>>> {
     const url = `${this.ADMIN_USER_BASE_URL}/${userId}`;
-
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    return await response.json();
+    return authGet(url).then((res) => res.json());
   }
 
   /**
@@ -107,16 +93,7 @@ export class UserApi {
     user: UserReqDto
   ): Promise<ResponseApi<Map<string, object>>> {
     const url = `${this.ADMIN_USER_BASE_URL}`;
-
-    const response = await fetch(url, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(user),
-    });
-
-    return await response.json();
+    return authPut(url, user).then((res) => res.json());
   }
 
   /**
@@ -130,14 +107,6 @@ export class UserApi {
     userId: string
   ): Promise<ResponseApi<Map<string, object>>> {
     const url = `${this.ADMIN_USER_BASE_URL}/${userId}`;
-
-    const response = await fetch(url, {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    return await response.json();
+    return authDelete(url).then((res) => res.json());
   }
 }
