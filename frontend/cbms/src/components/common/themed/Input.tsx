@@ -52,8 +52,12 @@ export const Input: React.FC<InputProps> = ({
     padding: `${theme.spacing.sm} ${theme.spacing.md}`,
     paddingLeft: leftIcon ? "40px" : theme.spacing.md,
     paddingRight: rightIcon ? "40px" : theme.spacing.md,
-    backgroundColor: theme.colors.background.surface,
-    color: theme.colors.text.primary,
+    backgroundColor: props.disabled
+      ? theme.colors.background.overlay
+      : theme.colors.background.surface,
+    color: props.disabled
+      ? theme.colors.text.tertiary
+      : theme.colors.text.primary,
     border: `1px solid ${
       error ? theme.colors.status.error : theme.colors.border.default
     }`,
@@ -62,6 +66,7 @@ export const Input: React.FC<InputProps> = ({
     fontFamily: theme.typography.fontFamily,
     outline: "none",
     transition: theme.effects.transitions.default,
+    cursor: props.disabled ? "not-allowed" : "text",
   };
 
   const iconStyle: React.CSSProperties = {

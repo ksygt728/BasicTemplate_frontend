@@ -183,7 +183,7 @@ export const Frame: React.FC<FrameProps> = (props) => {
 
     const containerStyle: React.CSSProperties = {
       width: "100%",
-      height: "100vh",
+      height: "100%",
       display: "flex",
       padding: padding ? theme.spacing.lg : "0",
       userSelect: "none",
@@ -407,7 +407,7 @@ export const Frame: React.FC<FrameProps> = (props) => {
 
     const containerStyle: React.CSSProperties = {
       width: "100%",
-      height: "100vh",
+      height: "100%",
       display: "flex",
       padding: padding ? theme.spacing.lg : "0",
       userSelect: "none",

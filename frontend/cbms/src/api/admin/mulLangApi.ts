@@ -2,6 +2,7 @@ import { ResponseApi } from "@/types/commonDto/ResponseApi";
 import { MulLangReqDto } from "@/types/requestDto/MulLangReqDto";
 import { MulLangResDto } from "@/types/responseDto/MulLangResDto";
 import { Pageable } from "@/types/requestDto/specialDto/Pageable";
+import { authGet, authPost, authPut, authDelete } from "@/utils/authFetch";
 
 /**
  * @파일명 : mulLangApi.ts
@@ -56,14 +57,7 @@ export class MulLangApi {
     });
 
     const url = `${this.ADMIN_MUL_LANG_BASE_URL}/search?${params}`;
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    return response.json();
+    return authGet(url).then((res) => res.json());
   }
 
   /**
@@ -79,14 +73,7 @@ export class MulLangApi {
     langCd: string
   ): Promise<ResponseApi<Map<string, object>>> {
     const url = `${this.ADMIN_MUL_LANG_BASE_URL}/${langGubun}/${langCd}`;
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    return response.json();
+    return authGet(url).then((res) => res.json());
   }
 
   /**
@@ -100,15 +87,7 @@ export class MulLangApi {
     mulLang: MulLangReqDto
   ): Promise<ResponseApi<Map<string, object>>> {
     const url = `${this.ADMIN_MUL_LANG_BASE_URL}`;
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(mulLang),
-    });
-
-    return response.json();
+    return authPost(url, mulLang).then((res) => res.json());
   }
 
   /**
@@ -122,15 +101,7 @@ export class MulLangApi {
     mulLang: MulLangReqDto
   ): Promise<ResponseApi<Map<string, object>>> {
     const url = `${this.ADMIN_MUL_LANG_BASE_URL}`;
-    const response = await fetch(url, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(mulLang),
-    });
-
-    return response.json();
+    return authPut(url, mulLang).then((res) => res.json());
   }
 
   /**
@@ -146,14 +117,7 @@ export class MulLangApi {
     langCd: string
   ): Promise<ResponseApi<Map<string, object>>> {
     const url = `${this.ADMIN_MUL_LANG_BASE_URL}/${langGubun}/${langCd}`;
-    const response = await fetch(url, {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    return response.json();
+    return authDelete(url).then((res) => res.json());
   }
 
   /**
@@ -165,13 +129,6 @@ export class MulLangApi {
     langGubun: string
   ): Promise<ResponseApi<Map<string, object>>> {
     const url = `${this.ADMIN_MUL_LANG_BASE_URL}/messages/${langGubun}`;
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    return response.json();
+    return authGet(url).then((res) => res.json());
   }
 }

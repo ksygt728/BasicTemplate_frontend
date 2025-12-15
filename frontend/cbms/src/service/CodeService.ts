@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback } from "react";
-import { useCodeApi } from "@/hooks/useCodeApi";
+import { useCodeApi } from "@/hooks/admin/useCodeApi";
 import {
   toCodeSearchFormReqDto,
   toComCodeMReqDto,

@@ -1,6 +1,7 @@
 import { ResponseApi } from "@/types/commonDto/ResponseApi";
 import { ChaebunReqDto } from "@/types/requestDto/ChaebunReqDto";
 import { ChaebunResDto } from "@/types/responseDto/ChaebunResDto";
+import { authGet, authPost, authPut, authDelete } from "@/utils/authFetch";
 
 /**
  * @파일명 : sequenceApi.ts
@@ -50,14 +51,7 @@ export class SequenceApi {
       url += `?${params.toString()}`;
     }
 
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    return await response.json();
+    return authGet(url).then((res) => res.json());
   }
 
   /**
@@ -71,15 +65,7 @@ export class SequenceApi {
     chaebunId: string
   ): Promise<ResponseApi<Map<string, object>>> {
     const url = `${this.ADMIN_SEQUENCE_BASE_URL}/${chaebunId}`;
-
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    return await response.json();
+    return authGet(url).then((res) => res.json());
   }
 
   /**
@@ -93,16 +79,7 @@ export class SequenceApi {
     chaebun: ChaebunReqDto
   ): Promise<ResponseApi<Map<string, object>>> {
     const url = `${this.ADMIN_SEQUENCE_BASE_URL}`;
-
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(chaebun),
-    });
-
-    return await response.json();
+    return authPost(url, chaebun).then((res) => res.json());
   }
 
   /**
@@ -116,16 +93,7 @@ export class SequenceApi {
     chaebun: ChaebunReqDto
   ): Promise<ResponseApi<Map<string, object>>> {
     const url = `${this.ADMIN_SEQUENCE_BASE_URL}`;
-
-    const response = await fetch(url, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(chaebun),
-    });
-
-    return await response.json();
+    return authPut(url, chaebun).then((res) => res.json());
   }
 
   /**
@@ -139,14 +107,6 @@ export class SequenceApi {
     chaebunId: string
   ): Promise<ResponseApi<Map<string, object>>> {
     const url = `${this.ADMIN_SEQUENCE_BASE_URL}/${chaebunId}`;
-
-    const response = await fetch(url, {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    return await response.json();
+    return authDelete(url).then((res) => res.json());
   }
 }

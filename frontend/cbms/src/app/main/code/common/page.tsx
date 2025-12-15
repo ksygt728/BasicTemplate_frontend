@@ -5,7 +5,7 @@ import type { AdvancedTableColumn } from "@/components/common/themed/AdvancedTab
 import { SearchForm } from "@/components/common/themed/SearchForm";
 import type { SearchField } from "@/components/common/themed/SearchForm";
 import TripleSplitFrame from "@/components/layout/frame/TripleSplitFrame";
-import { useCodeApi } from "@/hooks/useCodeApi";
+import { useCodeApi } from "@/hooks/admin/useCodeApi";
 import { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
 import { useAlert } from "@/contexts/AlertContext";

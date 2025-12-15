@@ -25,7 +25,7 @@ export interface RoleMenuResDto {
   /** 정렬순서 */
   orderNum: number;
 
-  /** 메뉴 접근 수준 (R,W) */
+  /** 메뉴 접근 수준 (C,R,U,D) */
   menuRw: string;
 
   /** 메뉴 하위 목록 */

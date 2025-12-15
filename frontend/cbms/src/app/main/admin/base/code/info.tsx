@@ -1,4 +1,4 @@
-import type { SearchOption } from "@/components/common/themed/SearchForm";
+import type { SearchField } from "@/components/common/themed/SearchForm";
 
 /**
  * @파일명 : info.tsx
@@ -17,22 +17,22 @@ import type { SearchOption } from "@/components/common/themed/SearchForm";
  * @설정 검색 폼 옵션들
  * @설명 SearchForm 컴포넌트에서 사용할 검색 조건 옵션 정의
  */
-export const searchOptions: SearchOption[] = [
+export const searchOptions: SearchField[] = [
   {
     label: "그룹코드타입",
-    value: "grpCdType",
+    name: "grpCdType",
     type: "text",
     placeholder: "그룹코드타입을 입력하세요",
   },
   {
     label: "그룹코드",
-    value: "grpCd",
+    name: "grpCd",
     type: "text",
     placeholder: "그룹코드를 입력하세요",
   },
   {
     label: "그룹명",
-    value: "grpNm",
+    name: "grpNm",
     type: "text",
     placeholder: "그룹명을 입력하세요",
   },

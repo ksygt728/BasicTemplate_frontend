@@ -2,6 +2,7 @@ import { ResponseApi } from "@/types/commonDto/ResponseApi";
 import { InterfaceReqDto } from "@/types/requestDto/InterfaceReqDto";
 import { InterfaceResDto } from "@/types/responseDto/InterfaceResDto";
 import { Pageable } from "@/types/requestDto/specialDto/Pageable";
+import { authGet, authPost, authPut, authDelete } from "@/utils/authFetch";
 
 /**
  * @파일명 : interfaceApi.ts
@@ -54,15 +55,7 @@ export class InterfaceApi {
     });
 
     const url = `${this.ADMIN_INTERFACE_BASE_URL}/search?${params}`;
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-
-    return response.json();
+    return authGet(url).then((res) => res.json());
   }
 
   /**
@@ -86,15 +79,7 @@ export class InterfaceApi {
     });
 
     const url = `${this.ADMIN_INTERFACE_BASE_URL}?${params}`;
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-
-    return response.json();
+    return authGet(url).then((res) => res.json());
   }
 
   /**
@@ -108,15 +93,7 @@ export class InterfaceApi {
     ifId: string
   ): Promise<ResponseApi<Map<string, object>>> {
     const url = `${this.ADMIN_INTERFACE_BASE_URL}/${ifId}`;
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-
-    return response.json();
+    return authGet(url).then((res) => res.json());
   }
 
   /**
@@ -130,16 +107,7 @@ export class InterfaceApi {
     ifc: InterfaceReqDto
   ): Promise<ResponseApi<Map<string, object>>> {
     const url = `${this.ADMIN_INTERFACE_BASE_URL}/execute/${ifc.ifId}`;
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(ifc),
-    });
-
-
-    return response.json();
+    return authPost(url, ifc).then((res) => res.json());
   }
 
   /**
@@ -153,15 +121,7 @@ export class InterfaceApi {
     ifId: string
   ): Promise<ResponseApi<Map<string, object>>> {
     const url = `${this.ADMIN_INTERFACE_BASE_URL}/history/${ifId}`;
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-
-    return response.json();
+    return authGet(url).then((res) => res.json());
   }
 
   /**
@@ -175,16 +135,7 @@ export class InterfaceApi {
     ifc: InterfaceReqDto
   ): Promise<ResponseApi<Map<string, object>>> {
     const url = `${this.ADMIN_INTERFACE_BASE_URL}`;
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(ifc),
-    });
-
-
-    return response.json();
+    return authPost(url, ifc).then((res) => res.json());
   }
 
   /**
@@ -198,16 +149,7 @@ export class InterfaceApi {
     ifc: InterfaceReqDto
   ): Promise<ResponseApi<Map<string, object>>> {
     const url = `${this.ADMIN_INTERFACE_BASE_URL}`;
-    const response = await fetch(url, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(ifc),
-    });
-
-
-    return response.json();
+    return authPut(url, ifc).then((res) => res.json());
   }
 
   /**
@@ -221,14 +163,6 @@ export class InterfaceApi {
     ifId: string
   ): Promise<ResponseApi<Map<string, object>>> {
     const url = `${this.ADMIN_INTERFACE_BASE_URL}/${ifId}`;
-    const response = await fetch(url, {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-
-    return response.json();
+    return authDelete(url).then((res) => res.json());
   }
 }
