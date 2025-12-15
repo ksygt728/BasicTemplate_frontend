@@ -977,7 +977,7 @@ export const AdvancedTable = <T extends Record<string, any>>({
 
   // Styles
   const containerStyle: React.CSSProperties = {
-    backgroundColor: theme.colors.background.default,
+    backgroundColor: "transparent",
     borderRadius: theme.borderRadius.lg,
     padding: theme.spacing.lg,
   };
