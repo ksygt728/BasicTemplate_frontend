@@ -36,6 +36,12 @@ export type { AdvancedTableProps, AdvancedTableColumn } from "./AdvancedTable";
 export { SearchForm } from "./SearchForm";
 export type { SearchFormProps, SearchField } from "./SearchForm";
 
+export { Pagination } from "./Pagination";
+export type { PaginationProps } from "./Pagination";
+
+export { DateRangePicker } from "./DateRangePicker";
+export type { DateRangePickerProps } from "./DateRangePicker";
+
 export { FilterDropdown } from "./FilterDropdown";
 
 export { ImageCard } from "./ImageCard";

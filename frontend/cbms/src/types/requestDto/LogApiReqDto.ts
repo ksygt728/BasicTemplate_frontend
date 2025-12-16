@@ -2,18 +2,20 @@
  * API 로그 요청 DTO
  * @작성자 김승연
  * @작성일 2025.10.07
+ * @변경이력 :
+ *       2025.12.16 김승연 백엔드 구조에 맞게 수정
  */
 export interface LogApiReqDto {
   /** 로그아이디 */
-  logId: string;
+  logId?: string;
 
   /** 사용자 아이디 */
   userId?: string;
 
-  /** 시작시간 */
+  /** 시작시간 (yyyy-MM-dd HH:mm:ss) */
   startDate?: string;
 
-  /** 종료시간 */
+  /** 종료시간 (yyyy-MM-dd HH:mm:ss) */
   endDate?: string;
 
   /** 아이피주소 */

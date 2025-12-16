@@ -18,6 +18,7 @@ import {
   Table,
   AdvancedTable,
   SearchForm,
+  DateRangePicker,
   ImageCard,
   Carousel,
   NavBar,
@@ -49,6 +50,7 @@ export default function DemoComponentPage() {
   const [showWarningAlert, setShowWarningAlert] = useState(true);
   const [showErrorAlert, setShowErrorAlert] = useState(true);
   const [showInfoAlert, setShowInfoAlert] = useState(true);
+  const [dateRangeValue, setDateRangeValue] = useState("");
 
   // 샘플 부서 트리 데이터 (메모이제이션)
   const sampleDepartmentTree = useMemo<TreeNode[]>(
@@ -708,6 +710,60 @@ export default function DemoComponentPage() {
               leftIcon="🔒"
             />
             <Input label="Disabled" placeholder="Disabled input" disabled />
+          </div>
+        </section>
+
+        {/* DateRangePicker Section */}
+        <section style={sectionStyle}>
+          <h2 style={sectionTitleStyle}>Date Range Picker</h2>
+
+          <div style={gridStyle}>
+            <div>
+              <label
+                style={{
+                  display: "block",
+                  marginBottom: "8px",
+                  fontSize: "14px",
+                  fontWeight: theme.typography.weights.medium,
+                  color: theme.colors.text.primary,
+                }}
+              >
+                날짜 범위 선택
+              </label>
+              <DateRangePicker
+                value={dateRangeValue}
+                onChange={setDateRangeValue}
+                placeholder="날짜를 선택하세요"
+              />
+              {dateRangeValue && (
+                <div
+                  style={{
+                    marginTop: "8px",
+                    fontSize: "12px",
+                    color: theme.colors.text.secondary,
+                  }}
+                >
+                  선택된 값: {dateRangeValue}
+                </div>
+              )}
+            </div>
+            <div>
+              <label
+                style={{
+                  display: "block",
+                  marginBottom: "8px",
+                  fontSize: "14px",
+                  fontWeight: theme.typography.weights.medium,
+                  color: theme.colors.text.primary,
+                }}
+              >
+                Disabled 상태
+              </label>
+              <DateRangePicker
+                value="2025-01-01 00:00:00~2025-12-31 23:59:59"
+                disabled
+              />
+            </div>
           </div>
         </section>
 

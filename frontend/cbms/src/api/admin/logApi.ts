@@ -46,19 +46,27 @@ export class LogApi {
       direction: "DESC",
     }
   ): Promise<ResponseApi<Map<string, object>>> {
-    const params = new URLSearchParams({
+    const params: any = {
       page: pageable.page.toString(),
       size: pageable.size.toString(),
-      sort: pageable.sort ?? "endDate",
-      direction: pageable.direction ?? "DESC",
-      ...Object.fromEntries(
-        Object.entries(logApiReqDto).filter(
-          ([_, value]) => value !== undefined && value !== null
-        )
-      ),
+    };
+
+    // sort 파라미터 추가 - 백엔드 형식: sort[fieldName]=direction
+    if (pageable.sort && pageable.direction) {
+      params[`sort[${pageable.sort}]`] = pageable.direction;
+    } else {
+      params["sort[endDate]"] = "DESC";
+    }
+
+    // 검색 조건 추가
+    Object.entries(logApiReqDto).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        params[key] = value;
+      }
     });
 
-    const url = `${this.ADMIN_LOG_BASE_URL}/api-log/search?${params}`;
+    const queryString = new URLSearchParams(params).toString();
+    const url = `${this.ADMIN_LOG_BASE_URL}/api-log/search?${queryString}`;
     return authGet(url).then((res) => res.json());
   }
 
@@ -93,19 +101,27 @@ export class LogApi {
       direction: "DESC",
     }
   ): Promise<ResponseApi<Map<string, object>>> {
-    const params = new URLSearchParams({
+    const params: any = {
       page: pageable.page.toString(),
       size: pageable.size.toString(),
-      sort: pageable.sort ?? "createDate",
-      direction: pageable.direction ?? "DESC",
-      ...Object.fromEntries(
-        Object.entries(logErrorReqDto).filter(
-          ([_, value]) => value !== undefined && value !== null
-        )
-      ),
+    };
+
+    // sort 파라미터 추가 - 백엔드 형식: sort[fieldName]=direction
+    if (pageable.sort && pageable.direction) {
+      params[`sort[${pageable.sort}]`] = pageable.direction;
+    } else {
+      params["sort[createDate]"] = "DESC";
+    }
+
+    // 검색 조건 추가
+    Object.entries(logErrorReqDto).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        params[key] = value;
+      }
     });
 
-    const url = `${this.ADMIN_LOG_BASE_URL}/error-log/search?${params}`;
+    const queryString = new URLSearchParams(params).toString();
+    const url = `${this.ADMIN_LOG_BASE_URL}/error-log/search?${queryString}`;
     return authGet(url).then((res) => res.json());
   }
 

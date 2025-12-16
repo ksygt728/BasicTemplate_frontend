@@ -13,6 +13,7 @@ import { Button } from "./Button";
 import { Input } from "./Input";
 import { Select } from "./Select";
 import { Badge } from "./Badge";
+import { Pagination } from "./Pagination";
 
 export interface TableColumn<T = any> {
   key: string;
@@ -44,8 +45,13 @@ export interface TableProps<T = any> {
   onEdit?: (record: T, index: number) => void;
   onDelete?: (record: T, index: number) => void;
   className?: string;
+  pagination?: boolean;
   page?: number;
   pageSize?: number;
+  totalElements?: number;
+  totalPages?: number;
+  first?: boolean;
+  last?: boolean;
   onPageChange?: (page: number) => void;
   onPageSizeChange?: (size: number) => void;
 }
@@ -63,6 +69,7 @@ interface TableRowProps<T = any> {
   hoverable: boolean;
   bordered: boolean;
   compact: boolean;
+  isSelected: boolean;
 }
 
 const TableRow = <T extends Record<string, any>>({
@@ -77,6 +84,7 @@ const TableRow = <T extends Record<string, any>>({
   hoverable,
   bordered,
   compact,
+  isSelected,
 }: TableRowProps<T>) => {
   const [isHovered, setIsHovered] = useState(false);
 
@@ -89,17 +97,23 @@ const TableRow = <T extends Record<string, any>>({
     borderRight: bordered ? `1px solid ${theme.colors.border.default}` : "none",
     borderBottom: `1px solid ${theme.colors.border.default}`,
     textAlign: align || "left",
+    userSelect: "text",
   });
 
   const getTrStyle = (): React.CSSProperties => ({
-    backgroundColor:
-      isHovered && hoverable
-        ? theme.colors.background.overlay
-        : striped && index % 2 === 1
-        ? theme.colors.background.subtle
-        : "transparent",
+    backgroundColor: isSelected
+      ? "rgba(94, 106, 210, 0.15)" // primary color with low opacity
+      : isHovered && hoverable
+      ? theme.colors.background.overlay
+      : striped && index % 2 === 1
+      ? theme.colors.background.subtle
+      : "transparent",
     cursor: onRowClick ? "pointer" : "default",
     transition: theme.effects.transitions.default,
+    userSelect: "text",
+    borderLeft: isSelected
+      ? `3px solid ${theme.colors.primary.default}`
+      : "3px solid transparent",
   });
 
   return (
@@ -171,8 +185,13 @@ export const Table = <T extends Record<string, any>>({
   onEdit,
   onDelete,
   className = "",
+  pagination = true,
   page = 1,
   pageSize = 10,
+  totalElements,
+  totalPages,
+  first,
+  last,
   onPageChange,
   onPageSizeChange,
 }: TableProps<T>) => {
@@ -180,6 +199,7 @@ export const Table = <T extends Record<string, any>>({
     key: string;
     direction: "asc" | "desc";
   } | null>(null);
+  const [selectedRowKey, setSelectedRowKey] = useState<string | null>(null);
 
   const getRowKey = (record: T, index: number): string => {
     if (typeof rowKey === "function") {
@@ -269,6 +289,7 @@ export const Table = <T extends Record<string, any>>({
         : "transparent",
     cursor: onRowClick ? "pointer" : "default",
     transition: theme.effects.transitions.default,
+    userSelect: "text",
   });
 
   const sortIconStyle = (columnKey: string): React.CSSProperties => ({
@@ -296,14 +317,20 @@ export const Table = <T extends Record<string, any>>({
 
   const sortedData = getSortedData();
 
+  // 백엔드 페이지네이션 여부 판단
+  const isBackendPagination =
+    totalElements !== undefined && totalPages !== undefined;
+
   // 페이징 처리
-  const total = sortedData.length;
-  const totalPages = Math.max(1, Math.ceil(total / pageSize));
-  const currentPage = Math.min(page, totalPages);
-  const pagedData = sortedData.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize
-  );
+  const total = isBackendPagination ? totalElements : sortedData.length;
+  const pages = isBackendPagination
+    ? totalPages
+    : Math.max(1, Math.ceil(sortedData.length / pageSize));
+  const currentPage = isBackendPagination ? page : Math.min(page, pages);
+
+  const pagedData = isBackendPagination
+    ? sortedData // 백엔드 페이지네이션: 이미 페이지네이션된 데이터
+    : sortedData.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   return (
     <div style={{ overflowX: "auto" }} className={className}>
@@ -373,110 +400,66 @@ export const Table = <T extends Record<string, any>>({
               </td>
             </tr>
           ) : (
-            pagedData.map((record, index) => (
-              <TableRow
-                key={getRowKey(record, index + (currentPage - 1) * pageSize)}
-                record={record}
-                index={index + (currentPage - 1) * pageSize}
-                columns={columns}
-                getRowKey={getRowKey}
-                onRowClick={onRowClick}
-                onEdit={onEdit}
-                onDelete={onDelete}
-                striped={striped}
-                hoverable={hoverable}
-                bordered={bordered}
-                compact={compact}
-              />
-            ))
+            pagedData.map((record, index) => {
+              const rowKey = getRowKey(
+                record,
+                index + (currentPage - 1) * pageSize
+              );
+              return (
+                <TableRow
+                  key={rowKey}
+                  record={record}
+                  index={index + (currentPage - 1) * pageSize}
+                  columns={columns}
+                  getRowKey={getRowKey}
+                  onRowClick={(rec, idx) => {
+                    setSelectedRowKey(rowKey);
+                    onRowClick?.(rec, idx);
+                  }}
+                  onEdit={onEdit}
+                  onDelete={onDelete}
+                  striped={striped}
+                  hoverable={hoverable}
+                  bordered={bordered}
+                  compact={compact}
+                  isSelected={selectedRowKey === rowKey}
+                />
+              );
+            })
           )}
         </tbody>
       </table>
       {/* 페이지네이션 UI */}
-      {!loading && pagedData.length > 0 && (
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginTop: theme.spacing.md,
-            padding: theme.spacing.md,
-            borderTop: `1px solid ${theme.colors.border.default}`,
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: theme.spacing.sm,
-            }}
-          >
-            <span
-              style={{ fontSize: "14px", color: theme.colors.text.secondary }}
-            >
-              Rows per page:
-            </span>
-            <Select
-              value={String(pageSize)}
-              onChange={(value) => {
-                onPageSizeChange?.(Number(value));
-                onPageChange?.(1);
-              }}
-              options={[10, 20, 50, 100].map((size) => ({
-                value: String(size),
-                label: String(size),
-              }))}
-            />
-          </div>
-          <div style={{ fontSize: "14px", color: theme.colors.text.secondary }}>
-            {(currentPage - 1) * pageSize + 1}-
-            {Math.min(currentPage * pageSize, total)} of {total}
-          </div>
-          <div style={{ display: "flex", gap: theme.spacing.xs }}>
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={() => onPageChange?.(1)}
-              disabled={currentPage === 1}
-            >
-              «
-            </Button>
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={() => onPageChange?.(Math.max(1, currentPage - 1))}
-              disabled={currentPage === 1}
-            >
-              ‹
-            </Button>
-            <span
-              style={{
-                padding: `${theme.spacing.sm} ${theme.spacing.md}`,
-                fontSize: "14px",
-                color: theme.colors.text.primary,
-              }}
-            >
-              {currentPage} / {totalPages}
-            </span>
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={() =>
-                onPageChange?.(Math.min(totalPages, currentPage + 1))
+      {pagination && !loading && pagedData.length > 0 && (
+        <div style={{ marginTop: theme.spacing.md }}>
+          <Pagination
+            currentPage={isBackendPagination ? currentPage : currentPage - 1}
+            pageSize={pageSize}
+            totalElements={total}
+            totalPages={pages}
+            first={
+              isBackendPagination
+                ? first ?? currentPage === 0
+                : currentPage === 1
+            }
+            last={
+              isBackendPagination
+                ? last ?? currentPage === pages - 1
+                : currentPage === pages
+            }
+            onPageChange={(page) => {
+              if (isBackendPagination) {
+                // 백엔드: 0-based 인덱스
+                onPageChange?.(page);
+              } else {
+                // 클라이언트: 1-based 인덱스
+                onPageChange?.(page + 1);
               }
-              disabled={currentPage === totalPages}
-            >
-              ›
-            </Button>
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={() => onPageChange?.(totalPages)}
-              disabled={currentPage === totalPages}
-            >
-              »
-            </Button>
-          </div>
+            }}
+            onPageSizeChange={(size) => {
+              onPageSizeChange?.(size);
+            }}
+          />
         </div>
       )}
     </div>
