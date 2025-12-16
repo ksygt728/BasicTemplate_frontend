@@ -11,6 +11,7 @@ import { theme } from "@/styles/theme";
 import { Button } from "./Button";
 import { Input } from "./Input";
 import { Select } from "./Select";
+import { DateRangePicker } from "./DateRangePicker";
 
 export interface SearchField {
   name: string;
@@ -50,6 +51,9 @@ export const SearchForm: React.FC<SearchFormProps> = ({
 }) => {
   const [searchData, setSearchData] =
     React.useState<Record<string, any>>(initialValues);
+  const [fieldErrors, setFieldErrors] = React.useState<Record<string, boolean>>(
+    {}
+  );
 
   const handleChange = (name: string, value: any) => {
     setSearchData((prev) => ({ ...prev, [name]: value }));
@@ -57,16 +61,42 @@ export const SearchForm: React.FC<SearchFormProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    // dateRange 필드 validation 체크
+    const errors: Record<string, boolean> = {};
+    fields.forEach((field) => {
+      if (field.type === "dateRange") {
+        const value = searchData[field.name] || "";
+        if (value) {
+          const [start, end] = value.split("~");
+          const hasStart = start && start.trim() !== "";
+          const hasEnd = end && end.trim() !== "";
+
+          // 하나만 입력된 경우 에러
+          if (hasStart !== hasEnd) {
+            errors[field.name] = true;
+          }
+        }
+      }
+    });
+
+    setFieldErrors(errors);
+
+    // 에러가 있으면 검색 중단
+    if (Object.keys(errors).length > 0) {
+      return;
+    }
+
     onSearch(searchData);
   };
 
   const handleReset = () => {
     setSearchData(initialValues);
+    setFieldErrors({}); // 에러 상태도 초기화
     if (onReset) {
       onReset();
-    } else {
-      onSearch(initialValues);
     }
+    // onSearch 호출 제거 - 검색은 Search 버튼으로만
   };
 
   const renderField = (field: SearchField) => {
@@ -117,33 +147,24 @@ export const SearchForm: React.FC<SearchFormProps> = ({
             >
               {field.label}
             </label>
-            <div
-              style={{
-                display: "flex",
-                gap: theme.spacing.sm,
-                alignItems: "center",
+            <DateRangePicker
+              value={value}
+              onChange={(val) => {
+                handleChange(field.name, val);
+                // 값이 변경되면 에러 제거
+                if (fieldErrors[field.name]) {
+                  setFieldErrors((prev) => {
+                    const newErrors = { ...prev };
+                    delete newErrors[field.name];
+                    return newErrors;
+                  });
+                }
               }}
-            >
-              <Input
-                type="date"
-                value={searchData[`${field.name}Start`] || ""}
-                onChange={(e) =>
-                  handleChange(`${field.name}Start`, e.target.value)
-                }
-                disabled={field.disabled || loading}
-                fullWidth
-              />
-              <span style={{ color: theme.colors.text.secondary }}>~</span>
-              <Input
-                type="date"
-                value={searchData[`${field.name}End`] || ""}
-                onChange={(e) =>
-                  handleChange(`${field.name}End`, e.target.value)
-                }
-                disabled={field.disabled || loading}
-                fullWidth
-              />
-            </div>
+              placeholder={field.placeholder}
+              disabled={field.disabled || loading}
+              fullWidth
+              error={fieldErrors[field.name]}
+            />
           </div>
         );
 

@@ -18,6 +18,8 @@ export type { BadgeProps, BadgeVariant, BadgeSize } from "./Badge";
 
 export { Modal } from "./Modal";
 export type { ModalProps } from "./Modal";
+export { TextViewModal } from "./TextViewModal";
+export type { TextViewModalProps } from "./TextViewModal";
 
 export { Select } from "./Select";
 export type { SelectProps, SelectOption } from "./Select";
@@ -33,6 +35,12 @@ export type { AdvancedTableProps, AdvancedTableColumn } from "./AdvancedTable";
 
 export { SearchForm } from "./SearchForm";
 export type { SearchFormProps, SearchField } from "./SearchForm";
+
+export { Pagination } from "./Pagination";
+export type { PaginationProps } from "./Pagination";
+
+export { DateRangePicker } from "./DateRangePicker";
+export type { DateRangePickerProps } from "./DateRangePicker";
 
 export { FilterDropdown } from "./FilterDropdown";
 

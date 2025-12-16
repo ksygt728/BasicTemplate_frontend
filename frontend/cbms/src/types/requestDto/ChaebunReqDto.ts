@@ -5,22 +5,22 @@
  */
 export interface ChaebunReqDto {
   /** 채번아이디 */
-  seqId: string;
+  seqId?: string;
 
   /** 채번명 */
-  seqName: string;
+  seqName?: string;
 
   /** 채번패턴 */
-  pattern: string;
+  pattern?: string;
 
   /** 채번고유번호 */
-  prefix: string;
+  prefix?: string;
 
   /** 증가량 */
-  step: number;
+  step?: number;
 
   /** 채번길이 */
-  length: number;
+  length?: number;
 
   /** 데이터포맷 */
   dateformat?: string;

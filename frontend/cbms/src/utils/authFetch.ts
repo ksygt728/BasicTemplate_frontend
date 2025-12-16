@@ -491,6 +491,14 @@ export const authPut = (
 /**
  * authFetch를 사용한 DELETE 요청
  */
-export const authDelete = (url: string, options?: AuthFetchOptions) => {
-  return authFetch(url, { ...options, method: "DELETE" });
+export const authDelete = (
+  url: string,
+  body?: any,
+  options?: AuthFetchOptions
+) => {
+  return authFetch(url, {
+    ...options,
+    method: "DELETE",
+    body: body ? JSON.stringify(body) : undefined,
+  });
 };
