@@ -158,29 +158,43 @@ export class RoleApi {
 
   /**
    * @REQ_ID : REQ_ADM_048
-   * @화면 : 권한 관리 > 권한 관리(Role)
-   * @기능 : 권한별 사용자 리스트 조회
-   * @param roleCd 권한 코드
-   * @returns 권한별 사용자 리스트 조회 결과
+   * @화면 : 권한 관리 > 사용자별 권한 관리
+   * @기능 : 사용자별 권한 리스트 조회
+   * @param userId 사용자 아이디
+   * @returns 사용자별 권한 리스트 조회 결과
    */
   public async findByRoleUserForAdmin(
-    roleCd: string
+    userId: string
   ): Promise<ResponseApi<Map<string, object>>> {
-    const url = `${this.ADMIN_ROLE_BASE_URL}/role-user/${roleCd}`;
+    const url = `${this.ADMIN_ROLE_BASE_URL}/role-user/${userId}`;
     return authGet(url).then((res) => res.json());
   }
 
   /**
    * @REQ_ID : REQ_ADM_049
-   * @화면 : 권한 관리 > 권한 관리(Role)
-   * @기능 : 권한별 사용자 리스트 수정
+   * @화면 : 권한 관리 > 사용자별 권한 관리
+   * @기능 : 사용자에게 권한 부여
    * @param roleUsers 권한별 사용자 리스트 DTO
-   * @returns 권한별 사용자 리스트 수정 결과
+   * @returns 권한 부여 결과
    */
-  public async updateRoleUserForAdmin(
+  public async grantRoleToUser(
     roleUsers: RoleUserReqDto[]
   ): Promise<ResponseApi<Map<string, object>>> {
     const url = `${this.ADMIN_ROLE_BASE_URL}/role-user`;
-    return authPut(url, { roleUsers }).then((res) => res.json());
+    return authPost(url, { roleUsers }).then((res) => res.json());
+  }
+
+  /**
+   * @REQ_ID : REQ_ADM_050
+   * @화면 : 권한 관리 > 사용자별 권한 관리
+   * @기능 : 사용자로부터 권한 회수
+   * @param roleUsers 권한별 사용자 리스트 DTO
+   * @returns 권한 회수 결과
+   */
+  public async revokeRoleFromUser(
+    roleUsers: RoleUserReqDto[]
+  ): Promise<ResponseApi<Map<string, object>>> {
+    const url = `${this.ADMIN_ROLE_BASE_URL}/role-user`;
+    return authDelete(url, { roleUsers }).then((res) => res.json());
   }
 }

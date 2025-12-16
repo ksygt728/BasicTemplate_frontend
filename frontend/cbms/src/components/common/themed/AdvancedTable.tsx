@@ -1040,6 +1040,8 @@ export const AdvancedTable = <T extends Record<string, any>>({
     borderRight: bordered ? `1px solid ${theme.colors.border.default}` : "none",
     borderBottom: `1px solid ${theme.colors.border.default}`,
     textAlign: align || "left",
+    position: "relative",
+    overflow: "visible",
   });
 
   const getTrStyle = (

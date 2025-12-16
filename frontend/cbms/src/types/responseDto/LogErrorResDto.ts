@@ -27,4 +27,6 @@ export interface LogErrorResDto {
 
   /** 에러내용상세 */
   errStack: string;
+
+  createDate: string;
 }

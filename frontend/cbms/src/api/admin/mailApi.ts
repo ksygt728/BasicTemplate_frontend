@@ -88,14 +88,14 @@ export class MailApi {
     pageable: Pageable = {
       page: 0,
       size: 2000,
-      sort: "sendDt",
+      sort: "createDate",
       direction: "DESC",
     }
   ): Promise<ResponseApi<Map<string, object>>> {
     const params = new URLSearchParams({
       page: pageable.page.toString(),
       size: pageable.size.toString(),
-      sort: pageable.sort ?? "sendDt",
+      sort: pageable.sort ?? "createDate",
       direction: pageable.direction ?? "DESC",
     });
 
