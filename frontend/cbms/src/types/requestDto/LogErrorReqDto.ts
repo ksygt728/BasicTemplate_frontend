@@ -27,4 +27,7 @@ export interface LogErrorReqDto {
 
   /** 에러내용상세 */
   errStack?: string;
+
+  /** 에러내용상세 */
+  createDate?: string;
 }

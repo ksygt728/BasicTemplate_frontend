@@ -1,30 +1,30 @@
 "use client";
 
-import React, { JSX, useEffect, useRef, useState } from "react";
+import React, { useState } from "react";
 import SplitFrame from "@/components/layout/frame/SplitFrame";
 import { SearchForm } from "@/components/common/themed/SearchForm";
 import { Table } from "@/components/common/themed/Table";
 import { Button } from "@/components/common/themed/Button";
 import { Card } from "@/components/common/themed/Card";
-import { searchFields, logTableColumns, detailFields } from "./info";
-import { useLogApiService } from "@/service/LogApiService";
+import { searchFields, errorLogTableColumns, detailFields } from "./info";
+import { useLogErrorService } from "@/service/LogErrorService";
 import { useAlert } from "@/contexts/AlertContext";
 import { theme } from "@/styles/theme";
 
 /**
  * @파일명 : page.tsx
- * @설명 : 사용자 접속 로그 관리 페이지 - 렌더링만 담당
+ * @설명 : 에러 로그 관리 페이지 - 렌더링만 담당
  * @작성자 : 김승연
  * @작성일 : 2025.12.16
  * @변경이력 :
  *       2025.12.16 김승연 최초 생성
  */
-export default function AccessLogPage() {
+export default function ErrorLogPage() {
   const {
     // 상태
     loading,
     error,
-    selectedLogId,
+    selectedErrId,
     searchFormData,
     currentPage,
     pageSize,
@@ -34,16 +34,16 @@ export default function AccessLogPage() {
     last,
 
     // 원본 데이터
-    logData,
-    selectedLogData,
+    errorLogData,
+    selectedErrorLogData,
 
     // 테이블 데이터
-    logListData,
-    logDetailData,
+    errorLogListData,
+    errorLogDetailData,
 
     // 상태 변경
     setSearchFormData,
-    setSelectedLogId,
+    setSelectedErrId,
 
     // 비즈니스 로직
     handleSearch,
@@ -51,15 +51,12 @@ export default function AccessLogPage() {
     handlePageChange,
     handlePageSizeChange,
     refetch,
-  } = useLogApiService();
+  } = useLogErrorService();
 
   const { showAlert } = useAlert();
 
-  // 중복 호출 방지 플래그
-  const isFetched = useRef(false);
-
-  // 선택된 로그의 상세 정보
-  const [selectedLog, setSelectedLog] = useState<any>(null);
+  // 선택된 에러 로그의 상세 정보
+  const [selectedErrorLog, setSelectedErrorLog] = useState<any>(null);
 
   // ============================================================================
   // 복사 함수
@@ -86,15 +83,6 @@ export default function AccessLogPage() {
     }
   };
 
-  // 초기 데이터 로드 - 제거 (사용자가 직접 검색해야 함)
-  // useEffect(() => {
-  //   if (isFetched.current) return;
-  //   isFetched.current = true;
-
-  //   refetch();
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, []);
-
   // ============================================================================
   // 테이블 Row 클릭 핸들러
   // ============================================================================
@@ -104,8 +92,8 @@ export default function AccessLogPage() {
    * @description 테이블 row 클릭 시 상세정보 즉시 표시 (API 호출 없이 row 데이터 사용)
    */
   const handleTableRowClickInstant = (row: any) => {
-    setSelectedLogId(row.logId);
-    setSelectedLog(row); // 상세정보 즉시 세팅
+    setSelectedErrId(row.errId);
+    setSelectedErrorLog(row); // 상세정보 즉시 세팅
   };
 
   // ============================================================================
@@ -134,14 +122,14 @@ export default function AccessLogPage() {
   };
 
   // ============================================================================
-  // 렌더링: 좌측 - 로그 리스트
+  // 렌더링: 좌측 - 에러 로그 리스트
   // ============================================================================
 
   const renderLeftContent = () => (
     <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
       {/* 검색 폼 */}
       <div style={{ marginBottom: theme.spacing.md }}>
-        <Card title="접속 로그 검색">
+        <Card title="에러 로그 검색">
           <SearchForm
             fields={searchFields}
             onSearch={handleSearch}
@@ -150,12 +138,12 @@ export default function AccessLogPage() {
         </Card>
       </div>
 
-      {/* 로그 목록 테이블 */}
+      {/* 에러 로그 목록 테이블 */}
       <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-        <Card title="접속 로그 목록" subtitle={`총 ${totalElements}건`}>
+        <Card title="에러 로그 목록" subtitle={`총 ${totalElements}건`}>
           <Table
-            columns={logTableColumns}
-            data={logListData}
+            columns={errorLogTableColumns}
+            data={errorLogListData}
             loading={loading}
             hoverable
             striped
@@ -169,7 +157,7 @@ export default function AccessLogPage() {
             onPageChange={handlePageChange}
             onPageSizeChange={handlePageSizeChange}
             onRowClick={handleTableRowClickInstant}
-            emptyText="검색된 로그가 없습니다."
+            emptyText="검색된 에러 로그가 없습니다."
           />
         </Card>
       </div>
@@ -177,17 +165,19 @@ export default function AccessLogPage() {
   );
 
   // ============================================================================
-  // 렌더링: 우측 - 로그 상세 정보
+  // 렌더링: 우측 - 에러 로그 상세 정보 (Stacktrace)
   // ============================================================================
 
   const renderRightContent = () => (
     <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
       <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
         <Card
-          title="로그 상세 정보"
-          subtitle={selectedLog ? `로그 ID: ${selectedLog.logId}` : ""}
+          title="에러 상세 정보"
+          subtitle={
+            selectedErrorLog ? `에러 ID: ${selectedErrorLog.errId}` : ""
+          }
         >
-          {selectedLog ? (
+          {selectedErrorLog ? (
             <div
               style={{
                 flex: 1,
@@ -230,7 +220,9 @@ export default function AccessLogPage() {
                       const basicInfo = detailFields
                         .map(
                           (field) =>
-                            `${field.label}: ${selectedLog[field.name] || "-"}`
+                            `${field.label}: ${
+                              selectedErrorLog[field.name] || "-"
+                            }`
                         )
                         .join("\n");
                       copyToClipboard(basicInfo, "기본 정보");
@@ -262,20 +254,23 @@ export default function AccessLogPage() {
                         {field.label}:
                       </div>
                       <div style={{ color: theme.colors.text.primary }}>
-                        {selectedLog[field.name] || "-"}
+                        {selectedErrorLog[field.name] || "-"}
                       </div>
                     </React.Fragment>
                   ))}
                 </div>
               </div>
 
-              {/* Request Body 섹션 */}
+              {/* Error Stack Trace 섹션 */}
               <div
                 style={{
                   padding: theme.spacing.md,
                   backgroundColor: theme.colors.background.default,
                   borderRadius: theme.borderRadius.md,
                   border: `1px solid ${theme.colors.border.default}`,
+                  flex: 1,
+                  display: "flex",
+                  flexDirection: "column",
                 }}
               >
                 <div
@@ -293,15 +288,16 @@ export default function AccessLogPage() {
                       color: theme.colors.text.primary,
                     }}
                   >
-                    요청 내용 (Request Body)
+                    에러 스택 트레이스 (Stack Trace)
                   </h4>
                   <Button
                     size="sm"
                     variant="secondary"
                     onClick={() =>
                       copyToClipboard(
-                        selectedLog.requestBody || "요청 내용이 없습니다.",
-                        "Request Body"
+                        selectedErrorLog.errStack ||
+                          "스택 트레이스가 없습니다.",
+                        "Stack Trace"
                       )
                     }
                   >
@@ -310,7 +306,7 @@ export default function AccessLogPage() {
                 </div>
                 <div
                   style={{
-                    maxHeight: "300px",
+                    flex: 1,
                     overflow: "auto",
                     backgroundColor: theme.colors.background.surface,
                     padding: theme.spacing.sm,
@@ -320,80 +316,17 @@ export default function AccessLogPage() {
                     wordBreak: "break-word",
                     fontSize: "13px",
                     fontFamily: "monospace",
+                    color: "#60a5fa",
                     userSelect: "text",
                     WebkitUserSelect: "text",
                     MozUserSelect: "text",
                     msUserSelect: "text",
                     cursor: "text",
+                    minHeight: "300px",
+                    maxHeight: "600px",
                   }}
                 >
-                  {selectedLog.requestBody
-                    ? highlightJson(selectedLog.requestBody)
-                    : "요청 내용이 없습니다."}
-                </div>
-              </div>
-
-              {/* Response Body 섹션 */}
-              <div
-                style={{
-                  padding: theme.spacing.md,
-                  backgroundColor: theme.colors.background.default,
-                  borderRadius: theme.borderRadius.md,
-                  border: `1px solid ${theme.colors.border.default}`,
-                }}
-              >
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    marginBottom: theme.spacing.sm,
-                  }}
-                >
-                  <h4
-                    style={{
-                      fontSize: "16px",
-                      fontWeight: theme.typography.weights.semibold,
-                      color: theme.colors.text.primary,
-                    }}
-                  >
-                    응답 내용 (Response Body)
-                  </h4>
-                  <Button
-                    size="sm"
-                    variant="secondary"
-                    onClick={() =>
-                      copyToClipboard(
-                        selectedLog.responseBody || "응답 내용이 없습니다.",
-                        "Response Body"
-                      )
-                    }
-                  >
-                    복사
-                  </Button>
-                </div>
-                <div
-                  style={{
-                    maxHeight: "300px",
-                    overflow: "auto",
-                    backgroundColor: theme.colors.background.surface,
-                    padding: theme.spacing.sm,
-                    borderRadius: theme.borderRadius.sm,
-                    border: `1px solid ${theme.colors.border.default}`,
-                    whiteSpace: "pre-wrap",
-                    wordBreak: "break-word",
-                    fontSize: "13px",
-                    fontFamily: "monospace",
-                    userSelect: "text",
-                    WebkitUserSelect: "text",
-                    MozUserSelect: "text",
-                    msUserSelect: "text",
-                    cursor: "text",
-                  }}
-                >
-                  {selectedLog.responseBody
-                    ? highlightJson(selectedLog.responseBody)
-                    : "응답 내용이 없습니다."}
+                  {selectedErrorLog.errStack || "스택 트레이스가 없습니다."}
                 </div>
               </div>
             </div>
@@ -408,7 +341,7 @@ export default function AccessLogPage() {
                 fontSize: "14px",
               }}
             >
-              좌측 목록에서 로그를 선택하세요.
+              좌측 목록에서 에러 로그를 선택하세요.
             </div>
           )}
         </Card>
@@ -432,67 +365,4 @@ export default function AccessLogPage() {
       />
     </div>
   );
-}
-
-// ============================================================================
-// 유틸리티 함수
-// ============================================================================
-
-/**
- * @function formatJson
- * @description JSON 문자열을 읽기 쉽게 포맷팅
- * @param {string} jsonString - JSON 문자열
- * @returns {string} 포맷팅된 JSON 문자열
- */
-function formatJson(jsonString: string): string {
-  try {
-    const parsed = JSON.parse(jsonString);
-    return JSON.stringify(parsed, null, 2);
-  } catch {
-    // JSON 파싱 실패 시 원본 반환
-    return jsonString;
-  }
-}
-
-/**
- * @function highlightJson
- * @description JSON 문자열에 구문 강조 적용
- * @param {string} jsonString - JSON 문자열
- * @returns {JSX.Element} 구문 강조된 JSX
- */
-function highlightJson(jsonString: string): JSX.Element {
-  try {
-    const formatted = formatJson(jsonString);
-    const highlighted = formatted.split("\n").map((line, i) => {
-      // 키 ("key":) - 청록색
-      line = line.replace(
-        /"([^"]+)":/g,
-        '<span style="color: #4ec9b0">"$1"</span>:'
-      );
-      // 문자열 값 - 주황색
-      line = line.replace(
-        /: "([^"]*)"/g,
-        ': <span style="color: #ce9178">"$1"</span>'
-      );
-      // 숫자 - 연두색
-      line = line.replace(
-        /: (\d+)/g,
-        ': <span style="color: #b5cea8">$1</span>'
-      );
-      // boolean - 파란색
-      line = line.replace(
-        /: (true|false)/g,
-        ': <span style="color: #569cd6">$1</span>'
-      );
-      // null - 파란색
-      line = line.replace(
-        /: (null)/g,
-        ': <span style="color: #569cd6">$1</span>'
-      );
-      return <div key={i} dangerouslySetInnerHTML={{ __html: line }} />;
-    });
-    return <>{highlighted}</>;
-  } catch {
-    return <>{jsonString}</>;
-  }
 }
