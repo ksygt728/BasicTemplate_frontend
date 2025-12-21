@@ -20,6 +20,8 @@ export { Modal } from "./Modal";
 export type { ModalProps } from "./Modal";
 export { TextViewModal } from "./TextViewModal";
 export type { TextViewModalProps } from "./TextViewModal";
+export { AnnouncementPopup } from "./AnnouncementPopup";
+export type { AnnouncementPopupProps } from "./AnnouncementPopup";
 
 export { Select } from "./Select";
 export type { SelectProps, SelectOption } from "./Select";

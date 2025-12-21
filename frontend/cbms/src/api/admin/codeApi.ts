@@ -100,7 +100,6 @@ export class CodeApi {
     comCodeM: ComCodeMReqDto
   ): Promise<ResponseApi<Map<string, object>>> {
     const url = `${this.ADMIN_CODE_BASE_URL}/group`;
-    console.log("comCodeM ", comCodeM);
     return authPut(url, comCodeM).then((res) => res.json());
   }
 

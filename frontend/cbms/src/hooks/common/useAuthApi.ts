@@ -32,6 +32,32 @@ export const useAuthApi = () => {
   const { loading, error, handleApiCall } = useCommonApi();
 
   /**
+   * @기능 현재 로그인한 사용자 정보 조회
+   * @returns {Promise<{success: boolean, data?: any, message?: string}>} 사용자 정보
+   */
+  const getCurrentUser = useCallback(async (): Promise<{
+    success: boolean;
+    data?: any;
+    message?: string;
+  }> => {
+    try {
+      const response = await authApi.getCurrentUser();
+      if (response.success && response.data?.data) {
+        return { success: true, data: response.data.data };
+      }
+      return {
+        success: false,
+        message: response.message || "사용자 정보를 가져올 수 없습니다.",
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        message: error.message || "사용자 정보 조회 중 오류가 발생했습니다.",
+      };
+    }
+  }, [authApi]);
+
+  /**
    * @기능 로그인 함수
    * @REQ_ID REQ_CMN_004
    * @param {AuthReqDto} authReqDto - 로그인 요청 정보 (userId, password)
@@ -290,5 +316,6 @@ export const useAuthApi = () => {
     handleNaverSignIn,
     handleSignUp,
     handleSignUpWithValidation,
+    getCurrentUser,
   };
 };
