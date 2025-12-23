@@ -98,20 +98,25 @@ export class SchedulerApi {
     pageable: Pageable = {
       page: 0,
       size: 200,
-      sort: "startDate",
-      direction: "ASC",
+      sort: "endTime",
+      direction: "DESC",
     }
   ): Promise<ResponseApi<Map<string, object>>> {
-    const url = new URL(`${this.ADMIN_SCHEDULER_BASE_URL}/history/${scheId}`);
+    const params: any = {
+      page: pageable.page.toString(),
+      size: pageable.size.toString(),
+    };
 
-    url.searchParams.append("page", pageable.page.toString());
-    url.searchParams.append("size", pageable.size.toString());
-    url.searchParams.append("sort", pageable.sort || "startDate");
-    if (pageable.direction) {
-      url.searchParams.append("direction", pageable.direction);
+    // sort 파라미터 추가 - 백엔드 형식: sort[fieldName]=direction
+    if (pageable.sort && pageable.direction) {
+      params[`sort[${pageable.sort}]`] = pageable.direction;
+    } else {
+      params["sort[endTime]"] = "DESC";
     }
 
-    return authGet(url.toString()).then((res) => res.json());
+    const searchParams = new URLSearchParams(params);
+    const url = `${this.ADMIN_SCHEDULER_BASE_URL}/history/${scheId}?${searchParams}`;
+    return authGet(url).then((res) => res.json());
   }
 
   /**

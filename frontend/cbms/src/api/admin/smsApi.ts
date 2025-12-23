@@ -39,7 +39,7 @@ export class SmsApi {
   public async findAllSmsForAdmin(
     smsM: SmsMReqDto
   ): Promise<ResponseApi<Map<string, object>>> {
-    let url = `${this.ADMIN_SMS_BASE_URL}`;
+    let url = `${this.ADMIN_SMS_BASE_URL}/search`;
     const params = new URLSearchParams();
 
     Object.keys(smsM).forEach((key) => {
@@ -124,15 +124,16 @@ export class SmsApi {
    */
   public async findBySmsHistoryForAdmin(
     smsId: string,
-    pageable: Pageable = {
-      page: 0,
-      size: 200,
-      sort: "sendDate",
-      direction: "ASC",
-    }
+    pageable?: Pageable
   ): Promise<ResponseApi<Map<string, object>>> {
-    const url = new URL(`${this.ADMIN_SMS_BASE_URL}/history/${smsId}`);
+    // History endpoint should be called without query string unless pageable is explicitly provided.
+    const baseUrl = `${this.ADMIN_SMS_BASE_URL}/history/${smsId}`;
 
+    if (!pageable) {
+      return authGet(baseUrl).then((res) => res.json());
+    }
+
+    const url = new URL(baseUrl);
     url.searchParams.append("page", pageable.page.toString());
     url.searchParams.append("size", pageable.size.toString());
     url.searchParams.append("sort", pageable.sort || "sendDate");

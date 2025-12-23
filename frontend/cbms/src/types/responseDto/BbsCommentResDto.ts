@@ -13,8 +13,8 @@ export interface BbsCommentResDto {
   /** 게시판 정보 */
   bbs: BbsResDto;
 
-  /** 내용 */
-  content: string;
+  /** 댓글 내용 */
+  commentContent: string;
 
   /** 작성자 */
   writor: UserResDto;
