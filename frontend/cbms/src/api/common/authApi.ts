@@ -28,6 +28,24 @@ export class AuthApi {
   private API_AUTH_BASE_URL = `${this.API_BASE_URL}/api/auth`;
 
   /**
+   * @기능 : 현재 로그인한 사용자 정보 조회
+   * @returns 현재 사용자 정보
+   */
+  public async getCurrentUser(): Promise<ResponseApi<any>> {
+    const url = `${this.API_AUTH_BASE_URL}/me`;
+
+    const response = await fetch(url, {
+      method: "GET",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    return await response.json();
+  }
+
+  /**
    * @REQ_ID : REQ_CMN_003
    * @화면 : 회원가입
    * @기능 : 회원정보 입력

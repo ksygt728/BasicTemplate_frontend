@@ -47,19 +47,27 @@ export class BbsApi {
       direction: "DESC",
     }
   ): Promise<ResponseApi<Map<string, object>>> {
-    const params = new URLSearchParams({
+    const params: any = {
       page: pageable.page.toString(),
       size: pageable.size.toString(),
-      sort: pageable.sort ?? "writeDate",
-      direction: pageable.direction ?? "DESC",
-      ...Object.fromEntries(
-        Object.entries(bbsReqDto).filter(
-          ([_, value]) => value !== undefined && value !== null
-        )
-      ),
+    };
+
+    // sort 파라미터 추가 - 백엔드 형식: sort[fieldName]=direction
+    if (pageable.sort && pageable.direction) {
+      params[`sort[${pageable.sort}]`] = pageable.direction;
+    } else {
+      params["sort[writeDate]"] = "DESC";
+    }
+
+    // 검색 조건 추가
+    Object.entries(bbsReqDto).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        params[key] = value;
+      }
     });
 
-    const url = `${this.ADMIN_BBS_BASE_URL}/search?${params}`;
+    const searchParams = new URLSearchParams(params);
+    const url = `${this.ADMIN_BBS_BASE_URL}/search?${searchParams}`;
     return authGet(url).then((res) => res.json());
   }
 
@@ -133,14 +141,46 @@ export class BbsApi {
     const params = new URLSearchParams({
       page: pageable.page.toString(),
       size: pageable.size.toString(),
-      ...Object.fromEntries(
-        Object.entries(bbsCommentReqDto).filter(
-          ([_, value]) => value !== undefined && value !== null
-        )
-      ),
     });
 
-    const url = `${this.ADMIN_BBS_BASE_URL}/comment/search?${params}`;
+    // bbsId는 Path Variable로 전달
+    const url = `${this.ADMIN_BBS_BASE_URL}/comment/search/${bbsCommentReqDto.bbsId}?${params}`;
     return authGet(url).then((res) => res.json());
+  }
+
+  /**
+   * @기능 : 게시판 댓글 추가
+   * @param bbsComment 댓글 정보 DTO
+   * @return 게시판 댓글 추가 결과
+   */
+  public async insertBbsCommentForAdmin(
+    bbsComment: BbsCommentReqDto
+  ): Promise<ResponseApi<Map<string, object>>> {
+    const url = `${this.ADMIN_BBS_BASE_URL}/comment`;
+    return authPost(url, bbsComment).then((res) => res.json());
+  }
+
+  /**
+   * @기능 : 게시판 댓글 수정
+   * @param bbsComment 댓글 정보 DTO
+   * @return 게시판 댓글 수정 결과
+   */
+  public async updateBbsCommentForAdmin(
+    bbsComment: BbsCommentReqDto
+  ): Promise<ResponseApi<Map<string, object>>> {
+    const url = `${this.ADMIN_BBS_BASE_URL}/comment`;
+    return authPut(url, bbsComment).then((res) => res.json());
+  }
+
+  /**
+   * @기능 : 게시판 댓글 삭제
+   * @param commentId 댓글 아이디
+   * @return 게시판 댓글 삭제 결과
+   */
+  public async deleteBbsCommentForAdmin(
+    commentId: string
+  ): Promise<ResponseApi<Map<string, object>>> {
+    const url = `${this.ADMIN_BBS_BASE_URL}/comment/${commentId}`;
+    return authDelete(url).then((res) => res.json());
   }
 }

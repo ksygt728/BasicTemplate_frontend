@@ -18,9 +18,6 @@ import type { ComCodeMResDto } from "@/types/responseDto/ComCodeMResDto";
  * @returns 변환된 CommonCodeData
  */
 export const transformCodeApiResponse = (apiResponse: any): CommonCodeData => {
-  console.log("=== transformCodeApiResponse 시작 ===");
-  console.log("API 응답 원본:", apiResponse);
-
   const groups: ComCodeMResDto[] = [];
   const detailsByGroup: { [grpCd: string]: CodeDetailWithAttributes[] } = {};
   const attributesByGroup: { [grpCd: string]: any[] } = {};
@@ -33,11 +30,8 @@ export const transformCodeApiResponse = (apiResponse: any): CommonCodeData => {
     return { groups, detailsByGroup, attributesByGroup };
   }
 
-  console.log("content 배열 길이:", content.length);
-
   // 각 그룹코드별로 처리
   content.forEach((group: any) => {
-    console.log("처리 중인 그룹:", group.grpCd, group);
     const grpCd = group.grpCd;
 
     // 그룹 정보 추가
@@ -56,16 +50,12 @@ export const transformCodeApiResponse = (apiResponse: any): CommonCodeData => {
     // 상세코드 정보 변환 (기존 CodeTransformer와 동일한 로직)
     const details: CodeDetailWithAttributes[] = [];
     if (group.comCodeInfo) {
-      console.log(`${grpCd} comCodeInfo:`, group.comCodeInfo);
-
       // dtlCd가 있는 데이터만 필터링
       group.comCodeInfo
         .filter(
           (codeInfo: any) => codeInfo.dtlCd && codeInfo.dtlCd.trim() !== ""
         )
         .forEach((codeInfo: any, index: number) => {
-          console.log(`  [${index}] codeInfo:`, codeInfo);
-
           const detail: CodeDetailWithAttributes = {
             dtlCd: codeInfo.dtlCd,
             dtlNm: "",
@@ -87,17 +77,11 @@ export const transformCodeApiResponse = (apiResponse: any): CommonCodeData => {
           }
 
           details.push(detail);
-          console.log(`  [${index}] 변환된 detail:`, detail);
         });
     }
 
     detailsByGroup[grpCd] = details;
   });
-
-  console.log("=== 변환 완료 ===");
-  console.log("총 그룹 수:", groups.length);
-  console.log("groups:", groups);
-  console.log("detailsByGroup:", detailsByGroup);
 
   return { groups, detailsByGroup, attributesByGroup };
 };
