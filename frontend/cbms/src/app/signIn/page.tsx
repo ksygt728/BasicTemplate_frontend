@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, FormEvent } from "react";
+import { useState, FormEvent, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button, Input, Card } from "@/components/common/themed";
@@ -15,10 +15,12 @@ import { useAlert } from "@/contexts/AlertContext";
  * @변경이력 :
  *       2025.12.01 김승연 최초 생성
  *       2025.12.07 김승연 테마 컴포넌트 적용
+ *       2025.12.24 김승연 hydration 오류 수정 (클라이언트 전용 렌더링)
  */
 export default function SignInPage() {
   const [userId, setUserId] = useState<string>("");
   const [password, setPassword] = useState<string>("");
+  const [isMounted, setIsMounted] = useState(false);
   const searchParams = useSearchParams();
   const redirectUrl = searchParams.get("redirect") || "/main";
   const {
@@ -29,6 +31,11 @@ export default function SignInPage() {
     handleNaverSignIn,
   } = useAuthApi();
   const { showAlert } = useAlert();
+
+  // 클라이언트에서만 렌더링되도록 설정 (hydration 오류 방지)
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   /**
    * 로그인 폼 제출 핸들러
@@ -65,6 +72,32 @@ export default function SignInPage() {
       });
     }
   };
+
+  // 마운트되기 전에는 로딩 상태 표시
+  if (!isMounted) {
+    return (
+      <div
+        style={{
+          minHeight: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          background: "var(--background-default)",
+        }}
+      >
+        <div
+          className="loading-spinner"
+          style={{
+            width: "40px",
+            height: "40px",
+            border: "3px solid var(--border-default)",
+            borderTop: "3px solid var(--primary-default)",
+            borderRadius: "50%",
+          }}
+        />
+      </div>
+    );
+  }
 
   return (
     <div

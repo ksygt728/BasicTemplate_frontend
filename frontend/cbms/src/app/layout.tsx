@@ -16,8 +16,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ko" className="h-full">
-      <body className="h-full m-0 p-0">
+    <html lang="ko" className="h-full" suppressHydrationWarning>
+      <body className="h-full m-0 p-0" suppressHydrationWarning>
         <ReduxProvider>
           <QueryProvider>
             <AlertProvider>
