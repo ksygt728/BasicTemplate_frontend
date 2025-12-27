@@ -20,13 +20,13 @@ pipeline {
 
   stages {
 
-    // stage('Checkout') {
-    //   steps {
-    //     git branch: params.BRANCH,
-    //         credentialsId: 'git-credential', // Jenkins Credential ID를 입력해야함
-    //         url: env.REPO_URL
-    //   }
-    // }
+    stage('Checkout') {
+      steps {
+        git branch: params.BRANCH,
+            credentialsId: 'git-credential', // Jenkins Credential ID를 입력해야함
+            url: env.REPO_URL
+      }
+    }
 
     stage('Prepare Tag') {
       steps {
