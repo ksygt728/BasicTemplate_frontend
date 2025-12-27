@@ -1,0 +1,17 @@
+version: "3.9"
+
+services:
+  front:
+    image: cbms-front-${ENV}:${IMAGE_TAG}
+    container_name: cbms-front-${ENV}
+    restart: always
+    ports:
+      - "${FRONT_PORT}:3000"
+    env_file:
+      - .env.${ENV}
+    networks:
+      - cbms-net
+
+networks:
+  cbms-net:
+    external: true

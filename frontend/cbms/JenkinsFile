@@ -6,24 +6,28 @@ pipeline {
     disableConcurrentBuilds()
   }
 
-  parameters {
-    choice(name: 'ENV', choices: ['dev', 'qa', 'prod'])
-    string(name: 'BRANCH', defaultValue: 'main')
-  }
-
   environment {
-    // ✅ HTTPS + PAT 사용
-    REPO_URL   = 'https://github.com/ksygt728/BasicTemplate_frontend.git'
-    IMAGE_NAME = 'cbms-front'
+    REPO_URL    = 'https://github.com/ksygt728/BasicTemplate_frontend.git'
+    IMAGE_NAME  = 'cbms-front'
     DEPLOY_PATH = '/srv/docker'
   }
 
   stages {
 
+    stage('Init Params') {
+      steps {
+        echo "================ Jenkins Build Parameters ================"
+        echo "ENV           : ${params.ENV}"
+        echo "BRANCH        : ${params.BRANCH}"
+        echo "DEPLOY_SERVER : ${params.DEPLOY_SERVER}"
+        echo "=========================================================="
+      }
+    }
+
     stage('Checkout') {
       steps {
         git branch: params.BRANCH,
-            credentialsId: 'git-credential', // Jenkins Credential ID를 입력해야함
+            credentialsId: 'git-credential',
             url: env.REPO_URL
       }
     }
@@ -31,7 +35,14 @@ pipeline {
     stage('Prepare Tag') {
       steps {
         script {
-          env.TAG = "front-${params.ENV}-${env.BUILD_NUMBER}"
+          def tz = TimeZone.getTimeZone('Asia/Seoul')
+          def dateStr = new Date().format('yyyy-MM-dd_HH', tz)
+
+          env.TAG = "front-${params.ENV}-${dateStr}-${env.BUILD_NUMBER}"
+
+          echo "▶ Build ENV        : ${params.ENV}"
+          echo "▶ Build Number     : ${env.BUILD_NUMBER}"
+          echo "▶ Generated TAG    : ${env.TAG}"
         }
       }
     }
@@ -39,8 +50,8 @@ pipeline {
     stage('Docker Build') {
       steps {
         sh """
-            cd frontend/cbms
-            docker build -t ${IMAGE_NAME}:${TAG} .
+          cd frontend/cbms
+          docker build -t ${IMAGE_NAME}:${TAG} .
         """
       }
     }
@@ -49,7 +60,7 @@ pipeline {
       steps {
         sshagent(credentials: ['deploy-key']) {
           sh """
-            ssh deploy@${params.ENV}-server '
+            ssh deploy@${params.DEPLOY_SERVER} '
               cd ${DEPLOY_PATH}
               IMAGE_TAG=${TAG} ENV=${params.ENV} \
               docker compose -f docker-compose.front.yml up -d
@@ -59,7 +70,6 @@ pipeline {
       }
     }
 
-    // ⚠️ Git tag / push는 SSH로만 안전하게
     stage('Git Tag') {
       steps {
         sshagent(credentials: ['git-ssh-key']) {
