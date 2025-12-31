@@ -2,11 +2,6 @@ version: "3.9"
 
 services:
   front:
-    # 로컬/원격 공통: build 사용
-    build:
-      context: .
-      dockerfile: Dockerfile
-    # remote에서만 이미지 pull이 필요한 경우, Jenkins에서 pull 수행
     image: cbms-front-${ENV}:${IMAGE_TAG}
     container_name: cbms-front-${ENV}
     restart: always
@@ -20,20 +15,3 @@ services:
 networks:
   cbms-net:
     external: true
-# version: "3.9"
-
-# services:
-#   front:
-#     image: ksygt728/cbms-front-development:front-development-2025-12-31_10-37
-#     container_name: cbms-front-development
-#     restart: always
-#     ports:
-#       - "3000:3000"
-#     env_file:
-#       - .env.development
-#     networks:
-#       - cbms-net
-
-# networks:
-#   cbms-net:
-#     external: true
