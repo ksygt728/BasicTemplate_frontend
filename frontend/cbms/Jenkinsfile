@@ -69,7 +69,7 @@ pipeline {
         echo "================ [DOCKER] Build image ================"
         sh """
           cd ${COMPOSE_FILE_PATH}
-          docker build -t ${REGISTRY}/${IMAGE_NAME}-${params.ENV}:${TAG} .
+          docker build --build-arg ENV_NAME=${params.ENV} -t ${REGISTRY}/${IMAGE_NAME}-${params.ENV}:${TAG} .
         """
         echo "================ ✅ [DOCKER] Build completed ================"
       }
