@@ -68,7 +68,7 @@ pipeline {
       steps {
         echo "================ [DOCKER] Build image ================"
         sh """
-          cd frontend/cbms
+          cd ${COMPOSE_FILE_PATH}
           docker build -t ${REGISTRY}/${IMAGE_NAME}-${params.ENV}:${TAG} .
         """
         echo "================ ✅ [DOCKER] Build completed ================"
