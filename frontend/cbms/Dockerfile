@@ -22,5 +22,39 @@ COPY .env.${ENV_NAME} .env.production
 # Next.js 빌드는 항상 production 모드
 ENV NODE_ENV=production
 
+
 # Next.js 빌드
 RUN npm run build
+
+
+
+
+############################################
+
+# 2단계: 실행 (Next.js 서버)
+
+############################################
+
+FROM node:20-alpine
+
+  
+
+WORKDIR /app
+
+  
+
+# 빌드 결과물과 node_modules 복사
+
+COPY --from=builder /app ./
+
+  
+
+# Next.js 기본 포트
+
+EXPOSE 3000
+
+  
+
+# Next.js 서버 실행
+
+CMD ["npm", "run", "start"]
