@@ -19,6 +19,10 @@ COPY . .
 # Next.js는 NODE_ENV=production 일 때 .env.production 만 읽음
 COPY .env.${ENV_NAME} .env.production
 
+# 빌드 시 .env.local을 무시하기 위해 제거
+# (개발 환경의 localhost:8080 설정이 배포 환경에 적용되는 것을 방지)
+RUN rm -f .env.local
+
 # Next.js 빌드는 항상 production 모드
 ENV NODE_ENV=production
 
