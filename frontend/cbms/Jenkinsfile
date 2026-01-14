@@ -17,7 +17,7 @@ pipeline {
     DEPLOY_PATH = '/home/ec2-user/deploy'
 
     // Docker registry info (remote deploy 기준)
-    REGISTRY   = 'docker.io/ksygt728'
+    REGISTRY   = 'docker.io/seungyeon728'
     IMAGE_NAME = 'cbms-front'
 
     // SSH 키 경로 (Jenkins 컨테이너 내부)
@@ -97,7 +97,7 @@ pipeline {
         echo "================ ✅ [DOCKER] Push completed ================"
       }
     }
-    
+
     stage('Deploy') {
       when {
         expression { env.IS_LOCAL != "true" }
