@@ -106,7 +106,7 @@ pipeline {
         echo "================ [DEPLOY][REMOTE] Detected ================"
         echo "▶▶ Target server : ${params.DEPLOY_SERVER}"
 
-        sshagent(credentials: ['ec2-user']) {
+        sshagent(credentials: ['deploy-ssh-key']) {
           sh """
             ssh -o StrictHostKeyChecking=no ec2-user@${params.DEPLOY_SERVER} "mkdir -p ${DEPLOY_PATH}"
 
