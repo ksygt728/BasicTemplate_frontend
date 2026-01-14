@@ -106,16 +106,22 @@ pipeline {
         echo "================ [DEPLOY][REMOTE] Detected ================"
         echo "▶▶ Target server : ${params.DEPLOY_SERVER}"
 
-        sshagent(credentials: ['deploy-ssh-key']) {
+        sshagent(credentials: ['ec2-user']) {
           sh """
-            ssh ec2-user@${params.DEPLOY_SERVER} "mkdir -p ${DEPLOY_PATH}"
-            scp ${WORKSPACE}/${COMPOSE_FILE_PATH}/docker-compose.yml ec2-user@${params.DEPLOY_SERVER}:${DEPLOY_PATH}/docker-compose.yml
-            scp ${WORKSPACE}/${COMPOSE_FILE_PATH}/.env.${params.ENV} ec2-user@${params.DEPLOY_SERVER}:${DEPLOY_PATH}/.env.${params.ENV}
+            ssh -o StrictHostKeyChecking=no ec2-user@${params.DEPLOY_SERVER} "mkdir -p ${DEPLOY_PATH}"
 
-            ssh ec2-user@${params.DEPLOY_SERVER} '
+            scp -o StrictHostKeyChecking=no \
+                ${WORKSPACE}/${COMPOSE_FILE_PATH}/docker-compose.yml \
+                ec2-user@${params.DEPLOY_SERVER}:${DEPLOY_PATH}/docker-compose.yml
+
+            scp -o StrictHostKeyChecking=no \
+                ${WORKSPACE}/${COMPOSE_FILE_PATH}/.env.${params.ENV} \
+                ec2-user@${params.DEPLOY_SERVER}:${DEPLOY_PATH}/.env.${params.ENV}
+
+            ssh -o StrictHostKeyChecking=no ec2-user@${params.DEPLOY_SERVER} '
               docker pull ${REGISTRY}/${IMAGE_NAME}-${params.ENV}:${TAG}
               cd ${DEPLOY_PATH}
-              IMAGE_TAG=${TAG} ENV=${params.ENV} FRONT_PORT=3000 docker compose up -d --build
+              IMAGE_TAG=${TAG} ENV=${params.ENV} FRONT_PORT=3000 docker compose up -d
             '
           """
         }
