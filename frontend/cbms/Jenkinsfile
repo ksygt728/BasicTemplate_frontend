@@ -138,15 +138,24 @@ pipeline {
       }
       steps {
         echo "▶▶ [GIT][REMOTE] Create Git tag"
-        sh """
-          git config user.name ${GIT_TAG_ID}
-          git config user.email ${GIT_TAG_EMAIL}
 
-          git tag -a ${TAG} -m "front deploy ${params.ENV}"
-          git push origin ${TAG}
-        """
+        withCredentials([usernamePassword(
+          credentialsId: 'git-credential',
+          usernameVariable: 'GIT_USER',
+          passwordVariable: 'GIT_PASS'
+        )]) {
+          sh """
+            git config user.name "${GIT_TAG_ID}"
+            git config user.email "${GIT_TAG_EMAIL}"
+
+            git tag -a ${TAG} -m "front deploy ${params.ENV}"
+
+            git push https://${GIT_USER}:${GIT_PASS}@github.com/ksygt728/BasicTemplate_frontend.git ${TAG}
+          """
+        }
+
         echo "✅ [GIT][REMOTE] Tag pushed"
       }
-    } 
+    }  
   }
 }
