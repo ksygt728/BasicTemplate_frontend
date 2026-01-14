@@ -13,15 +13,17 @@ pipeline {
     // Git workspace 기준 docker-compose 파일 경로
     COMPOSE_FILE_PATH = 'frontend/cbms'
 
+    // Git Tag에 사용할 변수
+    GIT_TAG_ID = 'ksygt728'
+    GIT_TAG_EMAIL = 'ksygt728@gmail.com'
+
     // 원격 서버 기준 배포 경로
     DEPLOY_PATH = '/home/ec2-user/deploy'
 
     // Docker registry info (remote deploy 기준)
+    // Docker image 네이밍에 필요한 변수들을 정리
     REGISTRY   = 'docker.io/seungyeon728'
     IMAGE_NAME = 'cbms-front'
-
-    // SSH 키 경로 (Jenkins 컨테이너 내부)
-    SSH_KEY_PATH = '/var/jenkins_home/.ssh/id_ed25519'
 
     // 전역으로 사용할 Local 판단 변수
     IS_LOCAL = "${params.DEPLOY_SERVER == 'localhost' || params.DEPLOY_SERVER == '127.0.0.1'}"
@@ -137,11 +139,14 @@ pipeline {
       steps {
         echo "▶▶ [GIT][REMOTE] Create Git tag"
         sh """
+          git config user.name ${GIT_TAG_ID}
+          git config user.email ${GIT_TAG_EMAIL}
+
           git tag -a ${TAG} -m "front deploy ${params.ENV}"
           git push origin ${TAG}
         """
         echo "✅ [GIT][REMOTE] Tag pushed"
       }
-    }
+    } 
   }
 }
