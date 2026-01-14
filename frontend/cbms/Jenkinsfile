@@ -118,11 +118,11 @@ pipeline {
                 ${WORKSPACE}/${COMPOSE_FILE_PATH}/.env.${params.ENV} \
                 ec2-user@${params.DEPLOY_SERVER}:${DEPLOY_PATH}/.env.${params.ENV}
 
-            ssh -o StrictHostKeyChecking=no ec2-user@${params.DEPLOY_SERVER} '
-              docker pull ${REGISTRY}/${IMAGE_NAME}-${params.ENV}:${TAG}
-              cd ${DEPLOY_PATH}
+            ssh -o StrictHostKeyChecking=no ec2-user@${params.DEPLOY_SERVER} "
+              docker pull ${REGISTRY}/${IMAGE_NAME}-${params.ENV}:${TAG} && \
+              cd ${DEPLOY_PATH} && \
               IMAGE_TAG=${TAG} ENV=${params.ENV} FRONT_PORT=3000 docker compose up -d
-            '
+            "
           """
         }
 
