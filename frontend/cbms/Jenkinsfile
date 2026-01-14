@@ -106,7 +106,7 @@ pipeline {
         echo "================ [DEPLOY][REMOTE] Detected ================"
         echo "▶▶ Target server : ${params.DEPLOY_SERVER}"
 
-        sshagent(credentials: ['git-credential']) {
+        sshagent(credentials: ['deploy-ssh-key']) {
           sh """
             ssh ec2-user@${params.DEPLOY_SERVER} "mkdir -p ${DEPLOY_PATH}"
             scp ${WORKSPACE}/${COMPOSE_FILE_PATH}/docker-compose.yml ec2-user@${params.DEPLOY_SERVER}:${DEPLOY_PATH}/docker-compose.yml
