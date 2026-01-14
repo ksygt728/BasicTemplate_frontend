@@ -7,25 +7,24 @@ pipeline {
   }
 
   environment {
-    // Git repository URL
-    REPO_URL = 'https://github.com/ksygt728/BasicTemplate_frontend.git'
+    // Git (SSH)
+    REPO_URL = 'git@github.com:ksygt728/BasicTemplate_frontend.git'
+    
+    // Git Tag 계정정보
+    GIT_TAG_ID = 'ksygt728'
+    GIT_TAG_EMAIL = 'ksygt728@gmail.com'
 
     // Git workspace 기준 docker-compose 파일 경로
     COMPOSE_FILE_PATH = 'frontend/cbms'
 
-    // Git Tag에 사용할 변수
-    GIT_TAG_ID = 'ksygt728'
-    GIT_TAG_EMAIL = 'ksygt728@gmail.com'
-
     // 원격 서버 기준 배포 경로
     DEPLOY_PATH = '/home/ec2-user/deploy'
 
-    // Docker registry info (remote deploy 기준)
-    // Docker image 네이밍에 필요한 변수들을 정리
+    // Docker registry info
     REGISTRY   = 'docker.io/seungyeon728'
     IMAGE_NAME = 'cbms-front'
 
-    // 전역으로 사용할 Local 판단 변수
+    // Local 여부 판단
     IS_LOCAL = "${params.DEPLOY_SERVER == 'localhost' || params.DEPLOY_SERVER == '127.0.0.1'}"
   }
 
@@ -34,21 +33,21 @@ pipeline {
     stage('Init Params') {
       steps {
         echo "================ Jenkins Build Parameters ================"
-        echo "ENV               : ${params.ENV}"
-        echo "BRANCH            : ${params.BRANCH}"
-        echo "DEPLOY_SERVER     : ${params.DEPLOY_SERVER}"
-        echo "COMPOSE_FILE_PATH : ${COMPOSE_FILE_PATH}"
-        echo "※ localhost / 127.0.0.1 은 Local 배포, Deploy 단계 스킵. 직접 실행 필요"
+        echo "ENV           : ${params.ENV}"
+        echo "BRANCH        : ${params.BRANCH}"
+        echo "DEPLOY_SERVER : ${params.DEPLOY_SERVER}"
         echo "=========================================================="
       }
     }
 
-    stage('Checkout') {
+    stage('Checkout (SSH)') {
       steps {
         echo "================ [CHECKOUT] Start Git Checkout ================"
-        git branch: params.BRANCH,
-            credentialsId: 'git-credential',
-            url: env.REPO_URL
+        sshagent(credentials: ['git-ssh-key']) {
+          sh """
+            git clone -b ${params.BRANCH} ${REPO_URL} .
+          """
+        }
         echo "================ ✅ [CHECKOUT] Completed ================"
       }
     }
@@ -56,12 +55,10 @@ pipeline {
     stage('Prepare Tag') {
       steps {
         script {
-          echo "================ [TAG] Generate image tag ================"
           def tz = TimeZone.getTimeZone('Asia/Seoul')
-          def dateStr = new Date().format('yyyy-MM-dd_HH', tz)
+          def dateStr = new Date().format('yyyy-MM-dd_HH-mm', tz)
           env.TAG = "front-${params.ENV}-${dateStr}-${env.BUILD_NUMBER}"
-          echo "▶▶ [TAG] Generated TAG : ${env.TAG}"
-          echo "================ ✅ [TAG] Completed ================"
+          echo "▶▶ Generated TAG : ${env.TAG}"
         }
       }
     }
@@ -71,7 +68,9 @@ pipeline {
         echo "================ [DOCKER] Build image ================"
         sh """
           cd ${COMPOSE_FILE_PATH}
-          docker build --build-arg ENV_NAME=${params.ENV} -t ${REGISTRY}/${IMAGE_NAME}-${params.ENV}:${TAG} .
+          docker build \
+            --build-arg ENV_NAME=${params.ENV} \
+            -t ${REGISTRY}/${IMAGE_NAME}-${params.ENV}:${TAG} .
         """
         echo "================ ✅ [DOCKER] Build completed ================"
       }
@@ -82,8 +81,7 @@ pipeline {
         expression { env.IS_LOCAL != "true" }
       }
       steps {
-        echo "================ [DOCKER] Login & Push image to registry ================"
-
+        echo "================ [DOCKER] Push image ================"
         withCredentials([usernamePassword(
           credentialsId: 'dockerhub-credential',
           usernameVariable: 'DOCKER_USER',
@@ -95,39 +93,39 @@ pipeline {
             docker logout
           """
         }
-
-        echo "================ ✅ [DOCKER] Push completed ================"
       }
     }
 
-    stage('Deploy') {
+    stage('Deploy (Remote)') {
       when {
         expression { env.IS_LOCAL != "true" }
       }
       steps {
-        echo "================ [DEPLOY][REMOTE] Detected ================"
-        echo "▶▶ Target server : ${params.DEPLOY_SERVER}"
-
+        echo "================ [DEPLOY][REMOTE] Start ================"
         sshagent(credentials: ['deploy-ssh-key']) {
           sh """
             ssh -o StrictHostKeyChecking=no ec2-user@${params.DEPLOY_SERVER} "mkdir -p ${DEPLOY_PATH}"
 
             scp -o StrictHostKeyChecking=no \
-                ${WORKSPACE}/${COMPOSE_FILE_PATH}/docker-compose.yml \
-                ec2-user@${params.DEPLOY_SERVER}:${DEPLOY_PATH}/docker-compose.yml
+              ${WORKSPACE}/${COMPOSE_FILE_PATH}/docker-compose.yml \
+              ec2-user@${params.DEPLOY_SERVER}:${DEPLOY_PATH}/docker-compose.yml
 
             scp -o StrictHostKeyChecking=no \
-                ${WORKSPACE}/${COMPOSE_FILE_PATH}/.env.${params.ENV} \
-                ec2-user@${params.DEPLOY_SERVER}:${DEPLOY_PATH}/.env.${params.ENV}
+              ${WORKSPACE}/${COMPOSE_FILE_PATH}/.env.${params.ENV} \
+              ec2-user@${params.DEPLOY_SERVER}:${DEPLOY_PATH}/.env.${params.ENV}
 
             ssh -o StrictHostKeyChecking=no ec2-user@${params.DEPLOY_SERVER} "
               docker pull ${REGISTRY}/${IMAGE_NAME}-${params.ENV}:${TAG} && \
               cd ${DEPLOY_PATH} && \
-              REGISTRY=${REGISTRY} IMAGE_NAME=${IMAGE_NAME} ENV=${params.ENV} IMAGE_TAG=${TAG} FRONT_PORT=3000 docker-compose up -d
+              REGISTRY=${REGISTRY} \
+              IMAGE_NAME=${IMAGE_NAME} \
+              ENV=${params.ENV} \
+              IMAGE_TAG=${TAG} \
+              FRONT_PORT=3000 \
+              docker-compose up -d
             "
           """
         }
-
         echo "================ ✅ [DEPLOY][REMOTE] Completed ================"
       }
     }
@@ -137,16 +135,18 @@ pipeline {
         expression { env.IS_LOCAL != "true" }
       }
       steps {
-        echo "▶▶ [GIT][REMOTE] Create Git tag"
-        sh """
-          git config user.name ${GIT_TAG_ID}
-          git config user.email ${GIT_TAG_EMAIL}
+        echo "▶▶ [GIT] Create & Push Tag (SSH)"
+        sshagent(credentials: ['git-ssh-key']) {
+          sh """
+            git config user.name ${GIT_TAG_ID}
+            git config user.email ${GIT_TAG_EMAIL}
 
-          git tag -a ${TAG} -m "front deploy ${params.ENV}"
-          git push origin ${TAG}
-        """
-        echo "✅ [GIT][REMOTE] Tag pushed"
+            git tag -a ${TAG} -m "front deploy ${params.ENV}"
+            git push origin ${TAG}
+          """
+        }
+        echo "✅ [GIT] Tag pushed"
       }
-    } 
+    }
   }
 }
