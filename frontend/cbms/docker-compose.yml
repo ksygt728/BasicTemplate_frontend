@@ -2,8 +2,8 @@ version: "3.9"
 
 services:
   front:
-    image: cbms-front-${ENV}:${IMAGE_TAG}
-    container_name: cbms-front-${ENV}
+    image: ${REGISTRY}/${IMAGE_NAME}-${ENV}:${IMAGE_TAG}
+    container_name: ${IMAGE_NAME}-${ENV}
     restart: always
     ports:
       - "${FRONT_PORT}:3000"

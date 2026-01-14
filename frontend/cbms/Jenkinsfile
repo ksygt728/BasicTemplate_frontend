@@ -121,7 +121,7 @@ pipeline {
             ssh -o StrictHostKeyChecking=no ec2-user@${params.DEPLOY_SERVER} "
               docker pull ${REGISTRY}/${IMAGE_NAME}-${params.ENV}:${TAG} && \
               cd ${DEPLOY_PATH} && \
-              IMAGE_TAG=${TAG} ENV=${params.ENV} FRONT_PORT=3000 docker-compose up -d
+              REGISTRY=${REGISTRY} IMAGE_NAME=${IMAGE_NAME} ENV=${params.ENV} IMAGE_TAG=${TAG} FRONT_PORT=3000 docker-compose up -d
             "
           """
         }
