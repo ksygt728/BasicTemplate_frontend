@@ -40,10 +40,10 @@ pipeline {
       }
     }
 
-    stage('Checkout (SSH)') {
+    stage('Checkout') {
       steps {
         echo "================ [CHECKOUT] Start Git Checkout ================"
-        sshagent(credentials: ['git-ssh-key']) {
+        sshagent(credentials: ['git-credential']) {
           sh """
             git clone -b ${params.BRANCH} ${REPO_URL} .
           """
@@ -55,10 +55,12 @@ pipeline {
     stage('Prepare Tag') {
       steps {
         script {
+          echo "================ [TAG] start ================"
           def tz = TimeZone.getTimeZone('Asia/Seoul')
-          def dateStr = new Date().format('yyyy-MM-dd_HH-mm', tz)
+          def dateStr = new Date().format('yyyy-MM-dd_HH', tz)
           env.TAG = "front-${params.ENV}-${dateStr}-${env.BUILD_NUMBER}"
-          echo "▶▶ Generated TAG : ${env.TAG}"
+          echo "================ ✅ [TAG] Completed ================"
+
         }
       }
     }
@@ -93,6 +95,7 @@ pipeline {
             docker logout
           """
         }
+        echo "================ ✅ [DOCKER] Push image completed ================"
       }
     }
 
