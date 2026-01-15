@@ -110,7 +110,6 @@ export const useAuthApi = () => {
         if (accessToken) {
           Cookies.set("accessToken", accessToken, {
             expires: accessTokenExpireDate,
-            secure: process.env.NODE_ENV === "production",
             sameSite: "strict",
           });
         }
@@ -118,7 +117,6 @@ export const useAuthApi = () => {
         if (refreshToken) {
           Cookies.set("refreshToken", refreshToken, {
             expires: refreshTokenExpireDate,
-            secure: process.env.NODE_ENV === "production",
             sameSite: "strict",
           });
         }
@@ -135,12 +133,6 @@ export const useAuthApi = () => {
         // 3. Redux에 사용자 정보 저장
         // API 응답 구조: result.data에 사용자 정보가 있음
         const userData = result.data.data as any; // API 응답 구조 확인을 위해 any 사용
-
-        // // 디버깅: API 응답 데이터 확인
-        // console.log("API 응답 전체:", result);
-        // console.log("사용자 데이터:", userData);
-        // console.log("사용자 이름:", userData?.name);
-        // console.log("userId:", userData?.userId);
 
         dispatch(
           login({
