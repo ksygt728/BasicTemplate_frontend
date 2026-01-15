@@ -220,6 +220,7 @@ const refreshAccessToken = async (
     const response = await fetch(url, {
       ...options,
       headers: refreshHeaders,
+      credentials: "include",
     });
 
     // 응답 헤더에서 새 토큰 추출
@@ -257,6 +258,7 @@ const refreshAccessToken = async (
         const userResponse = await fetch(userInfoUrl, {
           method: "GET",
           headers: userHeaders,
+          credentials: "include",
         });
 
         const userResult = await userResponse.json();
@@ -421,6 +423,7 @@ export const authFetch = async (
     const response = await fetch(url, {
       ...fetchOptions,
       headers,
+      credentials: "include",
     });
 
     // 응답 파싱
