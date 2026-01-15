@@ -224,23 +224,47 @@ const refreshAccessToken = async (
     });
 
     // 응답 헤더에서 새 토큰 추출
-    const newAccessToken = response.headers.get(
+    const accessTokenHeaderName =
       process.env.NEXT_PUBLIC_ACCESS_TOKEN_HEADER ||
-        "Authorization-Accesstoken-Dev"
-    );
-    const newRefreshToken = response.headers.get(
+      "Authorization-Accesstoken-Dev";
+    const refreshTokenHeaderName =
       process.env.NEXT_PUBLIC_REFRESH_TOKEN_HEADER ||
-        "Authorization-Refreshtoken-Dev"
-    );
+      "Authorization-Refreshtoken-Dev";
+
+    const newAccessToken = response.headers.get(accessTokenHeaderName);
+    const newRefreshToken = response.headers.get(refreshTokenHeaderName);
+
+    // 디버깅: 토큰 추출 로그
+    console.log("[토큰 갱신] 응답 헤더 확인:", {
+      accessTokenHeaderName,
+      accessTokenValue: newAccessToken ? "있음" : "없음",
+      refreshTokenHeaderName,
+      refreshTokenValue: newRefreshToken ? "있음" : "없음",
+      allHeaders: Array.from(response.headers.entries()),
+    });
 
     /* Case 4-2: RT도 만료되어 갱신 실패 */
     if (!newAccessToken || !newRefreshToken) {
+      console.error("[토큰 갱신 실패] 토큰이 헤더에 없음");
       handleLogout();
       return null;
     }
 
     /* Case 2-3, Case 3-4: 새 AT/RT를 쿠키에 저장 */
+    console.log("[쿠키 저장] 시작...");
     saveTokens(newAccessToken, newRefreshToken);
+    console.log("[쿠키 저장] 완료");
+
+    // 저장된 쿠키 확인
+    const savedAccessToken = Cookies.get("accessToken");
+    const savedRefreshToken = Cookies.get("refreshToken");
+    console.log("[쿠키 확인] 저장된 토큰:", {
+      accessToken: savedAccessToken ? "저장됨 ✓" : "없음 ✗",
+      refreshToken: savedRefreshToken ? "저장됨 ✓" : "없음 ✗",
+      accessTokenPreview: savedAccessToken ? `${savedAccessToken.substring(0, 20)}...` : null,
+      refreshTokenPreview: savedRefreshToken ? `${savedRefreshToken.substring(0, 20)}...` : null,
+    });
+
 
     // 토큰 갱신 응답 body 소비
     await safeParseResponse(response);
