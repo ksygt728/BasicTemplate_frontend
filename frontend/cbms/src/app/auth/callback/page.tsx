@@ -55,13 +55,11 @@ export default function AuthCallbackPage() {
             // 쿠키에 토큰 저장
             Cookies.set("accessToken", accessToken, {
               expires: accessTokenExpireDate,
-              secure: process.env.NODE_ENV === "production",
               sameSite: "strict",
             });
 
             Cookies.set("refreshToken", refreshToken, {
               expires: refreshTokenExpireDate,
-              secure: process.env.NODE_ENV === "production",
               sameSite: "strict",
             });
 
