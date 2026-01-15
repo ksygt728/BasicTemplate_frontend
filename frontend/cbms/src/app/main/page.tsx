@@ -12,7 +12,7 @@ export default function Home() {
   return (
     <div style={{ padding: "40px" }}>
       {/* 공지팝업 컴포넌트 */}
-      <AnnouncementPopup autoShow={true} />
+      {/* <AnnouncementPopup autoShow={true} /> */}
 
       {/* 메인 컨텐츠 */}
       <div style={{ textAlign: "center", marginTop: "60px" }}>
