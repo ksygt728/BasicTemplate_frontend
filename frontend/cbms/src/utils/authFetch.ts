@@ -123,12 +123,10 @@ const saveTokens = (accessToken: string, refreshToken: string) => {
 
   Cookies.set("accessToken", accessToken, {
     expires: accessTokenExpireDate,
-    secure: process.env.NODE_ENV === "production",
     sameSite: "strict",
   });
   Cookies.set("refreshToken", refreshToken, {
     expires: refreshTokenExpireDate,
-    secure: process.env.NODE_ENV === "production",
     sameSite: "strict",
   });
 };
