@@ -123,12 +123,10 @@ const saveTokens = (accessToken: string, refreshToken: string) => {
 
   Cookies.set("accessToken", accessToken, {
     expires: accessTokenExpireDate,
-    secure: process.env.NODE_ENV === "production",
     sameSite: "strict",
   });
   Cookies.set("refreshToken", refreshToken, {
     expires: refreshTokenExpireDate,
-    secure: process.env.NODE_ENV === "production",
     sameSite: "strict",
   });
 };
@@ -222,17 +220,19 @@ const refreshAccessToken = async (
     const response = await fetch(url, {
       ...options,
       headers: refreshHeaders,
+      credentials: "include",
     });
 
     // 응답 헤더에서 새 토큰 추출
-    const newAccessToken = response.headers.get(
+    const accessTokenHeaderName =
       process.env.NEXT_PUBLIC_ACCESS_TOKEN_HEADER ||
-        "Authorization-Accesstoken-Dev"
-    );
-    const newRefreshToken = response.headers.get(
+      "Authorization-Accesstoken-Dev";
+    const refreshTokenHeaderName =
       process.env.NEXT_PUBLIC_REFRESH_TOKEN_HEADER ||
-        "Authorization-Refreshtoken-Dev"
-    );
+      "Authorization-Refreshtoken-Dev";
+
+    const newAccessToken = response.headers.get(accessTokenHeaderName);
+    const newRefreshToken = response.headers.get(refreshTokenHeaderName);
 
     /* Case 4-2: RT도 만료되어 갱신 실패 */
     if (!newAccessToken || !newRefreshToken) {
@@ -259,6 +259,7 @@ const refreshAccessToken = async (
         const userResponse = await fetch(userInfoUrl, {
           method: "GET",
           headers: userHeaders,
+          credentials: "include",
         });
 
         const userResult = await userResponse.json();
@@ -283,7 +284,6 @@ const refreshAccessToken = async (
         }
       } catch (userError) {
         // 사용자 정보 조회 실패해도 토큰 갱신은 성공으로 처리
-        console.error("토큰 갱신 후 사용자 정보 조회 실패:", userError);
       }
     }
 
@@ -423,6 +423,7 @@ export const authFetch = async (
     const response = await fetch(url, {
       ...fetchOptions,
       headers,
+      credentials: "include",
     });
 
     // 응답 파싱
