@@ -6,7 +6,7 @@ services:
     container_name: ${IMAGE_NAME}-${ENV}
     restart: always
     ports:
-      - "${FRONT_PORT}:3000"
+      - "${FRONT_PORT}:${FRONT_PORT}"
     env_file:
       - .env.${ENV}
     networks:
