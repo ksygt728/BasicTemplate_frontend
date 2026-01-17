@@ -4,7 +4,7 @@ services:
   front:
     image: ${REGISTRY}/${IMAGE_NAME}-${ENV}:${IMAGE_TAG}
     container_name: ${IMAGE_NAME}-${ENV}
-    restart: always
+    restart: unless-stopped
     ports:
       - "${FRONT_PORT}:${FRONT_PORT}"
     env_file:
