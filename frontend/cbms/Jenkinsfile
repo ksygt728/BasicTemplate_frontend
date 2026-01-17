@@ -10,12 +10,12 @@ pipeline {
     // Git repository URL
     REPO_URL = 'https://github.com/ksygt728/BasicTemplate_frontend.git'
 
-    // Git workspace 기준 docker-compose 파일 경로
-    COMPOSE_FILE_PATH = 'frontend/cbms'
-
     // Git Tag에 사용할 변수
     GIT_TAG_ID = 'ksygt728'
     GIT_TAG_EMAIL = 'ksygt728@gmail.com'
+
+    // Git workspace 기준 docker-compose 파일 경로
+    COMPOSE_FILE_PATH = 'frontend/cbms'
 
     // 원격 서버 기준 배포 경로
     DEPLOY_PATH = '/home/ec2-user/deploy'
