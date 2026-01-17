@@ -10,6 +10,10 @@ pipeline {
     // Git repository URL
     REPO_URL = 'https://github.com/ksygt728/BasicTemplate_frontend.git'
 
+    // Git Tag에 사용할 변수
+    GIT_TAG_ID = 'ksygt728'
+    GIT_TAG_EMAIL = 'ksygt728@gmail.com'
+
     // Git workspace 기준 docker-compose 파일 경로
     COMPOSE_FILE_PATH = 'frontend/cbms'
 
@@ -151,8 +155,8 @@ pipeline {
           passwordVariable: 'GIT_PASS'
         )]) {
           sh """
-            git config user.name "ksygt728"
-            git config user.email "ksygt728@gmail.com"
+            git config user.name "${GIT_TAG_ID}"
+            git config user.email "${GIT_TAG_EMAIL}"
 
             git tag -a ${TAG} -m "front deploy ${params.ENV}"
 
