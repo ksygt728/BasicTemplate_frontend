@@ -148,7 +148,7 @@ pipeline {
         withCredentials([usernamePassword(
           credentialsId: 'git-credential',
           usernameVariable: 'GIT_USER',
-          passwordVariable: 'GIT_PASS'
+          passwordVariable: 'GIT_TOKEN'
         )]) {
           sh """
             git config user.name "ksygt728"
@@ -156,7 +156,7 @@ pipeline {
 
             git tag -a ${TAG} -m "front deploy ${params.ENV}"
 
-            git push https://${GIT_USER}:${GIT_PASS}@github.com/ksygt728/BasicTemplate_frontend.git ${TAG}
+            git push https://${GIT_USER}:${GIT_TOKEN}@github.com/ksygt728/BasicTemplate_frontend.git ${TAG}
           """
         }
 
