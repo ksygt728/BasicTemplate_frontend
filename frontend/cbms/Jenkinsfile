@@ -150,14 +150,14 @@ pipeline {
           usernameVariable: 'GIT_USER',
           passwordVariable: 'GIT_TOKEN'
         )]) {
-          sh """
+          sh '''
             git config user.name "ksygt728"
             git config user.email "ksygt728@gmail.com"
 
             git tag -a ${TAG} -m "front deploy ${params.ENV}"
 
             git push https://${GIT_USER}:${GIT_TOKEN}@github.com/ksygt728/BasicTemplate_frontend.git ${TAG}
-          """
+          '''
         }
 
         echo "✅ [GIT][REMOTE] Tag pushed"
