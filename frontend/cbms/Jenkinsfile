@@ -36,6 +36,7 @@ pipeline {
         echo "================ Jenkins Build Parameters ================"
         echo "ENV               : ${params.ENV}"
         echo "BRANCH            : ${params.BRANCH}"
+        echo "GIT_TAG           : ${params.GIT_TAG}"
         echo "DEPLOY_SERVER     : ${params.DEPLOY_SERVER}"
         echo "COMPOSE_FILE_PATH : ${COMPOSE_FILE_PATH}"
         echo "※ localhost / 127.0.0.1 은 Local 배포, Deploy 단계 스킵. 직접 실행 필요"
@@ -45,11 +46,27 @@ pipeline {
 
     stage('Checkout') {
       steps {
-        echo "================ [CHECKOUT] Start Git Checkout ================"
-        git branch: params.BRANCH,
-            credentialsId: 'git-credential',
-            url: env.REPO_URL
-        echo "================ ✅ [CHECKOUT] Completed ================"
+        echo "================ ✅ [CHECKOUT] ================="
+        script {
+          // Branch 또는 Tag 중 하나만 checkout
+          def ref = (params.GIT_TAG && params.GIT_TAG != 'HEAD')
+            ? "refs/tags/${params.GIT_TAG}"
+            : "refs/heads/${params.BRANCH}"
+
+          echo "▶▶ GIT_TAG param: ${params.GIT_TAG}"
+          echo "▶▶ BRANCH param: ${params.BRANCH}"
+          echo "▶▶ Resolved ref: ${ref}"
+
+          checkout([
+            $class: 'GitSCM',
+            branches: [[name: ref]],
+            userRemoteConfigs: [[
+              url: env.REPO_URL,
+              credentialsId: 'git-credential'
+            ]]
+          ])
+        }
+        echo "================ ✅ [CHECKOUT DONE] ================="
       }
     }
 
