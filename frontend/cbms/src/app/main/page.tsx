@@ -17,7 +17,7 @@ export default function Home() {
       {/* 메인 컨텐츠 */}
       <div style={{ textAlign: "center", marginTop: "60px" }}>
         <h1 style={{ fontSize: "32px", fontWeight: 700, marginBottom: "16px" }}>
-          환영합니다
+          환영합니다!
         </h1>
         <p style={{ fontSize: "16px", color: "#6b7280" }}>
           메인 페이지 컨텐츠를 여기에 추가하세요.
